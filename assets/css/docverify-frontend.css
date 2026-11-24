@@ -1,0 +1,444 @@
+/**
+ * Estilos Frontend — Portal Público de Verificación Documental (ES/EN + Claro/Oscuro + Print)
+ */
+
+.aura-dv-public-wrap {
+    max-width: 920px;
+    margin: 24px auto 48px;
+    padding: 0 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--aura-text, #0f172a);
+}
+
+.aura-dv-public-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.aura-dv-lang-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-dv-lang-btn,
+.aura-dv-print-btn {
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.35));
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-text, #0f172a);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.aura-dv-lang-btn.is-active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+}
+
+.aura-dv-card {
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.28));
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+.aura-dv-card.is-valid {
+    border-top: 4px solid #10b981;
+}
+
+.aura-dv-card.is-expired {
+    border-top: 4px solid #f59e0b;
+}
+
+.aura-dv-card.is-revoked,
+.aura-dv-card--invalid {
+    border-top: 4px solid #ef4444;
+}
+
+.aura-dv-org-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--aura-border, rgba(148, 163, 184, 0.24));
+}
+
+.aura-dv-org-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.aura-dv-org-logo {
+    max-height: 54px;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+.aura-dv-org-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--aura-text, #0f172a);
+}
+
+.aura-dv-org-meta {
+    font-size: 12.5px;
+    color: var(--aura-text-muted, #64748b);
+    margin-top: 2px;
+}
+
+.aura-dv-folio-chip {
+    text-align: right;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: rgba(2, 132, 199, 0.08);
+    border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+.aura-dv-folio-chip span {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #0369a1;
+    font-weight: 700;
+}
+
+.aura-dv-folio-chip strong {
+    font-size: 16px;
+    font-family: ui-monospace, monospace;
+}
+
+.aura-dv-status-hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+}
+
+.aura-dv-status-hero.is-valid {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.aura-dv-status-hero.is-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.aura-dv-status-hero.is-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.aura-dv-status-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.aura-dv-status-hero h1 {
+    margin: 6px 0 4px;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.aura-dv-status-hero p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--aura-text-muted, #475569);
+}
+
+.aura-dv-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+
+.aura-dv-pill-badge.is-valid {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.aura-dv-pill-badge.is-warning {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+.aura-dv-pill-badge.is-danger {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.aura-dv-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.aura-dv-specs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.aura-dv-spec {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--aura-surface-alt, #f8fafc);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.24));
+}
+
+.aura-dv-spec small {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--aura-text-muted, #64748b);
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.aura-dv-spec strong {
+    font-size: 14px;
+    color: var(--aura-text, #0f172a);
+}
+
+.aura-dv-muted {
+    font-weight: 500;
+    color: var(--aura-text-muted, #64748b);
+}
+
+.aura-dv-unlock-box,
+.aura-dv-sha-box {
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.3));
+    background: var(--aura-surface-alt, #f8fafc);
+    margin-top: 16px;
+}
+
+.aura-dv-unlock-box h4,
+.aura-dv-sha-box h4 {
+    margin: 0 0 6px;
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.aura-dv-unlock-form,
+.aura-dv-search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+
+.aura-dv-search-form > div {
+    flex: 1;
+    min-width: 190px;
+}
+
+.aura-dv-search-form label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.aura-dv-unlock-form input,
+.aura-dv-search-form input {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--aura-border, #cbd5e1);
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-text, #0f172a);
+}
+
+.aura-dv-unlock-form input {
+    flex: 1;
+    min-width: 220px;
+}
+
+.aura-dv-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+
+.aura-dv-download-wrap {
+    margin-top: 14px;
+}
+
+.aura-dv-sha-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 12px;
+    margin-bottom: 10px;
+}
+
+.aura-dv-sha-privacy {
+    font-size: 11.5px;
+    color: #059669;
+    font-weight: 600;
+}
+
+.aura-dv-sha-digest small {
+    display: block;
+    font-size: 11.5px;
+    color: var(--aura-text-muted, #64748b);
+}
+
+.aura-dv-sha-digest code {
+    display: block;
+    margin-top: 2px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.28));
+    font-size: 11.5px;
+    word-break: break-all;
+}
+
+.aura-dv-sha-drop {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 2px dashed rgba(2, 132, 199, 0.45);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(2, 132, 199, 0.04);
+}
+
+.aura-dv-sha-match-ok,
+.aura-dv-sha-match-fail {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.aura-dv-sha-match-ok {
+    background: rgba(16, 185, 129, 0.14);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.aura-dv-sha-match-fail {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.aura-dv-public-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--aura-border, rgba(148, 163, 184, 0.24));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+    font-size: 12.5px;
+    color: var(--aura-text-muted, #64748b);
+}
+
+/* Dark Mode Frontend Multi-Driver */
+[data-theme="dark"] .aura-dv-card,
+[data-theme="dark"] .aura-dv-lang-btn:not(.is-active),
+[data-theme="dark"] .aura-dv-print-btn,
+.aura-dark-mode .aura-dv-card,
+.aura-dark-mode .aura-dv-lang-btn:not(.is-active),
+.aura-dark-mode .aura-dv-print-btn,
+.wp-dark-mode-active .aura-dv-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-card {
+    background: #16152b;
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .aura-dv-spec,
+[data-theme="dark"] .aura-dv-unlock-box,
+[data-theme="dark"] .aura-dv-sha-box,
+[data-theme="dark"] .aura-dv-sha-digest code,
+[data-theme="dark"] .aura-dv-unlock-form input,
+[data-theme="dark"] .aura-dv-search-form input,
+.aura-dark-mode .aura-dv-spec,
+.aura-dark-mode .aura-dv-unlock-box,
+.aura-dark-mode .aura-dv-sha-box,
+.aura-dark-mode .aura-dv-sha-digest code,
+.aura-dark-mode .aura-dv-unlock-form input,
+.aura-dark-mode .aura-dv-search-form input,
+.wp-dark-mode-active .aura-dv-spec,
+.wp-dark-mode-active .aura-dv-sha-box {
+    background: #1f1d38;
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .aura-dv-org-name,
+[data-theme="dark"] .aura-dv-spec strong,
+.aura-dark-mode .aura-dv-org-name,
+.aura-dark-mode .aura-dv-spec strong,
+.wp-dark-mode-active .aura-dv-org-name,
+.wp-dark-mode-active .aura-dv-spec strong {
+    color: #f8fafc;
+}
+
+@media (max-width: 680px) {
+    .aura-dv-specs-grid {
+        grid-template-columns: 1fr;
+    }
+    .aura-dv-folio-chip {
+        text-align: left;
+    }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .aura-dv-public-wrap {
+        margin: 0;
+        max-width: 100%;
+    }
+    .aura-dv-card {
+        box-shadow: none;
+        border: 1px solid #cbd5e1;
+    }
+}

@@ -122,6 +122,15 @@ class Aura_Page_Manager {
                 'class'  => 'Aura_Certificates_Settings',
                 'desc'   => __( 'Buscador público para validar un folio de certificado.', 'aura-suite' ),
             ],
+            'doc_verify' => [
+                'module' => __( 'Validación Documental', 'aura-suite' ),
+                'title'  => __( 'Verificación Oficial de Documentos', 'aura-suite' ),
+                'label'  => __( 'Verificar Documento / Carta Consular', 'aura-suite' ),
+                'slug'   => 'verificar-documento',
+                'tag'    => 'aura_verificar_documento',
+                'class'  => 'Aura_DocVerify_Settings',
+                'desc'   => __( 'Portal público bilingüe (ES/EN) para validar documentos firmados, cartas de invitación con QR y cotejo SHA-256.', 'aura-suite' ),
+            ],
             'forms_portal' => [
                 'module' => __( 'Formularios', 'aura-suite' ),
                 'title'  => __( 'Mis Encuestas y Formularios', 'aura-suite' ),
@@ -157,6 +166,8 @@ class Aura_Page_Manager {
                 return (int) get_option( 'aura_cal_teacher_portal_page_id', 0 );
             case 'cert_mine':
                 return (int) Aura_Certificates_Settings::get( 'cert_page_id', 0 );
+            case 'doc_verify':
+                return (int) Aura_DocVerify_Settings::get( 'verify_page_id', 0 );
             case 'forms_portal':
                 return (int) Aura_Forms_Settings::get( 'portal_page', 0 );
             default:
@@ -186,6 +197,11 @@ class Aura_Page_Manager {
                 $opts = Aura_Certificates_Settings::get_all();
                 $opts['cert_page_id'] = $page_id;
                 update_option( Aura_Certificates_Settings::OPTION_KEY, $opts );
+                break;
+            case 'doc_verify':
+                $opts = Aura_DocVerify_Settings::get_all();
+                $opts['verify_page_id'] = $page_id;
+                update_option( Aura_DocVerify_Settings::OPTION_KEY, $opts );
                 break;
             case 'forms_portal':
                 $opts = get_option( Aura_Forms_Settings::OPTION_KEY, [] );

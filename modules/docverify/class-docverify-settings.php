@@ -47,6 +47,7 @@ class Aura_DocVerify_Settings {
             'verify_page_id'       => 0,
             'folio_padding'        => 4,
             'prefix_invitation'    => 'INV',
+            'prefix_migration'     => 'MIG',
             'prefix_official'      => 'OFI',
             'prefix_constancy'     => 'CON',
             'prefix_sponsorship'   => 'PAT',
@@ -102,13 +103,14 @@ class Aura_DocVerify_Settings {
      */
     public static function get_document_types(): array {
         return [
-            'invitation_letter' => __( 'Carta de Invitación (Visa / Embajada)', 'aura-suite' ),
-            'official_letter'   => __( 'Oficio / Comunicado Oficial', 'aura-suite' ),
-            'constancy'         => __( 'Constancia / Certificación Institucional', 'aura-suite' ),
-            'sponsorship'       => __( 'Carta de Patrocinio / Apoyo', 'aura-suite' ),
-            'authorization'     => __( 'Autorización / Poder / Permiso', 'aura-suite' ),
-            'agreement'         => __( 'Convenio / Acta / Resolución', 'aura-suite' ),
-            'other'             => __( 'Otro Documento Institucional', 'aura-suite' ),
+            'invitation_letter'    => __( 'Carta de Invitación (Visa / Embajada)', 'aura-suite' ),
+            'migration_invitation' => __( 'Carta de Invitación (Migración / Control Fronterizo)', 'aura-suite' ),
+            'official_letter'      => __( 'Oficio / Comunicado Oficial', 'aura-suite' ),
+            'constancy'            => __( 'Constancia / Certificación Institucional', 'aura-suite' ),
+            'sponsorship'          => __( 'Carta de Patrocinio / Apoyo', 'aura-suite' ),
+            'authorization'        => __( 'Autorización / Poder / Permiso', 'aura-suite' ),
+            'agreement'            => __( 'Convenio / Acta / Resolución', 'aura-suite' ),
+            'other'                => __( 'Otro Documento Institucional', 'aura-suite' ),
         ];
     }
 
@@ -120,6 +122,10 @@ class Aura_DocVerify_Settings {
             'invitation_letter' => [
                 'es' => 'Carta de Invitación (Visa / Trámite Consular)',
                 'en' => 'Official Letter of Invitation (Visa / Consular)',
+            ],
+            'migration_invitation' => [
+                'es' => 'Carta de Invitación (Migración / Control Fronterizo)',
+                'en' => 'Invitation Letter (Immigration / Border Control)',
             ],
             'official_letter' => [
                 'es' => 'Oficio / Comunicado Oficial',
@@ -154,8 +160,9 @@ class Aura_DocVerify_Settings {
      */
     public static function get_prefix_for_type( string $doc_type ): string {
         $map = [
-            'invitation_letter' => 'prefix_invitation',
-            'official_letter'   => 'prefix_official',
+            'invitation_letter'    => 'prefix_invitation',
+            'migration_invitation' => 'prefix_migration',
+            'official_letter'      => 'prefix_official',
             'constancy'         => 'prefix_constancy',
             'sponsorship'       => 'prefix_sponsorship',
             'authorization'     => 'prefix_authorization',
@@ -210,6 +217,7 @@ class Aura_DocVerify_Settings {
 
             $prefix_keys = [
                 'prefix_invitation',
+                'prefix_migration',
                 'prefix_official',
                 'prefix_constancy',
                 'prefix_sponsorship',

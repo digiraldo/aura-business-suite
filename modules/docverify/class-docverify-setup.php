@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_DocVerify_Setup {
 
     /** Versión del esquema de BD del módulo */
-    const DB_VERSION        = '1.0.0';
+    const DB_VERSION        = '1.0.1';
     const DB_VERSION_OPTION = 'aura_docverify_db_version';
 
     /**
@@ -73,6 +73,7 @@ class Aura_DocVerify_Setup {
             holder_doc_hash         CHAR(64) DEFAULT NULL,
             travel_or_event_start   DATE DEFAULT NULL,
             travel_or_event_end     DATE DEFAULT NULL,
+            stay_address            VARCHAR(300) DEFAULT NULL,
             signer_id               BIGINT(20) UNSIGNED DEFAULT NULL,
             signer_name             VARCHAR(200) NOT NULL DEFAULT '',
             signer_title            VARCHAR(200) NOT NULL DEFAULT '',
@@ -170,6 +171,7 @@ class Aura_DocVerify_Setup {
             $base . '/pdf',
             $base . '/qr',
             $base . '/tmp',
+            $base . '/tmp/mpdf',
         ];
 
         foreach ( $dirs as $d ) {

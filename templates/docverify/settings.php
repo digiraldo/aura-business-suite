@@ -139,8 +139,12 @@ $pages       = get_pages( [ 'post_status' => [ 'publish', 'draft' ] ] ) ?: [];
 
                 <div class="aura-dv-grid-3" style="margin-top:16px;">
                     <div>
-                        <label class="aura-dv-label"><?php esc_html_e( 'Prefijo Carta de Invitación', 'aura-suite' ); ?></label>
+                        <label class="aura-dv-label"><?php esc_html_e( 'Prefijo Carta de Invitación (Visa)', 'aura-suite' ); ?></label>
                         <input type="text" name="prefix_invitation" class="form-control" maxlength="8" value="<?php echo esc_attr( $settings['prefix_invitation'] ); ?>">
+                    </div>
+                    <div>
+                        <label class="aura-dv-label"><?php esc_html_e( 'Prefijo Carta Migración / Frontera', 'aura-suite' ); ?></label>
+                        <input type="text" name="prefix_migration" class="form-control" maxlength="8" value="<?php echo esc_attr( $settings['prefix_migration'] ); ?>">
                     </div>
                     <div>
                         <label class="aura-dv-label"><?php esc_html_e( 'Prefijo Oficio / Comunicado', 'aura-suite' ); ?></label>

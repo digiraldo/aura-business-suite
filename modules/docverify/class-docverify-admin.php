@@ -241,6 +241,7 @@ class Aura_DocVerify_Admin {
             'holder_doc_number'     => wp_unslash( $_POST['holder_doc_number'] ?? '' ),
             'travel_or_event_start' => wp_unslash( $_POST['travel_or_event_start'] ?? '' ),
             'travel_or_event_end'   => wp_unslash( $_POST['travel_or_event_end'] ?? '' ),
+            'stay_address'          => wp_unslash( $_POST['stay_address'] ?? '' ),
             'signer_id'             => wp_unslash( $_POST['signer_id'] ?? 0 ),
             'signer_name'           => wp_unslash( $_POST['signer_name'] ?? '' ),
             'signer_title'          => wp_unslash( $_POST['signer_title'] ?? '' ),
@@ -327,6 +328,7 @@ class Aura_DocVerify_Admin {
             'holder_doc_masked'     => $doc->holder_doc_masked,
             'travel_or_event_start' => $doc->travel_or_event_start,
             'travel_or_event_end'   => $doc->travel_or_event_end,
+            'stay_address'          => $doc->stay_address ?? '',
             'signer_name'           => $doc->signer_name,
             'signer_title'          => $doc->signer_title,
             'signer_email'          => $doc->signer_email,
@@ -500,11 +502,12 @@ class Aura_DocVerify_Admin {
         $path = (string) $doc->qr_png_path;
         if ( $path === '' || ! file_exists( $path ) ) {
             $gen  = Aura_DocVerify_PDF::generate_qr_files( (string) $doc->folio, (string) $doc->verify_url );
-            $path = $gen['png_path'];
+            $path = $gen['png_path'] ?: $gen['svg_path'];
         }
 
         if ( $path !== '' && file_exists( $path ) ) {
-            header( 'Content-Type: image/png' );
+            $is_svg = substr( strtolower( $path ), -4 ) === '.svg';
+            header( 'Content-Type: ' . ( $is_svg ? 'image/svg+xml' : 'image/png' ) );
             header( 'Cache-Control: private, max-age=3600' );
             readfile( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
             exit;

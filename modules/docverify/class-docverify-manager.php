@@ -161,6 +161,7 @@ class Aura_DocVerify_Manager {
             'holder_doc_hash'       => $holder_doc_hash,
             'travel_or_event_start' => self::sanitize_date( $data['travel_or_event_start'] ?? '' ),
             'travel_or_event_end'   => self::sanitize_date( $data['travel_or_event_end'] ?? '' ),
+            'stay_address'          => sanitize_text_field( $data['stay_address'] ?? '' ),
             'signer_id'             => ! empty( $data['signer_id'] ) ? absint( $data['signer_id'] ) : null,
             'signer_name'           => sanitize_text_field( $data['signer_name'] ?? '' ),
             'signer_title'          => sanitize_text_field( $data['signer_title'] ?? '' ),
@@ -265,6 +266,7 @@ class Aura_DocVerify_Manager {
                 'holder_doc_hash'        => $holder_doc_hash,
                 'travel_or_event_start'  => $doc_payload['travel_or_event_start'],
                 'travel_or_event_end'    => $doc_payload['travel_or_event_end'],
+                'stay_address'           => $doc_payload['stay_address'],
                 'signer_id'              => $doc_payload['signer_id'],
                 'signer_name'            => $doc_payload['signer_name'],
                 'signer_title'           => $doc_payload['signer_title'],
@@ -342,6 +344,7 @@ class Aura_DocVerify_Manager {
             'holder_doc_type'       => sanitize_key( $data['holder_doc_type'] ?? $doc->holder_doc_type ),
             'travel_or_event_start' => self::sanitize_date( $data['travel_or_event_start'] ?? '' ),
             'travel_or_event_end'   => self::sanitize_date( $data['travel_or_event_end'] ?? '' ),
+            'stay_address'          => sanitize_text_field( $data['stay_address'] ?? '' ),
             'signer_id'             => ! empty( $data['signer_id'] ) ? absint( $data['signer_id'] ) : null,
             'signer_name'           => sanitize_text_field( $data['signer_name'] ?? '' ),
             'signer_title'          => sanitize_text_field( $data['signer_title'] ?? '' ),
@@ -483,7 +486,7 @@ class Aura_DocVerify_Manager {
         $suffix      = $use_stamped ? '-certificado.pdf' : '-original.pdf';
         $filename    = sanitize_file_name( (string) $doc->folio ) . $suffix;
 
-        if ( $local_path !== '' && file_exists( $local_path ) && is_readable( $local_path ) ) {
+        if ( $local_path !== '' && file_exists( $local_path ) && is_file( $local_path ) ) {
             $content = @file_get_contents( $local_path );
             if ( is_string( $content ) && $content !== '' ) {
                 return [ 'content' => $content, 'filename' => $filename ];

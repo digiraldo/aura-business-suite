@@ -99,6 +99,7 @@
                     '<div class="aura-dv-spec-box"><small>Código de Verificación</small><strong><code>' + escHtml(d.verification_code) + '</code></strong></div>' +
                     '<div class="aura-dv-spec-box"><small>Titular / Invitado</small><strong>' + escHtml(d.holder_name) + (d.holder_doc_masked ? ' (' + escHtml(d.holder_doc_masked) + ')' : '') + '</strong></div>' +
                     '<div class="aura-dv-spec-box"><small>Entidad Destinataria</small><strong>' + escHtml(d.recipient_entity || '—') + (d.recipient_country ? ' · ' + escHtml(d.recipient_country) : '') + '</strong></div>' +
+                    (d.stay_address ? '<div class="aura-dv-spec-box"><small>Lugar de Estadía / Respaldo</small><strong>' + escHtml(d.stay_address) + '</strong></div>' : '') +
                     '<div class="aura-dv-spec-box"><small>Firmante Autorizado</small><strong>' + escHtml((d.signer_name || '—') + (d.signer_title ? ' — ' + d.signer_title : '')) + '</strong></div>' +
                     '<div class="aura-dv-spec-box"><small>Emisión / Vigencia</small><strong>' + escHtml(d.issued_at) + ' → ' + escHtml(d.expires_at || 'Sin vencimiento') + '</strong></div>' +
                     '<div class="aura-dv-spec-box"><small>Consultas Públicas</small><strong>' + escHtml(String(d.verified_count || 0)) + '</strong></div>' +
@@ -333,6 +334,17 @@
 
         $('#aura-dv-stamp-mode').on('change', function () {
             $('#aura-dv-stamp-pos-wrap').toggle($(this).val() === 'overlay_corner');
+        });
+
+        $('#aura-dv-doc-type').on('change', function () {
+            var v = $(this).val();
+            if (v === 'migration_invitation') {
+                $('#aura-dv-recipient').attr('placeholder', 'Ej: Autoridad Migratoria / Control Fronterizo');
+                $('#aura-dv-purpose').attr('placeholder', 'Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional');
+            } else if (v === 'invitation_letter') {
+                $('#aura-dv-recipient').attr('placeholder', 'Ej: Embajada de los Estados Unidos / Sección Consular');
+                $('#aura-dv-purpose').attr('placeholder', 'Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional');
+            }
         });
 
         $('#aura-dv-signer-preset').on('change', function () {

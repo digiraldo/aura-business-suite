@@ -234,6 +234,16 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-notifications.php';
         require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-reports.php';
 
+        // ── Módulo de Validación Documental (QR, SHA-256, Google Drive y Verificación Consular) ──
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-settings.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-folio.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-qrcode.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-pdf.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-manager.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-admin.php';
+        require_once AURA_PLUGIN_DIR . 'modules/docverify/class-docverify-verify.php';
+
         // ── Módulo de Formularios y Encuestas ──────────────────────
         require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-setup.php';
         require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-admin.php';
@@ -599,6 +609,12 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         Aura_Certificates_Reports::init();
         Aura_Certificates_Settings::init();
 
+        // ── Módulo de Validación Documental ────────────────────────
+        Aura_DocVerify_Setup::init();
+        Aura_DocVerify_Settings::init();
+        Aura_DocVerify_Admin::init();
+        Aura_DocVerify_Verify::init();
+
         // ── Módulo de Formularios y Encuestas ──────────────────────
         Aura_Forms_Setup::init();
         Aura_Forms_Admin::init();
@@ -656,6 +672,7 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         Aura_Inventory_Setup::create_tables();
         Aura_Students_Setup::create_tables();
         Aura_Certificates_Setup::create_tables();
+        Aura_DocVerify_Setup::create_tables();
         Aura_Forms_Setup::create_tables();
         Aura_Vehicle_Setup::create_tables();
         Aura_Library_Setup::create_tables();
@@ -668,7 +685,8 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         // Crear páginas necesarias si no existen
         $this->create_required_pages();
 
-        // Flush rewrite rules para que funcionen los permalinks de CPTs
+        // Flush rewrite rules para que funcionen los permalinks de CPTs y Validación Documental
+        Aura_DocVerify_Setup::register_rewrite_rules();
         flush_rewrite_rules();
 
         // Agregar opción de versión

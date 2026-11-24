@@ -25,8 +25,8 @@ class Aura_DocVerify_PDF {
      * @return true|WP_Error
      */
     public static function validate_pdf_file( string $filepath ) {
-        if ( ! file_exists( $filepath ) || ! is_readable( $filepath ) ) {
-            return new WP_Error( 'pdf_missing', __( 'No se pudo leer el archivo PDF subido.', 'aura-suite' ) );
+        if ( ! file_exists( $filepath ) || ! is_file( $filepath ) ) {
+            return new WP_Error( 'pdf_missing', __( 'No se pudo encontrar el archivo PDF subido.', 'aura-suite' ) );
         }
 
         $max_mb   = max( 2, (int) Aura_DocVerify_Settings::get( 'max_upload_mb', 15 ) );
@@ -66,10 +66,10 @@ class Aura_DocVerify_PDF {
      * Calcula el hash criptográfico SHA-256 de un archivo local.
      */
     public static function compute_sha256( string $filepath ): string {
-        if ( ! file_exists( $filepath ) || ! is_readable( $filepath ) ) {
+        if ( ! file_exists( $filepath ) || ! is_file( $filepath ) ) {
             return '';
         }
-        $hash = hash_file( 'sha256', $filepath );
+        $hash = @hash_file( 'sha256', $filepath );
         return is_string( $hash ) ? strtolower( $hash ) : '';
     }
 
@@ -86,49 +86,51 @@ class Aura_DocVerify_PDF {
             'svg_path' => '',
         ];
 
-        if ( ! class_exists( '\chillerlan\QRCode\QRCode' ) ) {
-            return $result;
-        }
-
         $base   = Aura_DocVerify_Setup::ensure_protected_storage_dir();
         $qr_dir = $base . '/qr';
         $safe   = sanitize_file_name( $folio );
         $scale  = max( 4, min( 10, (int) Aura_DocVerify_Settings::get( 'qr_scale', 6 ) ) );
 
-        // 1. PNG (alta corrección de errores ECC_H para impresión)
-        try {
-            $png_path             = $qr_dir . '/qr-' . $safe . '.png';
-            $opts_png             = new \chillerlan\QRCode\QROptions();
-            $opts_png->outputType = \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG;
-            $opts_png->eccLevel   = \chillerlan\QRCode\QRCode::ECC_H;
-            $opts_png->imageBase64 = false;
-            $opts_png->scale      = $scale;
+        $png_path = $qr_dir . '/qr-' . $safe . '.png';
+        $svg_path = $qr_dir . '/qr-' . $safe . '.svg';
 
-            $qr_png = new \chillerlan\QRCode\QRCode( $opts_png );
-            $qr_png->render( $verify_url, $png_path );
-            if ( file_exists( $png_path ) ) {
-                $result['png_path'] = $png_path;
+        // Motor nativo PHP ISO/IEC 18004 (cero dependencias externas)
+        if ( class_exists( 'Aura_DocVerify_QRCode' ) ) {
+            try {
+                if ( Aura_DocVerify_QRCode::to_png_file( $verify_url, $png_path, Aura_DocVerify_QRCode::ECC_H, $scale, 2 ) ) {
+                    $result['png_path'] = $png_path;
+                }
+            } catch ( \Throwable $e ) {
+                error_log( 'Aura DocVerify QR PNG error: ' . $e->getMessage() );
             }
-        } catch ( \Throwable $e ) {
-            error_log( 'Aura DocVerify QR PNG error: ' . $e->getMessage() );
+
+            try {
+                $svg = Aura_DocVerify_QRCode::to_svg( $verify_url, Aura_DocVerify_QRCode::ECC_H, $scale, 2 );
+                if ( $svg !== '' && @file_put_contents( $svg_path, $svg ) !== false && file_exists( $svg_path ) ) {
+                    $result['svg_path'] = $svg_path;
+                }
+            } catch ( \Throwable $e ) {
+                error_log( 'Aura DocVerify QR SVG error: ' . $e->getMessage() );
+            }
+
+            if ( $result['png_path'] !== '' || $result['svg_path'] !== '' ) {
+                return $result;
+            }
         }
 
-        // 2. SVG (vectorial nítido para Word / imprenta)
-        try {
-            $svg_path              = $qr_dir . '/qr-' . $safe . '.svg';
-            $opts_svg              = new \chillerlan\QRCode\QROptions();
-            $opts_svg->outputType  = \chillerlan\QRCode\Output\QROutputInterface::MARKUP_SVG;
-            $opts_svg->eccLevel    = \chillerlan\QRCode\QRCode::ECC_H;
-            $opts_svg->imageBase64 = false;
-            $opts_svg->scale       = $scale;
-
-            $qr_svg = new \chillerlan\QRCode\QRCode( $opts_svg );
-            $qr_svg->render( $verify_url, $svg_path );
-            if ( file_exists( $svg_path ) ) {
-                $result['svg_path'] = $svg_path;
-            }
-        } catch ( \Throwable $e ) {
-            error_log( 'Aura DocVerify QR SVG error: ' . $e->getMessage() );
+        // Fallback opcional si existiera chillerlan/php-qrcode
+        if ( class_exists( '\chillerlan\QRCode\QRCode' ) ) {
+            try {
+                $opts_png              = new \chillerlan\QRCode\QROptions();
+                $opts_png->outputType  = \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG;
+                $opts_png->eccLevel    = \chillerlan\QRCode\QRCode::ECC_H;
+                $opts_png->imageBase64 = false;
+                $opts_png->scale       = $scale;
+                ( new \chillerlan\QRCode\QRCode( $opts_png ) )->render( $verify_url, $png_path );
+                if ( file_exists( $png_path ) ) {
+                    $result['png_path'] = $png_path;
+                }
+            } catch ( \Throwable $e ) {}
         }
 
         return $result;
@@ -160,11 +162,11 @@ class Aura_DocVerify_PDF {
         }
 
         $base    = Aura_DocVerify_Setup::ensure_protected_storage_dir();
-        $tmp_dir = $base . '/tmp';
+        $tmp_dir = wp_normalize_path( $base . '/tmp' );
+        wp_mkdir_p( $tmp_dir . '/mpdf' );
 
         try {
-            $mpdf = new \Mpdf\Mpdf( [
-                'tempDir'          => $tmp_dir,
+            $mpdf_config = [
                 'default_font'     => 'dejavusans',
                 'margin_left'      => 0,
                 'margin_right'     => 0,
@@ -174,7 +176,11 @@ class Aura_DocVerify_PDF {
                 'margin_footer'    => 0,
                 'autoScriptToLang' => true,
                 'autoLangToFont'   => true,
-            ] );
+            ];
+            if ( is_writable( $tmp_dir . '/mpdf' ) ) {
+                $mpdf_config['tempDir'] = $tmp_dir;
+            }
+            $mpdf = new \Mpdf\Mpdf( $mpdf_config );
 
             $mpdf->SetTitle( (string) ( $doc_data['folio'] ?? '' ) . ' - ' . (string) ( $doc_data['title_subject'] ?? '' ) );
             $mpdf->SetAuthor( (string) Aura_DocVerify_Settings::get( 'org_name', get_bloginfo( 'name' ) ) );
@@ -185,6 +191,12 @@ class Aura_DocVerify_PDF {
             }
 
             $qr_path = (string) ( $doc_data['qr_png_path'] ?? '' );
+            if ( $qr_path === '' || ! file_exists( $qr_path ) ) {
+                $svg_fallback = (string) ( $doc_data['qr_svg_path'] ?? '' );
+                if ( $svg_fallback !== '' && file_exists( $svg_fallback ) ) {
+                    $qr_path = $svg_fallback;
+                }
+            }
 
             for ( $page_no = 1; $page_no <= $page_count; $page_no++ ) {
                 $tpl_id = $mpdf->importPage( $page_no );
@@ -354,6 +366,9 @@ class Aura_DocVerify_PDF {
         if ( ! empty( $doc_data['travel_or_event_start'] ) || ! empty( $doc_data['travel_or_event_end'] ) ) {
             $period = trim( (string) ( $doc_data['travel_or_event_start'] ?? '' ) . ' → ' . (string) ( $doc_data['travel_or_event_end'] ?? '' ), ' →' );
             $rows[] = [ 'Período / Event or Stay Period', $period ];
+        }
+        if ( ! empty( $doc_data['stay_address'] ) ) {
+            $rows[] = [ 'Lugar de Estadía / Accommodation & Host Address', (string) $doc_data['stay_address'] ];
         }
         if ( ! empty( $doc_data['signer_name'] ) ) {
             $signer = (string) $doc_data['signer_name'];

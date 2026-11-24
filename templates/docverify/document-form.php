@@ -241,6 +241,16 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                             </div>
                         </div>
                     </div>
+
+                    <div style="margin-top:14px;">
+                        <label class="aura-dv-label" for="aura-dv-stay-address"><?php esc_html_e( 'Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)', 'aura-suite' ); ?></label>
+                        <div class="input-group">
+                            <span class="input-group-text">📍</span>
+                            <input type="text" id="aura-dv-stay-address" name="stay_address" class="form-control"
+                                   value="<?php echo esc_attr( (string) $val( 'stay_address' ) ); ?>"
+                                   placeholder="<?php esc_attr_e( 'Ej: Sede Centro Mateo / Hotel / Dirección de hospedaje y contacto anfitrión', 'aura-suite' ); ?>">
+                        </div>
+                    </div>
                 </div>
             </div>
 
