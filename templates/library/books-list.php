@@ -442,3 +442,112 @@ $js_data = wp_json_encode([
         </div>
     </div>
 <?php endif; ?>
+
+<!-- Modal: Selector de IA para Prompt de Libro -->
+<div id="aura-lib-ai-picker-modal" class="aura-modal-overlay aura-lib-ai-modal-overlay" style="display:none;" role="dialog"
+    aria-modal="true" aria-labelledby="aura-lib-ai-picker-title" aria-hidden="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-ai-modal-container">
+        <div class="aura-modal-header">
+            <div>
+                <h2 id="aura-lib-ai-picker-title">✨ <?php esc_html_e('Consultar ficha con IA', 'aura-suite'); ?></h2>
+            </div>
+            <button type="button" class="aura-modal-close aura-lib-ai-modal-close" data-ai-modal-close="1"
+                aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>"
+                title="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+        </div>
+        <div class="aura-modal-body aura-lib-ai-modal-body">
+            <div class="aura-lib-ai-book-pill">
+                <span class="aura-lib-ai-book-pill-label"><?php esc_html_e('Libro seleccionado:', 'aura-suite'); ?></span>
+                <strong id="aura-lib-ai-modal-book-summary">—</strong>
+            </div>
+            <p class="aura-lib-ai-modal-desc">
+                <?php esc_html_e('Elige tu asistente de IA favorito. El prompt con el Título y Autor(es) se copiará al portapapeles y se abrirá la plataforma lista para consultar:', 'aura-suite'); ?>
+            </p>
+            <div class="aura-lib-ai-providers-grid">
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="chatgpt">
+                    <span class="aura-lib-ai-provider-icon is-chatgpt" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5a3.5 3.5 0 0 1 7 0c0 2-3.5 2.5-3.5 4.5"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>ChatGPT</strong>
+                        <small><?php esc_html_e('Abre con prompt prellenado', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-direct"><?php esc_html_e('Directo', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="claude">
+                    <span class="aura-lib-ai-provider-icon is-claude" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5.6 5.6l12.8 12.8M3 12h18M18.4 5.6L5.6 18.4"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>Claude</strong>
+                        <small><?php esc_html_e('Abre con prompt prellenado', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-direct"><?php esc_html_e('Directo', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="perplexity">
+                    <span class="aura-lib-ai-provider-icon is-perplexity" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16M4 12h16M7.5 7.5l9 9M16.5 7.5l-9 9"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>Perplexity</strong>
+                        <small><?php esc_html_e('Busca con fuentes bibliográficas', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-direct"><?php esc_html_e('Directo', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="grok">
+                    <span class="aura-lib-ai-provider-icon is-grok" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7 17L17 7"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>Grok</strong>
+                        <small><?php esc_html_e('Abre con prompt prellenado', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-direct"><?php esc_html_e('Directo', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="copilot">
+                    <span class="aura-lib-ai-provider-icon is-copilot" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>Microsoft Copilot</strong>
+                        <small><?php esc_html_e('Abre con prompt prellenado', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-direct"><?php esc_html_e('Directo', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="gemini">
+                    <span class="aura-lib-ai-provider-icon is-gemini" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c.6 5.2 4.8 9.4 10 10-5.2.6-9.4 4.8-10 10-.6-5.2-4.8-9.4-10-10 5.2-.6 9.4-4.8 10-10z"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>Google Gemini</strong>
+                        <small><?php esc_html_e('Copia y abre chat (pegar Ctrl+V)', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-clip"><?php esc_html_e('Portapapeles', 'aura-suite'); ?></span>
+                </button>
+                <button type="button" class="aura-lib-ai-provider-card" data-ai-provider="deepseek">
+                    <span class="aura-lib-ai-provider-icon is-deepseek" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c2.5-4.5 6.5-6.5 11-5.5 2.5.6 4.2 2.1 5 4.5-1.2 4.8-5.3 7.5-10.5 6.5-2.6-.5-4.5-2.3-5.5-5.5z"/><circle cx="14.5" cy="10.5" r="1" fill="currentColor"/></svg>
+                    </span>
+                    <span class="aura-lib-ai-provider-meta">
+                        <strong>DeepSeek</strong>
+                        <small><?php esc_html_e('Copia y abre chat (pegar Ctrl+V)', 'aura-suite'); ?></small>
+                    </span>
+                    <span class="aura-lib-ai-provider-tag is-clip"><?php esc_html_e('Portapapeles', 'aura-suite'); ?></span>
+                </button>
+            </div>
+            <details class="aura-lib-ai-preview-details">
+                <summary><?php esc_html_e('Ver vista previa del prompt generado', 'aura-suite'); ?></summary>
+                <textarea id="aura-lib-ai-modal-preview" class="aura-lib-ai-modal-preview" rows="7" readonly></textarea>
+            </details>
+        </div>
+        <div class="aura-modal-footer aura-lib-modal-footer">
+            <button type="button" id="aura-lib-ai-modal-copy-btn" class="btn btn-indigo btn-lift">
+                <span class="dashicons dashicons-clipboard"></span>
+                <span><?php esc_html_e('Solo copiar prompt', 'aura-suite'); ?></span>
+            </button>
+            <button type="button" class="btn btn-glass btn-lift aura-lib-ai-modal-close" data-ai-modal-close="1">
+                <?php esc_html_e('Cerrar', 'aura-suite'); ?>
+            </button>
+        </div>
+    </div>
+</div>

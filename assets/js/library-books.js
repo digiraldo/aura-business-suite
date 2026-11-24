@@ -31,53 +31,187 @@
     // ──────────────────────────────────────────────────────────────
     // EVENTS
     // ──────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────
+    // PROMPT IA DINÁMICO + SELECTOR DE PLATAFORMAS IA
+    // ──────────────────────────────────────────────────────────────
+    var AI_PROVIDERS = {
+        chatgpt   : { name: 'ChatGPT',           direct: true,  buildUrl: function (p) { return 'https://chatgpt.com/?q=' + encodeURIComponent(p); } },
+        claude    : { name: 'Claude',            direct: true,  buildUrl: function (p) { return 'https://claude.ai/new?q=' + encodeURIComponent(p); } },
+        perplexity: { name: 'Perplexity',        direct: true,  buildUrl: function (p) { return 'https://www.perplexity.ai/search?q=' + encodeURIComponent(p); } },
+        grok      : { name: 'Grok',              direct: true,  buildUrl: function (p) { return 'https://grok.com/?q=' + encodeURIComponent(p); } },
+        copilot   : { name: 'Microsoft Copilot', direct: true,  buildUrl: function (p) { return 'https://copilot.microsoft.com/?q=' + encodeURIComponent(p); } },
+        gemini    : { name: 'Google Gemini',     direct: false, buildUrl: function ()  { return 'https://gemini.google.com/app'; } },
+        deepseek  : { name: 'DeepSeek',          direct: false, buildUrl: function ()  { return 'https://chat.deepseek.com/'; } }
+    };
+
+    function getAiPromptTemplate() {
+        var $ta = $('#aura-lib-ai-prompt-text');
+        if (!$ta.length) return '';
+        var tpl = $ta.data('auraPromptTemplate');
+        if (!tpl) {
+            tpl = $ta.val() || '';
+            $ta.data('auraPromptTemplate', tpl);
+        }
+        return tpl;
+    }
+
+    function buildDynamicAiPrompt(title, author) {
+        var tpl = getAiPromptTemplate();
+        if (!tpl) return '';
+        var t = $.trim(title || '');
+        var a = $.trim(author || '');
+        var header = (t && a)
+            ? ('Libro: "' + t + '" — Autor(es): ' + a)
+            : (t ? ('Libro: "' + t + '"') : (a ? ('Autor(es): ' + a) : '[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]'));
+        return tpl.replace('[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]', header);
+    }
+
+    function syncAiPromptTextarea() {
+        var $ta = $('#aura-lib-ai-prompt-text');
+        if (!$ta.length) return;
+        $ta.val(buildDynamicAiPrompt($('#aura-lib-f-title').val(), $('#aura-lib-f-author').val()));
+    }
+
+    function requireTitleAndAuthorForPrompt() {
+        var $title  = $('#aura-lib-f-title');
+        var $author = $('#aura-lib-f-author');
+        var title   = $.trim($title.val() || '');
+        var author  = $.trim($author.val() || '');
+        if (!title || !author) {
+            if (!$('#aura-lib-wstep-1').is(':visible')) {
+                goToWizardStep(1, true);
+            }
+            if (!title)  markFieldInvalid($title);
+            if (!author) markFieldInvalid($author);
+            (!title ? $title : $author).focus();
+            showToast(__('Ingresa primero el Título y Autor(es) del libro para generar el prompt.', 'aura-suite'), 'error');
+            return null;
+        }
+        markFieldValid($title);
+        markFieldValid($author);
+        syncAiPromptTextarea();
+        return { title: title, author: author, prompt: buildDynamicAiPrompt(title, author) };
+    }
+
+    function copyTextToClipboard(text, onSuccess, onFail) {
+        var copied = false;
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:50%;left:50%;width:2px;height:2px;opacity:0.01;border:none;padding:0;margin:0;';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { copied = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        if (copied) {
+            if (typeof onSuccess === 'function') onSuccess();
+            return;
+        }
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).then(function () {
+                if (typeof onSuccess === 'function') onSuccess();
+            }).catch(function () {
+                if (typeof onFail === 'function') onFail();
+            });
+        } else if (typeof onFail === 'function') {
+            onFail();
+        }
+    }
+
+    function showCopied($btn) {
+        if (!$btn || !$btn.length) return;
+        var origHtml = $btn.data('origHtml') || $btn.html();
+        $btn.data('origHtml', origHtml);
+        $btn.addClass('copied').html('<span class="dashicons dashicons-yes"></span> ' + escHtml(__('¡Copiado!', 'aura-suite')));
+        clearTimeout($btn.data('copiedTimer'));
+        $btn.data('copiedTimer', setTimeout(function () {
+            $btn.removeClass('copied').html(origHtml);
+        }, 2500));
+    }
+
+    function openAiPickerModal(info) {
+        $('#aura-lib-ai-modal-book-summary').text(info.title + ' — ' + info.author);
+        $('#aura-lib-ai-modal-preview').val(info.prompt);
+        $('#aura-lib-ai-picker-modal').css('display', 'flex').addClass('active is-active').attr('aria-hidden', 'false');
+    }
+
+    function closeAiPickerModal() {
+        $('#aura-lib-ai-picker-modal').removeClass('active is-active').hide().attr('aria-hidden', 'true');
+    }
+
     function bindEvents() {
         // Nuevo libro
         $(document).on('click', '#aura-lib-btn-new-book', function () {
             openBookModal(0);
         });
 
-        // Copiar prompt IA
-        $(document).on('click', '#aura-lib-copy-prompt-btn', function () {
-            var $btn = $(this);
-            var text = document.getElementById('aura-lib-ai-prompt-text').value;
-            var copied = false;
-
-            // 1. Intentar execCommand de forma síncrona (conserva el user-gesture context)
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            ta.setAttribute('readonly', '');
-            ta.style.cssText = 'position:fixed;top:50%;left:50%;width:2px;height:2px;opacity:0.01;border:none;padding:0;margin:0;';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            try { copied = document.execCommand('copy'); } catch (e) {}
-            document.body.removeChild(ta);
-
-            if (copied) {
-                showCopied($btn);
-                return;
-            }
-
-            // 2. Fallback: Clipboard API async
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(function () {
-                    showCopied($btn);
-                }).catch(function () {
-                    window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), text);
-                });
-            } else {
-                window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), text);
-            }
+        // Prompt IA dinámico y modal selector de IAs
+        $(document).on('input', '#aura-lib-f-title, #aura-lib-f-author', function () {
+            syncAiPromptTextarea();
         });
 
-        function showCopied($btn) {
-            var origHtml = $btn.html();
-            $btn.addClass('copied').html('<span class="dashicons dashicons-yes"></span> ' + escHtml(__('¡Copiado!', 'aura-suite')));
-            setTimeout(function () {
-                $btn.removeClass('copied').html(origHtml);
-            }, 2500);
-        }
+        $(document).on('click', '#aura-lib-copy-prompt-btn', function () {
+            var $btn = $(this);
+            var info = requireTitleAndAuthorForPrompt();
+            if (!info) return;
+            copyTextToClipboard(info.prompt, function () {
+                showCopied($btn);
+                showToast(__('Prompt copiado con el Título y Autor(es) del libro.', 'aura-suite'), 'success');
+            }, function () {
+                window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), info.prompt);
+            });
+        });
+
+        $(document).on('click', '#aura-lib-open-ai-modal-btn', function () {
+            var info = requireTitleAndAuthorForPrompt();
+            if (!info) return;
+            openAiPickerModal(info);
+        });
+
+        $(document).on('click', '#aura-lib-ai-modal-copy-btn', function () {
+            var $btn = $(this);
+            var promptText = $('#aura-lib-ai-modal-preview').val() || '';
+            if (!promptText) return;
+            copyTextToClipboard(promptText, function () {
+                showCopied($btn);
+                showToast(__('Prompt copiado al portapapeles.', 'aura-suite'), 'success');
+            }, function () {
+                window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), promptText);
+            });
+        });
+
+        $(document).on('click', '.aura-lib-ai-provider-card', function () {
+            var key = $(this).data('aiProvider');
+            var provider = AI_PROVIDERS[key];
+            if (!provider) return;
+            var info = requireTitleAndAuthorForPrompt();
+            if (!info) { closeAiPickerModal(); return; }
+            copyTextToClipboard(info.prompt);
+            var url = provider.buildUrl(info.prompt);
+            window.open(url, '_blank', 'noopener,noreferrer');
+            closeAiPickerModal();
+            showToast(
+                provider.direct
+                    ? (__('Abriendo', 'aura-suite') + ' ' + provider.name + ' ' + __('con el prompt listo (también copiado al portapapeles).', 'aura-suite'))
+                    : (__('Prompt copiado al portapapeles. Pégalo con Ctrl+V en', 'aura-suite') + ' ' + provider.name + '.'),
+                'success'
+            );
+        });
+
+        var _aiBackdropDown = false;
+        $(document).on('mousedown', '#aura-lib-ai-picker-modal', function (e) {
+            _aiBackdropDown = (e.target === this);
+        });
+        $(document).on('click', '.aura-lib-ai-modal-close', function () {
+            closeAiPickerModal();
+        });
+        $(document).on('click', '#aura-lib-ai-picker-modal', function (e) {
+            if (_aiBackdropDown && e.target === this) {
+                closeAiPickerModal();
+            }
+            _aiBackdropDown = false;
+        });
 
         // Filtros
         $(document).on('click', '#aura-lib-filter-apply', function () {
@@ -135,7 +269,13 @@
             _libBackdropDown = false;
         });
         $(document).on('keydown', function (e) {
-            if (e.key === 'Escape') closeAllModals();
+            if (e.key === 'Escape') {
+                if ($('#aura-lib-ai-picker-modal').is(':visible')) {
+                    closeAiPickerModal();
+                    return;
+                }
+                closeAllModals();
+            }
         });
 
         // Guardar formulario
@@ -689,6 +829,7 @@
         }
 
         $('.aura-lib-manual-input').each(function () { syncManualFieldState($(this)); });
+        syncAiPromptTextarea();
     }
 
     function syncManualFieldState($el) {
@@ -732,6 +873,7 @@
         // Re-enable save button
         setSaveLoading(false);
         $('.aura-lib-save-msg').hide();
+        syncAiPromptTextarea();
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -1180,7 +1322,8 @@
             var off = $(this).offset();
             $tip.css({ top: off.top - $tip.outerHeight() - 10, left: off.left + $(this).outerWidth() + 8 }).fadeIn(150);
         }).off('mouseleave.coverthumb').on('mouseleave.coverthumb', '.aura-lib-cover-thumb[data-full]', function () {
-            $('.aura-lib-cover-tooltip').remove();
+            closeAiPickerModal();
+        $('.aura-lib-cover-tooltip').remove();
         });
     }
 

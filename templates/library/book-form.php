@@ -37,12 +37,19 @@ $dewey_classes = [
         <div class="aura-lib-ai-prompt-icon">🤖</div>
         <div class="aura-lib-ai-prompt-text">
             <strong><?php esc_html_e( '¿No tienes todos los datos? Usa IA para obtenerlos', 'aura-suite' ); ?></strong>
-            <span><?php esc_html_e( 'Copia el prompt, pégalo en ChatGPT u otra IA y rellena los campos automáticamente.', 'aura-suite' ); ?></span>
+            <span><?php esc_html_e( 'Escribe el Título y Autor(es) abajo: copia el prompt listo o ábrelo directo en tu IA favorita.', 'aura-suite' ); ?></span>
         </div>
-        <button type="button" id="aura-lib-copy-prompt-btn" class="aura-lib-ai-prompt-copy-btn">
-            <span class="dashicons dashicons-clipboard"></span>
-            <?php esc_html_e( 'Copiar prompt', 'aura-suite' ); ?>
-        </button>
+        <div class="aura-lib-ai-prompt-actions">
+            <button type="button" id="aura-lib-copy-prompt-btn" class="aura-lib-ai-prompt-copy-btn">
+                <span class="dashicons dashicons-clipboard"></span>
+                <span><?php esc_html_e( 'Copiar prompt', 'aura-suite' ); ?></span>
+            </button>
+            <button type="button" id="aura-lib-open-ai-modal-btn" class="aura-lib-ai-prompt-ia-btn"
+                    title="<?php esc_attr_e( 'Elegir IA y abrir con el prompt listo', 'aura-suite' ); ?>">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/></svg>
+                <span><?php esc_html_e( 'IA', 'aura-suite' ); ?></span>
+            </button>
+        </div>
     </div>
     <textarea id="aura-lib-ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px;" readonly
               aria-hidden="true"><?php echo esc_textarea( '[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]

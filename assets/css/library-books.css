@@ -594,9 +594,253 @@ body.aura-lib-modal-open {
     height: 14px;
 }
 
+.aura-lib-ai-prompt-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.aura-lib-ai-prompt-ia-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.28);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.aura-lib-ai-prompt-ia-btn:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.36);
+}
+
+.aura-lib-ai-prompt-ia-btn:active {
+    transform: scale(0.97);
+}
+
+/* ── Modal Selector de IAs ── */
+.aura-lib-ai-modal-overlay {
+    z-index: 100060 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.aura-lib-ai-modal-container {
+    max-width: 640px !important;
+    width: 100% !important;
+}
+
+.aura-lib-ai-modal-body {
+    padding: 20px 22px !important;
+}
+
+.aura-lib-ai-book-pill {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--aura-blue-bg, #eff6ff);
+    border: 1px solid var(--aura-blue-border, #bfdbfe);
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+
+.aura-lib-ai-book-pill-label {
+    color: var(--aura-text-muted, #475569);
+    font-weight: 500;
+}
+
+.aura-lib-ai-book-pill strong {
+    color: var(--aura-blue-dark, #1e3a8a);
+}
+
+.aura-lib-ai-modal-desc {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--aura-text-muted, #475569);
+}
+
+.aura-lib-ai-providers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.aura-lib-ai-provider-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.3));
+    background: var(--aura-surface, #ffffff);
+    cursor: pointer;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+}
+
+.aura-lib-ai-provider-card:hover {
+    border-color: var(--aura-indigo, #4f46e5);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.14);
+    transform: translateY(-1px);
+}
+
+.aura-lib-ai-provider-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #ffffff;
+}
+.aura-lib-ai-provider-icon.is-chatgpt    { background: linear-gradient(135deg, #10a37f, #0d8a6a); }
+.aura-lib-ai-provider-icon.is-claude     { background: linear-gradient(135deg, #d97706, #b45309); }
+.aura-lib-ai-provider-icon.is-perplexity { background: linear-gradient(135deg, #0891b2, #0e7490); }
+.aura-lib-ai-provider-icon.is-grok       { background: linear-gradient(135deg, #1e293b, #0f172a); }
+.aura-lib-ai-provider-icon.is-copilot    { background: linear-gradient(135deg, #2563eb, #4f46e5); }
+.aura-lib-ai-provider-icon.is-gemini     { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+.aura-lib-ai-provider-icon.is-deepseek   { background: linear-gradient(135deg, #4338ca, #6366f1); }
+
+.aura-lib-ai-provider-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.aura-lib-ai-provider-meta strong {
+    font-size: 13.5px;
+    color: var(--aura-text, #0f172a);
+}
+.aura-lib-ai-provider-meta small {
+    font-size: 11.5px;
+    color: var(--aura-text-muted, #64748b);
+    line-height: 1.25;
+}
+
+.aura-lib-ai-provider-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.aura-lib-ai-provider-tag.is-direct {
+    background: rgba(16, 185, 129, 0.14);
+    color: #059669;
+}
+.aura-lib-ai-provider-tag.is-clip {
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+}
+
+.aura-lib-ai-preview-details {
+    margin-top: 14px;
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: var(--aura-surface-alt, #f8fafc);
+}
+.aura-lib-ai-preview-details summary {
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--aura-text-muted, #475569);
+}
+.aura-lib-ai-modal-preview {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+    border-radius: 8px;
+    padding: 10px;
+    resize: vertical;
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-text, #0f172a);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.3));
+}
+
+[data-theme="dark"] .aura-lib-ai-book-pill,
+.wp-dark-mode-active .aura-lib-ai-book-pill,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-book-pill,
+.aura-dark-mode .aura-lib-ai-book-pill,
+body.admin-color-midnight .aura-lib-ai-book-pill {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(96, 165, 250, 0.35);
+}
+[data-theme="dark"] .aura-lib-ai-book-pill strong,
+.wp-dark-mode-active .aura-lib-ai-book-pill strong,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-book-pill strong,
+.aura-dark-mode .aura-lib-ai-book-pill strong {
+    color: #93c5fd;
+}
+[data-theme="dark"] .aura-lib-ai-provider-card,
+.wp-dark-mode-active .aura-lib-ai-provider-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-provider-card,
+.aura-dark-mode .aura-lib-ai-provider-card,
+body.admin-color-midnight .aura-lib-ai-provider-card {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.12));
+}
+[data-theme="dark"] .aura-lib-ai-provider-meta strong,
+.wp-dark-mode-active .aura-lib-ai-provider-meta strong,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-provider-meta strong,
+.aura-dark-mode .aura-lib-ai-provider-meta strong {
+    color: #f8fafc;
+}
+[data-theme="dark"] .aura-lib-ai-provider-tag.is-direct,
+.wp-dark-mode-active .aura-lib-ai-provider-tag.is-direct,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-provider-tag.is-direct,
+.aura-dark-mode .aura-lib-ai-provider-tag.is-direct {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+[data-theme="dark"] .aura-lib-ai-provider-tag.is-clip,
+.wp-dark-mode-active .aura-lib-ai-provider-tag.is-clip,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-provider-tag.is-clip,
+.aura-dark-mode .aura-lib-ai-provider-tag.is-clip {
+    background: rgba(99, 102, 241, 0.22);
+    color: #a5b4fc;
+}
+[data-theme="dark"] .aura-lib-ai-preview-details,
+[data-theme="dark"] .aura-lib-ai-modal-preview,
+.wp-dark-mode-active .aura-lib-ai-preview-details,
+.wp-dark-mode-active .aura-lib-ai-modal-preview,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-preview-details,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-modal-preview,
+.aura-dark-mode .aura-lib-ai-preview-details,
+.aura-dark-mode .aura-lib-ai-modal-preview {
+    background: var(--aura-surface, #16152b);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.12));
+    color: #f1f5f9;
+}
+
+@media (max-width: 600px) {
+    .aura-lib-ai-providers-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 520px) {
     .aura-lib-ai-prompt-banner { flex-wrap: wrap; }
-    .aura-lib-ai-prompt-copy-btn { width: 100%; justify-content: center; }
+    .aura-lib-ai-prompt-actions { width: 100%; }
+    .aura-lib-ai-prompt-copy-btn { flex: 1; justify-content: center; }
+    .aura-lib-ai-prompt-ia-btn { justify-content: center; }
 }
 
 /* ── Progress bar ── */
