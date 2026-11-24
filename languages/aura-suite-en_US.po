@@ -59053,3 +59053,1398 @@ msgstr "First select a .po file to upload."
 #: templates/settings-page.php:343
 msgid "Idiomas (i18n)"
 msgstr "Languages (i18n)"
+
+#: modules/common/class-page-manager.php:126 modules/docverify/class-docverify-admin.php:57
+msgid "Validación Documental"
+msgstr "Document Verification"
+
+#: modules/common/class-page-manager.php:128
+msgid "Verificar Documento / Carta Consular"
+msgstr "Verify Document / Consular Letter"
+
+#: modules/common/class-roles-manager.php:344
+msgid "Ver listado completo de documentos verificables"
+msgstr "View complete list of verifiable documents"
+
+#: modules/common/class-roles-manager.php:345
+msgid "Registrar documentos y subir PDFs firmados"
+msgstr "Register documents and upload signed PDFs"
+
+#: modules/common/class-roles-manager.php:588
+msgid "MÓDULO: VALIDACIÓN DOCUMENTAL (QR & CONSULAR)"
+msgstr "MODULE: DOCUMENT VERIFICATION (QR & CONSULAR)"
+
+#: modules/common/class-roles-manager.php:591
+msgid "Subir PDFs firmados y emitir QR/Folio"
+msgstr "Upload signed PDFs and issue QR/Folio"
+
+#: modules/common/class-roles-manager.php:594
+msgid "Ver auditoría de consultas y cotejos SHA-256"
+msgstr "View lookup audit log and SHA-256 checks"
+
+#: modules/common/class-roles-manager.php:596
+msgid "Configurar Validación Documental"
+msgstr "Configure Document Verification"
+
+#: modules/docverify/class-docverify-admin.php:56
+msgid "Validación Documental — AURA"
+msgstr "Document Verification — AURA"
+
+#: modules/docverify/class-docverify-admin.php:67
+msgid "Dashboard — Validación Documental"
+msgstr "Dashboard — Document Verification"
+
+#: modules/docverify/class-docverify-admin.php:77 templates/docverify/documents-list.php:66
+msgid "Documentos Verificables"
+msgstr "Verifiable Documents"
+
+#: modules/docverify/class-docverify-admin.php:78 templates/docverify/audit-log.php:40
+msgid "Documentos"
+msgstr "Documents"
+
+#: modules/docverify/class-docverify-admin.php:88
+msgid "Registrar / Subir PDF Firmado"
+msgstr "Register / Upload Signed PDF"
+
+#: modules/docverify/class-docverify-admin.php:89 templates/docverify/documents-list.php:133
+msgid "Registrar PDF"
+msgstr "Register PDF"
+
+#: modules/docverify/class-docverify-admin.php:99
+msgid "Auditoría de Verificaciones"
+msgstr "Verification Audit Log"
+
+#: modules/docverify/class-docverify-admin.php:110 templates/docverify/settings.php:29
+msgid "Configuración — Validación Documental"
+msgstr "Settings — Document Verification"
+
+#: modules/docverify/class-docverify-admin.php:163
+msgid "Procesando PDF y generando código QR…"
+msgstr "Processing PDF and generating QR code…"
+
+#: modules/docverify/class-docverify-admin.php:164
+msgid "Documento registrado y sellado correctamente."
+msgstr "Document registered and stamped successfully."
+
+#: modules/docverify/class-docverify-admin.php:165 modules/docverify/class-docverify-admin.php:293
+msgid "Documento actualizado correctamente."
+msgstr "Document updated successfully."
+
+#: modules/docverify/class-docverify-admin.php:168
+msgid "Código de verificación copiado."
+msgstr "Verification code copied."
+
+#: modules/docverify/class-docverify-admin.php:169
+msgid "¿Eliminar definitivamente este documento y sus archivos en almacenamiento?"
+msgstr "Permanently delete this document and its stored files?"
+
+#: modules/docverify/class-docverify-admin.php:170
+msgid "¿Reactivar la validez de este documento?"
+msgstr "Reactivate the validity of this document?"
+
+#: modules/docverify/class-docverify-admin.php:171
+msgid "Escribe el motivo oficial de revocación."
+msgstr "Enter the official revocation reason."
+
+#: modules/docverify/class-docverify-admin.php:172
+msgid "Selecciona primero el archivo PDF firmado."
+msgstr "Please select the signed PDF file first."
+
+#: modules/docverify/class-docverify-admin.php:173 templates/docverify/dashboard.php:189 templates/docverify/documents-list.php:243
+msgid "Vigente"
+msgstr "Valid"
+
+#: modules/docverify/class-docverify-admin.php:176
+msgid "Google Drive (Privado)"
+msgstr "Google Drive (Private)"
+
+#: modules/docverify/class-docverify-admin.php:178
+msgid "Código de Verificación"
+msgstr "Verification Code"
+
+#: modules/docverify/class-docverify-admin.php:179 templates/docverify/documents-list.php:165
+msgid "Titular / Invitado"
+msgstr "Holder / Invitee"
+
+#: modules/docverify/class-docverify-admin.php:180
+msgid "Entidad Destinataria"
+msgstr "Recipient Entity"
+
+#: modules/docverify/class-docverify-admin.php:181
+msgid "Lugar de Estadía / Respaldo"
+msgstr "Accommodation / Host Address"
+
+#: modules/docverify/class-docverify-admin.php:182 templates/docverify/documents-list.php:290
+msgid "Firmante Autorizado"
+msgstr "Authorized Signatory"
+
+#: modules/docverify/class-docverify-admin.php:183 templates/docverify/documents-list.php:171
+msgid "Emisión / Vigencia"
+msgstr "Issue / Validity"
+
+#: modules/docverify/class-docverify-admin.php:184 templates/docverify/documents-list.php:237
+msgid "Sin vencimiento"
+msgstr "No expiration"
+
+#: modules/docverify/class-docverify-admin.php:185
+msgid "Consultas Públicas"
+msgstr "Public Lookups"
+
+#: modules/docverify/class-docverify-admin.php:186
+msgid "Motivo de revocación"
+msgstr "Revocation reason"
+
+#: modules/docverify/class-docverify-admin.php:187
+msgid "URL Pública de Verificación"
+msgstr "Public Verification URL"
+
+#: modules/docverify/class-docverify-admin.php:189
+msgid "Abrir"
+msgstr "Open"
+
+#: modules/docverify/class-docverify-admin.php:190
+msgid "SHA-256 PDF Original"
+msgstr "Original PDF SHA-256"
+
+#: modules/docverify/class-docverify-admin.php:191
+msgid "SHA-256 PDF Sellado / Anexo"
+msgstr "Stamped / Annex PDF SHA-256"
+
+#: modules/docverify/class-docverify-admin.php:192
+msgid "Descargar PDF Original"
+msgstr "Download Original PDF"
+
+#: modules/docverify/class-docverify-admin.php:193
+msgid "Descargar PDF Certificado / Anexo"
+msgstr "Download Certified / Annex PDF"
+
+#: modules/docverify/class-docverify-admin.php:194
+msgid "Se calculará en servidor"
+msgstr "Will be computed on server"
+
+#: modules/docverify/class-docverify-admin.php:195
+msgid "Ej: Autoridad Migratoria / Control Fronterizo"
+msgstr "E.g.: Immigration Authority / Border Control"
+
+#: modules/docverify/class-docverify-admin.php:196
+msgid "Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional"
+msgstr "E.g.: Visa-free entry — Proof of stay, event, and institutional sponsorship"
+
+#: modules/docverify/class-docverify-admin.php:197 templates/docverify/document-form.php:186
+msgid "Ej: Embajada de los Estados Unidos / Sección Consular"
+msgstr "E.g.: U.S. Embassy / Consular Section"
+
+#: modules/docverify/class-docverify-admin.php:198 templates/docverify/document-form.php:212
+msgid "Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional"
+msgstr "E.g.: B1/B2 Visitor Visa Application — International Seminar Participation"
+
+#: modules/docverify/class-docverify-admin.php:234
+msgid "Plantilla de Validación Documental no encontrada."
+msgstr "Document Verification template not found."
+
+#: modules/docverify/class-docverify-admin.php:252
+msgid "Sin permisos para editar documentos."
+msgstr "You do not have permission to edit documents."
+
+#: modules/docverify/class-docverify-admin.php:255
+msgid "Sin permisos para registrar documentos."
+msgstr "You do not have permission to register documents."
+
+#: modules/docverify/class-docverify-admin.php:308
+msgid "Documento registrado con QR y verificación criptográfica."
+msgstr "Document registered with QR and cryptographic verification."
+
+#: modules/docverify/class-docverify-admin.php:326 modules/docverify/class-docverify-admin.php:487 modules/docverify/class-docverify-manager.php:333 modules/docverify/class-docverify-manager.php:388
+#: modules/docverify/class-docverify-manager.php:420 modules/docverify/class-docverify-manager.php:448 modules/docverify/class-docverify-manager.php:480
+msgid "Documento no encontrado."
+msgstr "Document not found."
+
+#: modules/docverify/class-docverify-admin.php:394
+msgid "Sin permisos para revocar documentos."
+msgstr "You do not have permission to revoke documents."
+
+#: modules/docverify/class-docverify-admin.php:404
+msgid "Documento revocado correctamente."
+msgstr "Document revoked successfully."
+
+#: modules/docverify/class-docverify-admin.php:414
+msgid "Sin permisos para reactivar documentos."
+msgstr "You do not have permission to reactivate documents."
+
+#: modules/docverify/class-docverify-admin.php:422
+msgid "Documento reactivado."
+msgstr "Document reactivated."
+
+#: modules/docverify/class-docverify-admin.php:432
+msgid "Sin permisos para eliminar documentos."
+msgstr "You do not have permission to delete documents."
+
+#: modules/docverify/class-docverify-admin.php:440
+msgid "Documento eliminado definitivamente."
+msgstr "Document permanently deleted."
+
+#: modules/docverify/class-docverify-admin.php:450
+msgid "Sin permisos para descargar este documento."
+msgstr "You do not have permission to download this document."
+
+#: modules/docverify/class-docverify-admin.php:497
+msgid "No se pudo generar la imagen QR."
+msgstr "Could not generate QR image."
+
+#: modules/docverify/class-docverify-manager.php:78
+msgid "Debes adjuntar el archivo PDF firmado del documento."
+msgstr "You must attach the signed PDF file of the document."
+
+#: modules/docverify/class-docverify-manager.php:94
+msgid "El título o asunto del documento es obligatorio."
+msgstr "The document title or subject is required."
+
+#: modules/docverify/class-docverify-manager.php:97
+msgid "El nombre del titular o persona invitada es obligatorio."
+msgstr "The holder or invitee name is required."
+
+#: modules/docverify/class-docverify-manager.php:117
+msgid "No se pudo almacenar temporalmente el PDF en el servidor."
+msgstr "Could not temporarily store the PDF on the server."
+
+#: modules/docverify/class-docverify-manager.php:302
+msgid "Error al guardar el registro documental en la base de datos."
+msgstr "Error saving the document record to the database."
+
+#: modules/docverify/class-docverify-manager.php:392
+msgid "Debes indicar el motivo de revocación."
+msgstr "You must provide a revocation reason."
+
+#: modules/docverify/class-docverify-manager.php:506
+msgid "El archivo PDF no está disponible en almacenamiento local ni en Google Drive."
+msgstr "The PDF file is not available in local storage or Google Drive."
+
+#: modules/docverify/class-docverify-pdf.php:29
+msgid "No se pudo encontrar el archivo PDF subido."
+msgstr "Could not find the uploaded PDF file."
+
+#: modules/docverify/class-docverify-pdf.php:37
+msgid "El archivo PDF está vacío."
+msgstr "The PDF file is empty."
+
+#: modules/docverify/class-docverify-pdf.php:45
+msgid "El PDF supera el tamaño máximo permitido (%d MB)."
+msgstr "The PDF exceeds the maximum allowed size (%d MB)."
+
+#: modules/docverify/class-docverify-pdf.php:53
+msgid "Error al inspeccionar el archivo PDF."
+msgstr "Error inspecting the PDF file."
+
+#: modules/docverify/class-docverify-pdf.php:59
+msgid "El archivo no tiene una firma binaria PDF válida (%PDF-)."
+msgstr "The file does not have a valid PDF binary signature (%PDF-)."
+
+#: modules/docverify/class-docverify-pdf.php:157
+msgid "La librería mPDF no está disponible para sellar el PDF."
+msgstr "The mPDF library is not available to stamp the PDF."
+
+#: modules/docverify/class-docverify-pdf.php:161
+msgid "No se encontró el PDF base para sellar."
+msgstr "Base PDF not found for stamping."
+
+#: modules/docverify/class-docverify-pdf.php:190
+msgid "El PDF no contiene páginas importables."
+msgstr "The PDF contains no importable pages."
+
+#: modules/docverify/class-docverify-pdf.php:234
+msgid "No se pudo generar el archivo PDF sellado."
+msgstr "Could not generate the stamped PDF file."
+
+#: modules/docverify/class-docverify-pdf.php:244
+msgid "No fue posible estampar este PDF automáticamente (%s). Puede usar el modo \"Solo QR\" e insertar el código QR manualmente antes de exportarlo."
+msgstr "Could not stamp this PDF automatically (%s). You can use the \"QR Only\" mode and insert the QR code manually before exporting."
+
+#: modules/docverify/class-docverify-settings.php:106
+msgid "Carta de Invitación (Visa / Embajada)"
+msgstr "Invitation Letter (Visa / Embassy)"
+
+#: modules/docverify/class-docverify-settings.php:107
+msgid "Carta de Invitación (Migración / Control Fronterizo)"
+msgstr "Invitation Letter (Immigration / Border Control)"
+
+#: modules/docverify/class-docverify-settings.php:108
+msgid "Oficio / Comunicado Oficial"
+msgstr "Official Letter / Memorandum"
+
+#: modules/docverify/class-docverify-settings.php:109
+msgid "Constancia / Certificación Institucional"
+msgstr "Institutional Certificate / Attestation"
+
+#: modules/docverify/class-docverify-settings.php:110
+msgid "Carta de Patrocinio / Apoyo"
+msgstr "Sponsorship / Institutional Support Letter"
+
+#: modules/docverify/class-docverify-settings.php:111
+msgid "Autorización / Poder / Permiso"
+msgstr "Authorization / Power / Official Consent"
+
+#: modules/docverify/class-docverify-settings.php:112
+msgid "Convenio / Acta / Resolución"
+msgstr "Agreement / Minutes / Resolution"
+
+#: modules/docverify/class-docverify-settings.php:113
+msgid "Otro Documento Institucional"
+msgstr "Other Institutional Document"
+
+#: modules/docverify/class-docverify-settings.php:197
+msgid "Sin permisos para modificar la configuración."
+msgstr "You do not have permission to modify settings."
+
+#: modules/docverify/class-docverify-settings.php:272
+msgid "Configuración de Validación Documental guardada correctamente."
+msgstr "Document Verification settings saved successfully."
+
+#: modules/docverify/class-docverify-verify.php:259
+msgid "Demasiados intentos. Espera unos minutos."
+msgstr "Too many attempts. Please wait a few minutes."
+
+#: modules/docverify/class-docverify-verify.php:269
+msgid "Documento o firma de consulta inválidos."
+msgstr "Invalid document or verification signature."
+
+#: modules/docverify/class-docverify-verify.php:286
+msgid "El PIN o número de documento/pasaporte no coincide."
+msgstr "The PIN or passport/ID number does not match."
+
+#: modules/docverify/class-docverify-verify.php:327
+msgid "Descarga pública no habilitada para este documento."
+msgstr "Public download is not enabled for this document."
+
+#: modules/docverify/class-docverify-verify.php:331
+msgid "Token de descarga inválido."
+msgstr "Invalid download token."
+
+#: modules/docverify/class-docverify-verify.php:336
+msgid "Se requiere validar PIN o número de pasaporte antes de descargar."
+msgstr "PIN or passport number verification is required before downloading."
+
+#: templates/docverify/audit-log.php:29
+msgid "Auditoría de Verificaciones y Consultas"
+msgstr "Verification & Lookup Audit Log"
+
+#: templates/docverify/audit-log.php:30
+msgid "Trazabilidad completa de escaneos QR, búsquedas manuales, cotejos SHA-256, desbloqueos con PIN y descargas"
+msgstr "Full traceability of QR scans, manual lookups, SHA-256 checks, PIN unlocks, and downloads"
+
+#: templates/docverify/audit-log.php:34
+msgid "Registro Criptográfico Activo"
+msgstr "Active Cryptographic Log"
+
+#: templates/docverify/audit-log.php:55
+msgid "Buscar por folio, asunto o titular…"
+msgstr "Search by folio, subject, or holder…"
+
+#: templates/docverify/audit-log.php:61
+msgid "Todos los eventos"
+msgstr "All events"
+
+#: templates/docverify/audit-log.php:88
+msgid "Sin registros de auditoría para estos criterios"
+msgstr "No audit logs found for these criteria"
+
+#: templates/docverify/audit-log.php:95
+msgid "Fecha y Hora"
+msgstr "Date & Time"
+
+#: templates/docverify/audit-log.php:101
+msgid "Tipo de operación: verify_qr (escaneo), verify_manual, verify_hash_ok/fail (cotejo PDF), pin_unlock, download_pdf o revoked."
+msgstr "Operation type: verify_qr (scan), verify_manual, verify_hash_ok/fail (PDF check), pin_unlock, download_pdf, or revoked."
+
+#: templates/docverify/audit-log.php:106 templates/docverify/dashboard.php:232
+msgid "Resultado"
+msgstr "Result"
+
+#: templates/docverify/audit-log.php:107
+msgid "Indica si la validación fue válida/ok, expirada, revocada, con token inválido o PIN incorrecto."
+msgstr "Indicates whether the validation was valid/ok, expired, revoked, invalid token, or incorrect PIN."
+
+#: templates/docverify/audit-log.php:112
+msgid "Detalle Técnico"
+msgstr "Technical Details"
+
+#: templates/docverify/audit-log.php:113
+msgid "Huella anonimizada de la IP solicitante y metadatos del evento."
+msgstr "Anonymized hash of the requesting IP and event metadata."
+
+#: templates/docverify/audit-log.php:126
+msgid "(No localizado)"
+msgstr "(Not found)"
+
+#: templates/docverify/audit-log.php:153
+msgid "Página %1$d de %2$d (%3$d eventos)"
+msgstr "Page %1$d of %2$d (%3$d events)"
+
+#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
+#: templates/docverify/settings.php:266
+msgid "Desarrollado con"
+msgstr "Developed with"
+
+#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
+#: templates/docverify/settings.php:266
+msgid "por"
+msgstr "by"
+
+#: templates/docverify/dashboard.php:25
+msgid "Validación Documental — Dashboard"
+msgstr "Document Verification — Dashboard"
+
+#: templates/docverify/dashboard.php:26
+msgid "Control de documentos oficiales firmados, cartas de invitación para embajadas, códigos QR y cotejo SHA-256"
+msgstr "Control of signed official documents, embassy invitation letters, QR codes, and SHA-256 verification"
+
+#: templates/docverify/dashboard.php:30 templates/docverify/settings.php:40
+msgid "Ver Documentos"
+msgstr "View Documents"
+
+#: templates/docverify/dashboard.php:42 templates/docverify/documents-list.php:58
+msgid "Registrar PDF Firmado"
+msgstr "Register Signed PDF"
+
+#: templates/docverify/dashboard.php:55
+msgid "Documentos Registrados"
+msgstr "Registered Documents"
+
+#: templates/docverify/dashboard.php:57
+msgid "Total histórico de documentos con folio y QR asignados"
+msgstr "Historical total of documents with assigned folio and QR"
+
+#: templates/docverify/dashboard.php:63
+msgid "Vigentes y Válidos"
+msgstr "Valid & Current"
+
+#: templates/docverify/dashboard.php:65
+msgid "Documentos activos dentro de su período de vigencia"
+msgstr "Active documents within their validity period"
+
+#: templates/docverify/dashboard.php:71
+msgid "Vencen en 15 días"
+msgstr "Expiring in 15 days"
+
+#: templates/docverify/dashboard.php:73
+msgid "Documentos próximos a expirar (cartas de invitación o permisos)"
+msgstr "Documents expiring soon (invitation letters or permits)"
+
+#: templates/docverify/dashboard.php:81
+msgid "Documentos anulados oficialmente por la institución"
+msgstr "Documents officially revoked by the institution"
+
+#: templates/docverify/dashboard.php:87
+msgid "En Google Drive"
+msgstr "On Google Drive"
+
+#: templates/docverify/dashboard.php:89
+msgid "Documentos respaldados en Google Drive de AURA"
+msgstr "Documents backed up on AURA Google Drive"
+
+#: templates/docverify/dashboard.php:95
+msgid "Verificaciones (30 días)"
+msgstr "Verifications (30 days)"
+
+#: templates/docverify/dashboard.php:97
+msgid "Consultas públicas válidas realizadas mediante QR, folio o SHA-256"
+msgstr "Valid public lookups performed via QR, folio, or SHA-256"
+
+#: templates/docverify/dashboard.php:108
+msgid "Google Drive Conectado (Almacenamiento Privado Activo)"
+msgstr "Google Drive Connected (Private Storage Active)"
+
+#: templates/docverify/dashboard.php:113
+msgid "Google Drive no configurado — Usando bóveda local protegida (.htaccess)"
+msgstr "Google Drive not configured — Using protected local vault (.htaccess)"
+
+#: templates/docverify/dashboard.php:120
+msgid "Carpeta destino en Drive: %s / Año / Mes"
+msgstr "Drive target folder: %s / Year / Month"
+
+#: templates/docverify/dashboard.php:133
+msgid "Abrir Verificador Público"
+msgstr "Open Public Verifier"
+
+#: templates/docverify/dashboard.php:146
+msgid "Últimos Documentos Registrados"
+msgstr "Latest Registered Documents"
+
+#: templates/docverify/dashboard.php:154
+msgid "Aún no hay documentos registrados"
+msgstr "No documents registered yet"
+
+#: templates/docverify/dashboard.php:155
+msgid "Sube tu primer PDF firmado o carta de invitación para generar su folio institucional, código QR y huella SHA-256."
+msgstr "Upload your first signed PDF or invitation letter to generate its institutional folio, QR code, and SHA-256 digest."
+
+#: templates/docverify/dashboard.php:158
+msgid "Registrar Primer Documento"
+msgstr "Register First Document"
+
+#: templates/docverify/dashboard.php:167
+msgid "Asunto / Titular"
+msgstr "Subject / Holder"
+
+#: templates/docverify/dashboard.php:169
+msgid "Nube"
+msgstr "Cloud"
+
+#: templates/docverify/dashboard.php:214
+msgid "Actividad y Consultas Recientes"
+msgstr "Recent Activity & Lookups"
+
+#: templates/docverify/dashboard.php:216
+msgid "Ver historial"
+msgstr "View history"
+
+#: templates/docverify/dashboard.php:222
+msgid "Sin eventos de auditoría todavía"
+msgstr "No audit events yet"
+
+#: templates/docverify/dashboard.php:223
+msgid "Cada escaneo QR, búsqueda manual, cotejo SHA-256 o descarga se registrará aquí."
+msgstr "Every QR scan, manual search, SHA-256 check, or download will be logged here."
+
+#: templates/docverify/document-form.php:39
+msgid "Editar Documento — %s"
+msgstr "Edit Document — %s"
+
+#: templates/docverify/document-form.php:40
+msgid "Registrar y Sellar Documento PDF"
+msgstr "Register and Stamp PDF Document"
+
+#: templates/docverify/document-form.php:41
+msgid "Sube un PDF ya firmado (carta de invitación, oficio o constancia), genera su folio/QR y guárdalo de forma segura en Google Drive"
+msgstr "Upload an already signed PDF (invitation letter, memo, or certificate), generate its folio/QR, and store it securely in Google Drive"
+
+#: templates/docverify/document-form.php:62
+msgid "Archivo PDF Firmado"
+msgstr "Signed PDF File"
+
+#: templates/docverify/document-form.php:62
+msgid "Sube el documento PDF ya firmado (con firma escaneada o firma electrónica). AURA calculará su huella SHA-256 original para detectar cualquier alteración futura."
+msgstr "Upload the already signed PDF (with handwritten scan or digital signature). AURA will compute its original SHA-256 digest to detect any future tampering."
+
+#: templates/docverify/document-form.php:64
+msgid "El PDF original y su versión sellada se guardarán de forma privada en Google Drive de AURA sin acceso público abierto."
+msgstr "The original PDF and its stamped version will be stored privately in AURA Google Drive without open public access."
+
+#: templates/docverify/document-form.php:64
+msgid "Destino: Google Drive (Privado)"
+msgstr "Destination: Google Drive (Private)"
+
+#: templates/docverify/document-form.php:66
+msgid "Google Drive no está configurado; el archivo se almacenará en la bóveda local protegida con .htaccess."
+msgstr "Google Drive is not configured; the file will be stored in the local .htaccess-protected vault."
+
+#: templates/docverify/document-form.php:66
+msgid "Destino: Bóveda Local (.htaccess)"
+msgstr "Destination: Local Vault (.htaccess)"
+
+#: templates/docverify/document-form.php:74
+msgid "Arrastra aquí tu PDF firmado o haz clic para seleccionarlo"
+msgstr "Drag and drop your signed PDF here or click to browse"
+
+#: templates/docverify/document-form.php:79
+msgid "Solo formato PDF (%d MB máx.). Se calculará su huella criptográfica SHA-256."
+msgstr "PDF format only (%d MB max.). Its SHA-256 cryptographic digest will be calculated."
+
+#: templates/docverify/document-form.php:87
+msgid "Calculando…"
+msgstr "Calculating…"
+
+#: templates/docverify/document-form.php:95
+msgid "Modo de Sellado / QR en PDF"
+msgstr "PDF Stamping / QR Mode"
+
+#: templates/docverify/document-form.php:96
+msgid "Hoja Anexa Oficial añade una página final bilingüe sin tocar las páginas originales (ideal si ya trae firma digital certificada). Estampar QR pega el bloque de verificación en la última página. Solo QR conserva el PDF intacto y te permite descargar el PNG/SVG."
+msgstr "Official Verification Annex adds a bilingual final page without modifying original pages (ideal if already digitally signed). Stamp QR places the verification block on the last page. QR Only keeps the PDF untouched and lets you download the PNG/SVG."
+
+#: templates/docverify/document-form.php:100
+msgid "Hoja Anexa Oficial ES/EN (Recomendado si el PDF tiene firma digital)"
+msgstr "Official Verification Annex ES/EN (Recommended if PDF is digitally signed)"
+
+#: templates/docverify/document-form.php:103
+msgid "Estampar Sello QR compacto sobre la última página"
+msgstr "Stamp compact QR Seal on the last page"
+
+#: templates/docverify/document-form.php:106
+msgid "No modificar el PDF (solo registrar SHA-256 y descargar QR PNG/SVG)"
+msgstr "Do not modify PDF (only register SHA-256 and download QR PNG/SVG)"
+
+#: templates/docverify/document-form.php:112
+msgid "Posición del Sello QR"
+msgstr "QR Stamp Position"
+
+#: templates/docverify/document-form.php:113
+msgid "Ubicación donde se estampará el cuadro con QR, Folio, Código de verificación y SHA-256 en la última página del PDF."
+msgstr "Location where the box with QR, Folio, Verification Code, and SHA-256 will be stamped on the last page."
+
+#: templates/docverify/document-form.php:116
+msgid "Esquina inferior derecha"
+msgstr "Bottom right corner"
+
+#: templates/docverify/document-form.php:117
+msgid "Esquina inferior izquierda"
+msgstr "Bottom left corner"
+
+#: templates/docverify/document-form.php:118
+msgid "Franja horizontal inferior completa"
+msgstr "Full bottom horizontal bar"
+
+#: templates/docverify/document-form.php:128
+msgid "Datos Institucionales y del Trámite"
+msgstr "Institutional & Procedure Details"
+
+#: templates/docverify/document-form.php:128
+msgid "Información oficial que verá la embajada, autoridad migratoria o entidad receptora al escanear el QR."
+msgstr "Official details shown to the embassy, immigration authority, or receiving entity when scanning the QR."
+
+#: templates/docverify/document-form.php:134
+msgid "Tipo de Documento *"
+msgstr "Document Type *"
+
+#: templates/docverify/document-form.php:135
+msgid "Define la clasificación oficial y el prefijo automático del folio (INV para Visa/Embajada, MIG para Migración/Frontera sin visa, OFI para Oficios, CON para Constancias)."
+msgstr "Sets the official classification and automatic folio prefix (INV for Visa/Embassy, MIG for Visa-Free Immigration/Border, OFI for Official Letters, CON for Certificates)."
+
+#: templates/docverify/document-form.php:149
+msgid "Idioma del Documento"
+msgstr "Document Language"
+
+#: templates/docverify/document-form.php:150
+msgid "Indica en qué idioma está redactado el PDF firmado. El verificador web público igual ofrece cambio instantáneo Español / English."
+msgstr "Indicates the language of the signed PDF. The public web verifier still offers an instant Español / English toggle."
+
+#: templates/docverify/document-form.php:157
+msgid "Bilingüe (ES / EN)"
+msgstr "Bilingual (ES / EN)"
+
+#: templates/docverify/document-form.php:165
+msgid "Título / Asunto Oficial *"
+msgstr "Official Title / Subject *"
+
+#: templates/docverify/document-form.php:166
+msgid "Nombre o asunto principal del documento tal como aparece en el encabezado del PDF firmado."
+msgstr "Main document title or subject exactly as shown in the signed PDF header."
+
+#: templates/docverify/document-form.php:172
+msgid "Ej: Carta de Invitación Institucional para Solicitud de Visa — Conferencia Anual 2026"
+msgstr "E.g.: Institutional Invitation Letter for Visa Application — Annual Conference 2026"
+
+#: templates/docverify/document-form.php:179
+msgid "Entidad Destinataria / Embajada / Consulado"
+msgstr "Recipient Entity / Embassy / Consulate"
+
+#: templates/docverify/document-form.php:180
+msgid "Institución ante la cual se presenta el documento (ej: Embajada, Consulado General, Autoridad Migratoria o entidad contratante)."
+msgstr "Institution before which the document is presented (e.g., Embassy, Consulate General, Immigration Authority, or contracting entity)."
+
+#: templates/docverify/document-form.php:191
+msgid "País de Destino / Jurisdicción"
+msgstr "Destination Country / Jurisdiction"
+
+#: templates/docverify/document-form.php:192
+msgid "País de la embajada, puesto fronterizo o jurisdicción donde surtirá efecto el documento."
+msgstr "Country of the embassy, border checkpoint, or jurisdiction where the document takes effect."
+
+#: templates/docverify/document-form.php:198
+msgid "Ej: Estados Unidos / España / Canadá"
+msgstr "E.g.: United States / Spain / Canada"
+
+#: templates/docverify/document-form.php:205
+msgid "Propósito / Trámite"
+msgstr "Purpose / Procedure"
+
+#: templates/docverify/document-form.php:206
+msgid "Describe brevemente el trámite o motivo del documento (ej: Visa B1/B2, ingreso migratorio por evento/misión, certificación laboral)."
+msgstr "Briefly describe the procedure or purpose (e.g., B1/B2 Visa, immigration entry for event/mission, employment verification)."
+
+#: templates/docverify/document-form.php:220
+msgid "Titular o Persona Invitada"
+msgstr "Document Holder or Invitee"
+
+#: templates/docverify/document-form.php:220
+msgid "Persona a favor de quien se emite el documento o viajero invitado en cartas consulares/migratorias."
+msgstr "Person on whose behalf the document is issued or invited traveler in consular/immigration letters."
+
+#: templates/docverify/document-form.php:227
+msgid "Escribe nombres y apellidos completos exactamente como figuran en el pasaporte o documento de identidad."
+msgstr "Enter full legal first and last names exactly as printed on the passport or ID document."
+
+#: templates/docverify/document-form.php:233
+msgid "Nombre tal como figura en el pasaporte"
+msgstr "Full name as shown on passport"
+
+#: templates/docverify/document-form.php:238
+msgid "Tipo de Identificación"
+msgstr "ID Type"
+
+#: templates/docverify/document-form.php:239
+msgid "Documento que acredita la identidad del titular (Pasaporte es el estándar recomendado para visas y migración)."
+msgstr "Identification document of the holder (Passport is the standard for visas and immigration)."
+
+#: templates/docverify/document-form.php:243
+msgid "Cédula / DNI / ID Nacional"
+msgstr "National ID / Citizen Card"
+
+#: templates/docverify/document-form.php:244
+msgid "NIT / RUC / Tax ID"
+msgstr "Tax ID / EIN / NIT"
+
+#: templates/docverify/document-form.php:245
+msgid "No aplica"
+msgstr "Not applicable"
+
+#: templates/docverify/document-form.php:250
+msgid "Número (se enmascara en público)"
+msgstr "ID Number (masked publicly)"
+
+#: templates/docverify/document-form.php:251
+msgid "Por privacidad (Habeas Data), nunca se publica completo en la web: solo se muestran los últimos 4 caracteres (ej: *****4821) y su hash SHA-256 para permitir desbloqueo consular."
+msgstr "For privacy, the full number is never exposed publicly: only the last 4 characters (e.g., *****4821) and its SHA-256 hash are stored for optional consular unlocking."
+
+#: templates/docverify/document-form.php:256
+msgid "Actual: %s (dejar vacío para conservar)"
+msgstr "Current: %s (leave blank to keep)"
+
+#: templates/docverify/document-form.php:256
+msgid "Ej: AB9874821"
+msgstr "E.g.: AB9874821"
+
+#: templates/docverify/document-form.php:264
+msgid "Inicio de Evento / Estadía (Opcional)"
+msgstr "Event / Stay Start Date (Optional)"
+
+#: templates/docverify/document-form.php:265
+msgid "Fecha de ingreso al país o inicio del evento/actividad que respalda la invitación."
+msgstr "Country arrival date or start date of the event/activity supported by the invitation."
+
+#: templates/docverify/document-form.php:275
+msgid "Fin de Evento / Estadía (Opcional)"
+msgstr "Event / Stay End Date (Optional)"
+
+#: templates/docverify/document-form.php:276
+msgid "Fecha de salida prevista o clausura del evento. Muy solicitada en controles migratorios sin visa."
+msgstr "Expected departure date or event closing date. Commonly requested at visa-free border checks."
+
+#: templates/docverify/document-form.php:288
+msgid "Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)"
+msgstr "Accommodation / Host Address in Country (Optional — Immigration)"
+
+#: templates/docverify/document-form.php:289
+msgid "Hotel, sede institucional o dirección física donde se hospedará el visitante junto con la entidad o persona anfitriona que lo respalda al ingresar por migración."
+msgstr "Hotel, institutional venue, or physical address where the visitor will stay along with the host organization or sponsor supporting border entry."
+
+#: templates/docverify/document-form.php:295
+msgid "Ej: Sede Centro Mateo / Hotel / Dirección de hospedaje y contacto anfitrión"
+msgstr "E.g.: Centro Mateo Venue / Hotel / Host street address & sponsor contact"
+
+#: templates/docverify/document-form.php:304
+msgid "Firmante y Vigencia"
+msgstr "Signatory & Validity"
+
+#: templates/docverify/document-form.php:304
+msgid "Identifica quién autoriza y firma el documento y hasta qué fecha conserva validez oficial."
+msgstr "Identifies who authorizes and signs the document and until what date it remains officially valid."
+
+#: templates/docverify/document-form.php:308
+msgid "Autocompletar Firmante Registrado"
+msgstr "Autofill Registered Signatory"
+
+#: templates/docverify/document-form.php:309
+msgid "Carga automáticamente nombre y cargo desde el catálogo de firmantes autorizados de AURA."
+msgstr "Automatically fills name and title from AURA's registered authorized signers catalog."
+
+#: templates/docverify/document-form.php:312
+msgid "— Seleccionar o escribir manual —"
+msgstr "— Select or enter manually —"
+
+#: templates/docverify/document-form.php:325
+msgid "Nombre del Firmante"
+msgstr "Signatory Name"
+
+#: templates/docverify/document-form.php:326
+msgid "Persona con autoridad legal o institucional cuya firma aparece en el PDF subido."
+msgstr "Person with legal or institutional authority whose signature appears in the uploaded PDF."
+
+#: templates/docverify/document-form.php:330
+msgid "Ej: Dr. Carlos Méndez"
+msgstr "E.g.: Dr. Carlos Méndez"
+
+#: templates/docverify/document-form.php:333
+msgid "Cargo Institucional"
+msgstr "Official Title / Position"
+
+#: templates/docverify/document-form.php:334
+msgid "Título o cargo oficial del firmante (se muestra en la Hoja Anexa y en la verificación pública)."
+msgstr "Official title or position of the signer (displayed on the Annex page and public verification)."
+
+#: templates/docverify/document-form.php:338
+msgid "Ej: Director General / Representante Legal"
+msgstr "E.g.: General Director / Legal Representative"
+
+#: templates/docverify/document-form.php:341
+msgid "Correo de Confirmación Consular"
+msgstr "Consular Confirmation Email"
+
+#: templates/docverify/document-form.php:342
+msgid "Correo institucional visible en el pie del verificador por si la embajada o migración desea confirmar directamente."
+msgstr "Institutional email shown in the verifier footer in case the embassy or immigration office wishes to confirm directly."
+
+#: templates/docverify/document-form.php:350
+msgid "Fecha Emisión *"
+msgstr "Issue Date *"
+
+#: templates/docverify/document-form.php:351
+msgid "Fecha oficial en que se expidió y firmó el documento; define también la carpeta Año/Mes en Google Drive."
+msgstr "Official date the document was issued and signed; also determines the Year/Month folder in Google Drive."
+
+#: templates/docverify/document-form.php:358
+msgid "Válido Hasta"
+msgstr "Valid Until"
+
+#: templates/docverify/document-form.php:359
+msgid "Opcional. Si defines una fecha límite (recomendado en cartas de invitación/migración), pasada esa fecha el QR indicará automáticamente EXPIRADO."
+msgstr "Optional. If set (recommended for invitation/immigration letters), after this date the QR will automatically display EXPIRED."
+
+#: templates/docverify/document-form.php:368
+msgid "Privacidad y Control Consular"
+msgstr "Privacy & Consular Access Control"
+
+#: templates/docverify/document-form.php:368
+msgid "Controla qué información se muestra al escanear el QR y si requiere PIN o número de pasaporte para ver detalles completos o descargar el PDF."
+msgstr "Controls what data appears when scanning the QR and whether a PIN or passport number is required to unlock full details or download the PDF."
+
+#: templates/docverify/document-form.php:371
+msgid "Nivel de Visibilidad Pública"
+msgstr "Public Visibility Level"
+
+#: templates/docverify/document-form.php:372
+msgid "Estándar Institucional muestra datos clave con pasaporte enmascarado. Protegido con PIN oculta destino, propósito y estadía hasta ingresar el PIN o número completo de pasaporte."
+msgstr "Institutional Standard shows key data with masked passport. PIN-Protected hides recipient, purpose, and stay details until the PIN or full passport number is entered."
+
+#: templates/docverify/document-form.php:376
+msgid "Estándar Institucional (ID/Pasaporte enmascarado)"
+msgstr "Institutional Standard (Masked ID/Passport)"
+
+#: templates/docverify/document-form.php:379
+msgid "Protegido con PIN o Pasaporte para ver detalle completo"
+msgstr "PIN or Passport Protected for Full Details"
+
+#: templates/docverify/document-form.php:382
+msgid "Resumen Público Completo"
+msgstr "Full Public Summary"
+
+#: templates/docverify/document-form.php:387
+msgid "PIN Opcional de Acceso Consular"
+msgstr "Optional Consular Access PIN"
+
+#: templates/docverify/document-form.php:388
+msgid "Clave adicional (ej. código de cita consular o clave compartida con el invitado). Además del PIN, el sistema acepta el número completo de pasaporte si lo registraste arriba."
+msgstr "Additional passcode (e.g., consular appointment code or shared key). Besides this PIN, the verifier also accepts the full passport number if entered above."
+
+#: templates/docverify/document-form.php:393
+msgid "PIN configurado (escribir para cambiar)"
+msgstr "PIN set (enter new value to change)"
+
+#: templates/docverify/document-form.php:393
+msgid "Opcional (ej. código de cita)"
+msgstr "Optional (e.g., appointment code)"
+
+#: templates/docverify/document-form.php:399
+msgid "Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)"
+msgstr "Allow downloading stamped PDF from web verification (requires PIN first if set)"
+
+#: templates/docverify/document-form.php:400
+msgid "Por defecto desactivado para proteger cartas confidenciales. Actívalo solo si deseas que la embajada o titular descargue la copia desde el enlace público."
+msgstr "Disabled by default to protect confidential letters. Enable only if you want the embassy or holder to download a copy from the public link."
+
+#: templates/docverify/document-form.php:405
+msgid "Notas Internas (Privadas)"
+msgstr "Internal Notes (Private)"
+
+#: templates/docverify/document-form.php:406
+msgid "Observaciones internas para el equipo administrativo. Nunca aparecen en el PDF ni en la página pública de verificación."
+msgstr "Internal notes for administrative staff. Never shown in the PDF or public verification page."
+
+#: templates/docverify/document-form.php:414
+msgid "Registrar, Generar QR y Subir a Nube"
+msgstr "Register, Generate QR & Upload to Cloud"
+
+#: templates/docverify/documents-list.php:67
+msgid "Administra folios institucionales, códigos QR, firmas, cartas de invitación y archivos respaldados en Google Drive"
+msgstr "Manage institutional folios, QR codes, signatures, invitation letters, and files backed up in Google Drive"
+
+#: templates/docverify/documents-list.php:81
+msgid "Folio, código, asunto, invitado o embajada…"
+msgstr "Folio, code, subject, invitee, or embassy…"
+
+#: templates/docverify/documents-list.php:98
+msgid "Vigentes"
+msgstr "Valid"
+
+#: templates/docverify/documents-list.php:99
+msgid "Expirados"
+msgstr "Expired"
+
+#: templates/docverify/documents-list.php:107
+msgid "Todo almacenamiento"
+msgstr "All storage"
+
+#: templates/docverify/documents-list.php:109
+msgid "Local Privado"
+msgstr "Private Local"
+
+#: templates/docverify/documents-list.php:129
+msgid "No se encontraron documentos"
+msgstr "No documents found"
+
+#: templates/docverify/documents-list.php:130
+msgid "Ajusta los filtros o registra un nuevo PDF firmado."
+msgstr "Adjust your filters or register a new signed PDF."
+
+#: templates/docverify/documents-list.php:143
+msgid "Desplegar hashes SHA-256, firmante y enlace público directo."
+msgstr "Expand SHA-256 hashes, signatory, and direct public link."
+
+#: templates/docverify/documents-list.php:147
+msgid "QR"
+msgstr "QR"
+
+#: templates/docverify/documents-list.php:148
+msgid "Vista previa rápida del QR y acceso al modal completo."
+msgstr "Quick QR preview and full credential modal access."
+
+#: templates/docverify/documents-list.php:153
+msgid "Folio y Código"
+msgstr "Folio & Code"
+
+#: templates/docverify/documents-list.php:154
+msgid "Folio único institucional y código aleatorio anti-enumeración."
+msgstr "Unique institutional folio and anti-enumeration random code."
+
+#: templates/docverify/documents-list.php:159
+msgid "Documento y Destinatario"
+msgstr "Document & Recipient"
+
+#: templates/docverify/documents-list.php:160
+msgid "Asunto, tipo de documento y embajada o autoridad migratoria receptora."
+msgstr "Subject, document type, and receiving embassy or immigration authority."
+
+#: templates/docverify/documents-list.php:166
+msgid "Nombre del titular/invitado y documento de identidad enmascarado."
+msgstr "Holder/invitee full name and masked identification number."
+
+#: templates/docverify/documents-list.php:172
+msgid "Fecha de expedición y límite de validez pública del documento."
+msgstr "Issue date and public validity expiration limit."
+
+#: templates/docverify/documents-list.php:178
+msgid "Vigencia actual, almacenamiento (Drive o Local) y cantidad de verificaciones."
+msgstr "Current validity, storage driver (Drive or Local), and verification count."
+
+#: templates/docverify/documents-list.php:196
+msgid "Ver detalles criptográficos y hashes"
+msgstr "View cryptographic details & hashes"
+
+#: templates/docverify/documents-list.php:258
+msgid "QR y Ficha 360°"
+msgstr "QR & 360° Credential"
+
+#: templates/docverify/documents-list.php:263
+msgid "Descargar PDF sellado / certificado"
+msgstr "Download stamped / certified PDF"
+
+#: templates/docverify/documents-list.php:270
+msgid "Editar metadatos o vigencia"
+msgstr "Edit metadata or validity"
+
+#: templates/docverify/documents-list.php:282
+msgid "SHA-256 Original"
+msgstr "Original SHA-256"
+
+#: templates/docverify/documents-list.php:286
+msgid "SHA-256 Sellado / Anexo"
+msgstr "Stamped / Annex SHA-256"
+
+#: templates/docverify/documents-list.php:294
+msgid "URL de Verificación Pública"
+msgstr "Public Verification URL"
+
+#: templates/docverify/documents-list.php:317
+msgid "Página %1$d de %2$d (%3$d documentos)"
+msgstr "Page %1$d of %2$d (%3$d documents)"
+
+#: templates/docverify/documents-list.php:356
+msgid "Credencial de Verificación y Código QR"
+msgstr "Verification Credential & QR Code"
+
+#: templates/docverify/documents-list.php:367
+msgid "Revocar Documento"
+msgstr "Revoke Document"
+
+#: templates/docverify/documents-list.php:390
+msgid "Revocar Autenticidad del Documento"
+msgstr "Revoke Document Authenticity"
+
+#: templates/docverify/documents-list.php:399
+msgid "Efecto inmediato en la verificación pública"
+msgstr "Immediate effect on public verification"
+
+#: templates/docverify/documents-list.php:400
+msgid "Cualquier embajada o entidad que escanee el código QR verá el documento como REVOCADO junto con este motivo."
+msgstr "Any embassy or entity scanning the QR code will see this document marked as REVOKED along with this reason."
+
+#: templates/docverify/documents-list.php:403
+msgid "Motivo oficial de revocación *"
+msgstr "Official revocation reason *"
+
+#: templates/docverify/documents-list.php:405
+msgid "Ej: Carta cancelada por cambio de fechas de evento / reemplazada por folio INV-2026-0015."
+msgstr "E.g.: Letter canceled due to rescheduled event dates / superseded by folio INV-2026-0015."
+
+#: templates/docverify/settings.php:30
+msgid "Personaliza datos consulares de la organización, prefijos de folios, sellado FPDI/QR y respaldo en Google Drive"
+msgstr "Customize consular organization details, folio prefixes, FPDI/QR stamping, and Google Drive backup"
+
+#: templates/docverify/settings.php:50
+msgid "Pestañas de configuración"
+msgstr "Settings tabs"
+
+#: templates/docverify/settings.php:53
+msgid "Institución y Contacto Consular"
+msgstr "Institution & Consular Contact"
+
+#: templates/docverify/settings.php:57
+msgid "Folios y URL Pública"
+msgstr "Folios & Public URL"
+
+#: templates/docverify/settings.php:61
+msgid "Google Drive y Sellado PDF"
+msgstr "Google Drive & PDF Stamping"
+
+#: templates/docverify/settings.php:65
+msgid "Seguridad y Página Pública"
+msgstr "Security & Public Page"
+
+#: templates/docverify/settings.php:73
+msgid "Identidad Institucional para Embajadas y Hoja Anexa"
+msgstr "Institutional Identity for Embassies & Annex Page"
+
+#: templates/docverify/settings.php:75
+msgid "Se hereda automáticamente de Configuración → Organización de AURA; puedes especificar aquí datos adicionales de verificación consular."
+msgstr "Automatically inherited from AURA Settings → Organization; you can specify additional consular verification details here."
+
+#: templates/docverify/settings.php:80
+msgid "Nombre Oficial de la Institución"
+msgstr "Official Institution Name"
+
+#: templates/docverify/settings.php:80
+msgid "Razón social o nombre institucional mostrado en la Hoja Anexa del PDF y en el portal de verificación."
+msgstr "Legal or institutional name shown on the PDF Annex page and public verification portal."
+
+#: templates/docverify/settings.php:84
+msgid "NIT / Registro Legal / Tax ID"
+msgstr "Tax ID / Legal Registration"
+
+#: templates/docverify/settings.php:84
+msgid "Identificación tributaria o personería jurídica de la entidad emisora, muy útil ante consulados y notarías."
+msgstr "Tax ID or legal entity registration number, useful for consulates and notaries."
+
+#: templates/docverify/settings.php:91
+msgid "Dirección Física Oficial"
+msgstr "Official Physical Address"
+
+#: templates/docverify/settings.php:91
+msgid "Sede principal física de la organización emisora."
+msgstr "Main physical headquarters address of the issuing organization."
+
+#: templates/docverify/settings.php:95
+msgid "Ciudad y País"
+msgstr "City & Country"
+
+#: templates/docverify/settings.php:95
+msgid "Ciudad y país de domicilio legal de la institución."
+msgstr "City and country of legal domicile of the institution."
+
+#: templates/docverify/settings.php:97
+msgid "Ej: Bogotá, Colombia"
+msgstr "E.g.: Bogotá, Colombia"
+
+#: templates/docverify/settings.php:103
+msgid "Correo Oficial de Confirmación Consular"
+msgstr "Official Consular Confirmation Email"
+
+#: templates/docverify/settings.php:103
+msgid "Correo institucional que aparece como canal directo de confirmación para embajadas o autoridades migratorias."
+msgstr "Institutional email displayed as the direct confirmation channel for embassies or immigration authorities."
+
+#: templates/docverify/settings.php:110
+msgid "Teléfono de Atención Institucional / Consular"
+msgstr "Institutional / Consular Phone Line"
+
+#: templates/docverify/settings.php:110
+msgid "Teléfono de contacto directo para verificación telefónica por parte de entidades receptoras."
+msgstr "Direct phone number for verbal verification by receiving authorities."
+
+#: templates/docverify/settings.php:119
+msgid "URL del Logo Institucional"
+msgstr "Institutional Logo URL"
+
+#: templates/docverify/settings.php:119
+msgid "Logotipo impreso en el encabezado de la Hoja Anexa del PDF y en la tarjeta pública web."
+msgstr "Logo printed on the PDF Annex header and the public verification card."
+
+#: templates/docverify/settings.php:123
+msgid "Elegir de Medios"
+msgstr "Choose from Media Library"
+
+#: templates/docverify/settings.php:128
+msgid "Prefijos de Folios y Ruta Pública"
+msgstr "Folio Prefixes & Public Route"
+
+#: templates/docverify/settings.php:131
+msgid "Slug Amigable de Verificación"
+msgstr "Friendly Verification Slug"
+
+#: templates/docverify/settings.php:131
+msgid "Segmento de URL usado en los QR cuando no hay página asignada (ej: /verificar-documento/MIG-2026-0001)."
+msgstr "URL path segment used in QR codes when no WP page is assigned (e.g., /verificar-documento/MIG-2026-0001)."
+
+#: templates/docverify/settings.php:138
+msgid "Dígitos de Secuencia (Padding)"
+msgstr "Sequence Digits (Padding)"
+
+#: templates/docverify/settings.php:138
+msgid "Cantidad de ceros a la izquierda en el consecutivo del folio (4 = 0001, 5 = 00001)."
+msgstr "Number of zero-padded digits in the sequential folio number (4 = 0001, 5 = 00001)."
+
+#: templates/docverify/settings.php:145
+msgid "Prefijo Carta de Invitación (Visa)"
+msgstr "Invitation Letter Prefix (Visa)"
+
+#: templates/docverify/settings.php:145
+msgid "Prefijo del folio cuando se selecciona Carta de Invitación para embajada/visa (por defecto INV)."
+msgstr "Folio prefix when Invitation Letter (Visa / Embassy) is selected (default INV)."
+
+#: templates/docverify/settings.php:149
+msgid "Prefijo Carta Migración / Frontera"
+msgstr "Immigration / Border Letter Prefix"
+
+#: templates/docverify/settings.php:149
+msgid "Prefijo del folio para cartas presentadas en migración al entrar a un país sin visa (por defecto MIG)."
+msgstr "Folio prefix for letters presented at border immigration when entering visa-free (default MIG)."
+
+#: templates/docverify/settings.php:153
+msgid "Prefijo Oficio / Comunicado"
+msgstr "Official Letter Prefix"
+
+#: templates/docverify/settings.php:153
+msgid "Prefijo para oficios y comunicados oficiales (por defecto OFI)."
+msgstr "Prefix for official letters and memorandums (default OFI)."
+
+#: templates/docverify/settings.php:157
+msgid "Prefijo Constancia"
+msgstr "Certificate / Attestation Prefix"
+
+#: templates/docverify/settings.php:157
+msgid "Prefijo para constancias institucionales o laborales (por defecto CON)."
+msgstr "Prefix for institutional or employment certificates (default CON)."
+
+#: templates/docverify/settings.php:161
+msgid "Prefijo Carta Patrocinio"
+msgstr "Sponsorship Letter Prefix"
+
+#: templates/docverify/settings.php:161
+msgid "Prefijo para cartas de patrocinio o respaldo económico (por defecto PAT)."
+msgstr "Prefix for sponsorship or financial support letters (default PAT)."
+
+#: templates/docverify/settings.php:165
+msgid "Prefijo Autorización"
+msgstr "Authorization Prefix"
+
+#: templates/docverify/settings.php:165
+msgid "Prefijo para permisos o autorizaciones oficiales (por defecto AUT)."
+msgstr "Prefix for official permits or authorizations (default AUT)."
+
+#: templates/docverify/settings.php:169
+msgid "Prefijo Otros Documentos"
+msgstr "Other Documents Prefix"
+
+#: templates/docverify/settings.php:169
+msgid "Prefijo genérico para otros documentos institucionales (por defecto DOC)."
+msgstr "Generic prefix for other institutional documents (default DOC)."
+
+#: templates/docverify/settings.php:175
+msgid "Almacenamiento en Google Drive y Sellado PDF"
+msgstr "Google Drive Storage & PDF Stamping"
+
+#: templates/docverify/settings.php:182
+msgid "Google Drive de AURA está activo y listo"
+msgstr "AURA Google Drive is active and ready"
+
+#: templates/docverify/settings.php:183
+msgid "Google Drive de AURA no está configurado aún"
+msgstr "AURA Google Drive is not configured yet"
+
+#: templates/docverify/settings.php:186
+msgid "Este módulo comparte las credenciales Service Account de Configuración → Google Drive y almacena cada PDF de forma privada (sin enlace público abierto) dentro de la subcarpeta dedicada."
+msgstr "This module shares the Service Account credentials from Settings → Google Drive and stores each PDF privately (no open public link) inside its dedicated subfolder."
+
+#: templates/docverify/settings.php:187
+msgid "Ir a Configuración de Google Drive"
+msgstr "Go to Google Drive Settings"
+
+#: templates/docverify/settings.php:196
+msgid "Guardar PDFs originales y sellados en Google Drive de AURA"
+msgstr "Store original and stamped PDFs in AURA Google Drive"
+
+#: templates/docverify/settings.php:196
+msgid "Utiliza la conexión Google Drive de AURA para subir los PDFs originales y sellados de forma privada en carpetas Año/Mes."
+msgstr "Uses AURA's Google Drive connection to upload original and stamped PDFs privately into Year/Month folders."
+
+#: templates/docverify/settings.php:200
+msgid "Conservar también una copia local en el servidor tras subir a Drive"
+msgstr "Also keep a local server copy after uploading to Drive"
+
+#: templates/docverify/settings.php:200
+msgid "Si lo activas, mantiene también copia en uploads/aura-docverify/pdf/ (protegida con .htaccess) además de Google Drive."
+msgstr "If enabled, keeps a local copy in uploads/aura-docverify/pdf/ (.htaccess protected) in addition to Google Drive."
+
+#: templates/docverify/settings.php:204
+msgid "Nombre de Subcarpeta en Google Drive"
+msgstr "Google Drive Subfolder Name"
+
+#: templates/docverify/settings.php:204
+msgid "Carpeta raíz del módulo dentro de la carpeta configurada en AURA Google Drive."
+msgstr "Module root folder inside the parent folder configured in AURA Google Drive."
+
+#: templates/docverify/settings.php:211
+msgid "Modo de Sellado por Defecto"
+msgstr "Default Stamping Mode"
+
+#: templates/docverify/settings.php:211
+msgid "Preselección al abrir Registrar PDF. Hoja Anexa Oficial ES/EN es la opción más segura si el PDF ya tiene firma electrónica."
+msgstr "Default option when opening Register PDF. Official Annex ES/EN is the safest choice if the PDF is already digitally signed."
+
+#: templates/docverify/settings.php:213
+msgid "Hoja Anexa Oficial ES/EN"
+msgstr "Official Annex ES/EN"
+
+#: templates/docverify/settings.php:214
+msgid "Sello QR en Esquina/Pie"
+msgstr "QR Stamp in Corner/Footer"
+
+#: templates/docverify/settings.php:215
+msgid "Solo generar QR"
+msgstr "Generate QR Only"
+
+#: templates/docverify/settings.php:219
+msgid "Posición Sello Esquina"
+msgstr "Corner Stamp Position"
+
+#: templates/docverify/settings.php:219
+msgid "Posición predeterminada cuando se elige estampar el sello sobre la última página del PDF."
+msgstr "Default position when stamping the QR seal onto the last page of the PDF."
+
+#: templates/docverify/settings.php:221
+msgid "Inferior derecha"
+msgstr "Bottom right"
+
+#: templates/docverify/settings.php:222
+msgid "Inferior izquierda"
+msgstr "Bottom left"
+
+#: templates/docverify/settings.php:223
+msgid "Franja inferior"
+msgstr "Bottom bar"
+
+#: templates/docverify/settings.php:227
+msgid "Tamaño máximo PDF (MB)"
+msgstr "Maximum PDF Size (MB)"
+
+#: templates/docverify/settings.php:227
+msgid "Límite máximo permitido por archivo PDF subido (entre 2 y 50 MB)."
+msgstr "Maximum file size allowed per uploaded PDF (between 2 and 50 MB)."
+
+#: templates/docverify/settings.php:233
+msgid "Seguridad Anti-Enumeración y Página de Verificación"
+msgstr "Anti-Enumeration Security & Verification Page"
+
+#: templates/docverify/settings.php:236
+msgid "Página WP del Shortcode [aura_verificar_documento]"
+msgstr "WP Page for [aura_verificar_documento] Shortcode"
+
+#: templates/docverify/settings.php:236
+msgid "Página pública de WordPress vinculada al verificador; también puedes gestionarla desde Configuración → Páginas."
+msgstr "Public WordPress page linked to the verifier; you can also manage it under Settings → Pages."
+
+#: templates/docverify/settings.php:238
+msgid "— Automático (Aura Page Manager) —"
+msgstr "— Automatic (Aura Page Manager) —"
+
+#: templates/docverify/settings.php:247
+msgid "Máximo de búsquedas por IP"
+msgstr "Max lookups per IP"
+
+#: templates/docverify/settings.php:247
+msgid "Número máximo de consultas o intentos de PIN permitidos desde una misma IP dentro de la ventana de tiempo."
+msgstr "Maximum number of lookups or PIN attempts allowed from the same IP within the time window."
+
+#: templates/docverify/settings.php:251
+msgid "Ventana de bloqueo (minutos)"
+msgstr "Rate-limit window (minutes)"
+
+#: templates/docverify/settings.php:251
+msgid "Duración en minutos de la ventana para el límite anti-fuerza bruta."
+msgstr "Duration in minutes of the anti-brute-force rate-limit window."
+
+#: templates/docverify/verify-public.php:162
+msgid "Protegido — Validar PIN o Pasaporte"
+msgstr "Protected — Verify PIN or Passport"
+
+#: modules/common/class-roles-manager.php:346
+msgid "Editar vigencia y metadatos de documentos"
+msgstr "Edit document validity and metadata"
+
+#: modules/common/class-roles-manager.php:347
+msgid "Descargar PDFs privados (original y sellado)"
+msgstr "Download private PDFs (original and stamped)"
+
+#: modules/common/class-roles-manager.php:348
+msgid "Revocar o reactivar autenticidad de documentos"
+msgstr "Revoke or reactivate document authenticity"
+
+#: modules/common/class-roles-manager.php:349
+msgid "Eliminar registros documentales (solo admin)"
+msgstr "Delete document records (admin only)"
+
+#: modules/common/class-roles-manager.php:590
+msgid "Ver listado de documentos registrados"
+msgstr "View registered documents list"
+
+#: modules/common/class-roles-manager.php:592
+msgid "Editar metadatos y vigencia consular"
+msgstr "Edit metadata and consular validity"
+
+#: modules/common/class-roles-manager.php:593
+msgid "Descargar PDFs originales y sellados"
+msgstr "Download original and stamped PDFs"
+
+#: modules/common/class-roles-manager.php:595
+msgid "Revocar o reactivar documentos"
+msgstr "Revoke or reactivate documents"
+
+#: modules/common/class-roles-manager.php:597
+msgid "Eliminar documentos del registro"
+msgstr "Delete documents from registry"
+
+#: modules/common/class-page-manager.php:127
+msgid "Verificación Oficial de Documentos"
+msgstr "Official Document Verification"
+
+#: modules/common/class-page-manager.php:132
+msgid "Portal público bilingüe (ES/EN) para validar documentos firmados, cartas de invitación con QR y cotejo SHA-256."
+msgstr "Bilingual public portal (ES/EN) to verify signed documents, QR invitation letters, and SHA-256 digests."

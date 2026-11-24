@@ -139,18 +139,45 @@ $nonce        = wp_create_nonce( 'aura_docverify_nonce' );
                     <table class="aura-table table-row-hover-lift aura-dv-table">
                         <thead>
                             <tr>
-                                <th style="width:42px;"></th>
-                                <th style="width:54px;"><?php esc_html_e( 'QR', 'aura-suite' ); ?></th>
+                                <th style="width:42px;">
+                                    <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Desplegar hashes SHA-256, firmante y enlace público directo.', 'aura-suite' ); ?>">?</span>
+                                </th>
+                                <th style="width:54px;">
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'QR', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Vista previa rápida del QR y acceso al modal completo.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
                                 <th>
                                     <span class="aura-th-flex">
                                         <?php esc_html_e( 'Folio y Código', 'aura-suite' ); ?>
                                         <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Folio único institucional y código aleatorio anti-enumeración.', 'aura-suite' ); ?>">?</span>
                                     </span>
                                 </th>
-                                <th><?php esc_html_e( 'Documento y Destinatario', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Titular / Invitado', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Emisión / Vigencia', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Documento y Destinatario', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Asunto, tipo de documento y embajada o autoridad migratoria receptora.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Titular / Invitado', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Nombre del titular/invitado y documento de identidad enmascarado.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Emisión / Vigencia', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Fecha de expedición y límite de validez pública del documento.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Estado', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Vigencia actual, almacenamiento (Drive o Local) y cantidad de verificaciones.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
                                 <th><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></th>
                             </tr>
                         </thead>

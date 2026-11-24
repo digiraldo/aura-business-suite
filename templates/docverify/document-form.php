@@ -25,6 +25,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
     }
     return $default;
 };
+
+$dv_tip = static function ( string $text ): string {
+    return '<span class="aura-help-icon aura-tooltip-wrap" tabindex="0" data-tooltip="' . esc_attr( $text ) . '">?</span>';
+};
 ?>
 <div class="aura-app-wrapper aura-docverify-wrap" id="aura-docverify-form-page">
     <div class="wrap aura-app-context">
@@ -55,11 +59,11 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                 <!-- 1. Subida del PDF firmado -->
                 <div class="aura-glass-card aura-dv-section-card">
                     <div class="aura-dv-section-head">
-                        <h3>1. <?php esc_html_e( 'Archivo PDF Firmado', 'aura-suite' ); ?></h3>
+                        <h3>1. <?php esc_html_e( 'Archivo PDF Firmado', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Sube el documento PDF ya firmado (con firma escaneada o firma electrónica). AURA calculará su huella SHA-256 original para detectar cualquier alteración futura.', 'aura-suite' ) ); ?></h3>
                         <?php if ( $drive_ready ) : ?>
-                            <span class="badge badge-cyan">☁️ <?php esc_html_e( 'Destino: Google Drive (Privado)', 'aura-suite' ); ?></span>
+                            <span class="badge badge-cyan aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'El PDF original y su versión sellada se guardarán de forma privada en Google Drive de AURA sin acceso público abierto.', 'aura-suite' ); ?>">☁️ <?php esc_html_e( 'Destino: Google Drive (Privado)', 'aura-suite' ); ?></span>
                         <?php else : ?>
-                            <span class="badge badge-slate">🔒 <?php esc_html_e( 'Destino: Bóveda Local (.htaccess)', 'aura-suite' ); ?></span>
+                            <span class="badge badge-slate aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Google Drive no está configurado; el archivo se almacenará en la bóveda local protegida con .htaccess.', 'aura-suite' ); ?>">🔒 <?php esc_html_e( 'Destino: Bóveda Local (.htaccess)', 'aura-suite' ); ?></span>
                         <?php endif; ?>
                     </div>
 
@@ -87,7 +91,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
 
                     <div class="aura-dv-grid-2" style="margin-top:16px;">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-stamp-mode"><?php esc_html_e( 'Modo de Sellado / QR en PDF', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-stamp-mode">
+                                <?php esc_html_e( 'Modo de Sellado / QR en PDF', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Hoja Anexa Oficial añade una página final bilingüe sin tocar las páginas originales (ideal si ya trae firma digital certificada). Estampar QR pega el bloque de verificación en la última página. Solo QR conserva el PDF intacto y te permite descargar el PNG/SVG.', 'aura-suite' ) ); ?>
+                            </label>
                             <select id="aura-dv-stamp-mode" name="stamp_mode" class="form-select form-control">
                                 <option value="annex_page" <?php selected( $settings['default_stamp_mode'], 'annex_page' ); ?>>
                                     <?php esc_html_e( 'Hoja Anexa Oficial ES/EN (Recomendado si el PDF tiene firma digital)', 'aura-suite' ); ?>
@@ -101,7 +108,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                             </select>
                         </div>
                         <div id="aura-dv-stamp-pos-wrap" style="<?php echo $settings['default_stamp_mode'] === 'overlay_corner' ? '' : 'display:none;'; ?>">
-                            <label class="aura-dv-label" for="aura-dv-stamp-pos"><?php esc_html_e( 'Posición del Sello QR', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-stamp-pos">
+                                <?php esc_html_e( 'Posición del Sello QR', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Ubicación donde se estampará el cuadro con QR, Folio, Código de verificación y SHA-256 en la última página del PDF.', 'aura-suite' ) ); ?>
+                            </label>
                             <select id="aura-dv-stamp-pos" name="stamp_position" class="form-select form-control">
                                 <option value="bottom_right" <?php selected( $settings['default_stamp_pos'], 'bottom_right' ); ?>><?php esc_html_e( 'Esquina inferior derecha', 'aura-suite' ); ?></option>
                                 <option value="bottom_left" <?php selected( $settings['default_stamp_pos'], 'bottom_left' ); ?>><?php esc_html_e( 'Esquina inferior izquierda', 'aura-suite' ); ?></option>
@@ -115,12 +125,15 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                 <!-- 2. Metadatos Institucionales y Consulares -->
                 <div class="aura-glass-card aura-dv-section-card">
                     <div class="aura-dv-section-head">
-                        <h3><?php echo $is_edit ? '1.' : '2.'; ?> <?php esc_html_e( 'Datos Institucionales y del Trámite', 'aura-suite' ); ?></h3>
+                        <h3><?php echo $is_edit ? '1.' : '2.'; ?> <?php esc_html_e( 'Datos Institucionales y del Trámite', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Información oficial que verá la embajada, autoridad migratoria o entidad receptora al escanear el QR.', 'aura-suite' ) ); ?></h3>
                     </div>
 
                     <div class="aura-dv-grid-2">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-doc-type"><?php esc_html_e( 'Tipo de Documento *', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-doc-type">
+                                <?php esc_html_e( 'Tipo de Documento *', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Define la clasificación oficial y el prefijo automático del folio (INV para Visa/Embajada, MIG para Migración/Frontera sin visa, OFI para Oficios, CON para Constancias).', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">📑</span>
                                 <select id="aura-dv-doc-type" name="doc_type" class="form-select form-control">
@@ -132,7 +145,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                         </div>
 
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-doc-lang"><?php esc_html_e( 'Idioma del Documento', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-doc-lang">
+                                <?php esc_html_e( 'Idioma del Documento', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Indica en qué idioma está redactado el PDF firmado. El verificador web público igual ofrece cambio instantáneo Español / English.', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">🌐</span>
                                 <select id="aura-dv-doc-lang" name="doc_language" class="form-select form-control">
@@ -145,7 +161,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                     </div>
 
                     <div style="margin-top:14px;">
-                        <label class="aura-dv-label" for="aura-dv-title"><?php esc_html_e( 'Título / Asunto Oficial *', 'aura-suite' ); ?></label>
+                        <label class="aura-dv-label" for="aura-dv-title">
+                            <?php esc_html_e( 'Título / Asunto Oficial *', 'aura-suite' ); ?>
+                            <?php echo $dv_tip( __( 'Nombre o asunto principal del documento tal como aparece en el encabezado del PDF firmado.', 'aura-suite' ) ); ?>
+                        </label>
                         <div class="input-group">
                             <span class="input-group-text">📝</span>
                             <input type="text" id="aura-dv-title" name="title_subject" class="form-control" required
@@ -156,7 +175,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
 
                     <div class="aura-dv-grid-2" style="margin-top:14px;">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-recipient"><?php esc_html_e( 'Entidad Destinataria / Embajada / Consulado', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-recipient">
+                                <?php esc_html_e( 'Entidad Destinataria / Embajada / Consulado', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Institución ante la cual se presenta el documento (ej: Embajada, Consulado General, Autoridad Migratoria o entidad contratante).', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">🏛️</span>
                                 <input type="text" id="aura-dv-recipient" name="recipient_entity" class="form-control"
@@ -165,7 +187,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                             </div>
                         </div>
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-country"><?php esc_html_e( 'País de Destino / Jurisdicción', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-country">
+                                <?php esc_html_e( 'País de Destino / Jurisdicción', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'País de la embajada, puesto fronterizo o jurisdicción donde surtirá efecto el documento.', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">🌍</span>
                                 <input type="text" id="aura-dv-country" name="recipient_country" class="form-control"
@@ -176,7 +201,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                     </div>
 
                     <div style="margin-top:14px;">
-                        <label class="aura-dv-label" for="aura-dv-purpose"><?php esc_html_e( 'Propósito / Trámite', 'aura-suite' ); ?></label>
+                        <label class="aura-dv-label" for="aura-dv-purpose">
+                            <?php esc_html_e( 'Propósito / Trámite', 'aura-suite' ); ?>
+                            <?php echo $dv_tip( __( 'Describe brevemente el trámite o motivo del documento (ej: Visa B1/B2, ingreso migratorio por evento/misión, certificación laboral).', 'aura-suite' ) ); ?>
+                        </label>
                         <div class="input-group">
                             <span class="input-group-text">🎯</span>
                             <input type="text" id="aura-dv-purpose" name="purpose" class="form-control"
@@ -189,12 +217,15 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                 <!-- 3. Titular / Persona Invitada -->
                 <div class="aura-glass-card aura-dv-section-card">
                     <div class="aura-dv-section-head">
-                        <h3><?php echo $is_edit ? '2.' : '3.'; ?> <?php esc_html_e( 'Titular o Persona Invitada', 'aura-suite' ); ?></h3>
+                        <h3><?php echo $is_edit ? '2.' : '3.'; ?> <?php esc_html_e( 'Titular o Persona Invitada', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Persona a favor de quien se emite el documento o viajero invitado en cartas consulares/migratorias.', 'aura-suite' ) ); ?></h3>
                     </div>
 
                     <div class="aura-dv-grid-3">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-holder-name"><?php esc_html_e( 'Nombre Completo *', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-holder-name">
+                                <?php esc_html_e( 'Nombre Completo *', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Escribe nombres y apellidos completos exactamente como figuran en el pasaporte o documento de identidad.', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">👤</span>
                                 <input type="text" id="aura-dv-holder-name" name="holder_name" class="form-control" required
@@ -203,7 +234,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                             </div>
                         </div>
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-holder-doc-type"><?php esc_html_e( 'Tipo de Identificación', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-holder-doc-type">
+                                <?php esc_html_e( 'Tipo de Identificación', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Documento que acredita la identidad del titular (Pasaporte es el estándar recomendado para visas y migración).', 'aura-suite' ) ); ?>
+                            </label>
                             <select id="aura-dv-holder-doc-type" name="holder_doc_type" class="form-select form-control">
                                 <option value="passport" <?php selected( $val( 'holder_doc_type', 'passport' ), 'passport' ); ?>><?php esc_html_e( 'Pasaporte', 'aura-suite' ); ?></option>
                                 <option value="national_id" <?php selected( $val( 'holder_doc_type', 'passport' ), 'national_id' ); ?>><?php esc_html_e( 'Cédula / DNI / ID Nacional', 'aura-suite' ); ?></option>
@@ -214,6 +248,7 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                         <div>
                             <label class="aura-dv-label" for="aura-dv-holder-doc-num">
                                 <?php esc_html_e( 'Número (se enmascara en público)', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Por privacidad (Habeas Data), nunca se publica completo en la web: solo se muestran los últimos 4 caracteres (ej: *****4821) y su hash SHA-256 para permitir desbloqueo consular.', 'aura-suite' ) ); ?>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">🛂</span>
@@ -225,7 +260,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
 
                     <div class="aura-dv-grid-2" id="aura-dv-travel-dates" style="margin-top:14px;">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-start"><?php esc_html_e( 'Inicio de Evento / Estadía (Opcional)', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-start">
+                                <?php esc_html_e( 'Inicio de Evento / Estadía (Opcional)', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Fecha de ingreso al país o inicio del evento/actividad que respalda la invitación.', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">📅</span>
                                 <input type="date" id="aura-dv-start" name="travel_or_event_start" class="form-control"
@@ -233,7 +271,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                             </div>
                         </div>
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-end"><?php esc_html_e( 'Fin de Evento / Estadía (Opcional)', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-end">
+                                <?php esc_html_e( 'Fin de Evento / Estadía (Opcional)', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Fecha de salida prevista o clausura del evento. Muy solicitada en controles migratorios sin visa.', 'aura-suite' ) ); ?>
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">📅</span>
                                 <input type="date" id="aura-dv-end" name="travel_or_event_end" class="form-control"
@@ -243,7 +284,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                     </div>
 
                     <div style="margin-top:14px;">
-                        <label class="aura-dv-label" for="aura-dv-stay-address"><?php esc_html_e( 'Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)', 'aura-suite' ); ?></label>
+                        <label class="aura-dv-label" for="aura-dv-stay-address">
+                            <?php esc_html_e( 'Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)', 'aura-suite' ); ?>
+                            <?php echo $dv_tip( __( 'Hotel, sede institucional o dirección física donde se hospedará el visitante junto con la entidad o persona anfitriona que lo respalda al ingresar por migración.', 'aura-suite' ) ); ?>
+                        </label>
                         <div class="input-group">
                             <span class="input-group-text">📍</span>
                             <input type="text" id="aura-dv-stay-address" name="stay_address" class="form-control"
@@ -257,10 +301,13 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
             <!-- Columna lateral de firmante, vigencia y privacidad -->
             <div class="aura-dv-form-side">
                 <div class="aura-glass-card aura-dv-section-card">
-                    <h3><?php esc_html_e( 'Firmante y Vigencia', 'aura-suite' ); ?></h3>
+                    <h3><?php esc_html_e( 'Firmante y Vigencia', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Identifica quién autoriza y firma el documento y hasta qué fecha conserva validez oficial.', 'aura-suite' ) ); ?></h3>
 
                     <?php if ( ! empty( $signers ) ) : ?>
-                        <label class="aura-dv-label" for="aura-dv-signer-preset"><?php esc_html_e( 'Autocompletar Firmante Registrado', 'aura-suite' ); ?></label>
+                        <label class="aura-dv-label" for="aura-dv-signer-preset">
+                            <?php esc_html_e( 'Autocompletar Firmante Registrado', 'aura-suite' ); ?>
+                            <?php echo $dv_tip( __( 'Carga automáticamente nombre y cargo desde el catálogo de firmantes autorizados de AURA.', 'aura-suite' ) ); ?>
+                        </label>
                         <select id="aura-dv-signer-preset" name="signer_id" class="form-select form-control" style="margin-bottom:12px;">
                             <option value=""><?php esc_html_e( '— Seleccionar o escribir manual —', 'aura-suite' ); ?></option>
                             <?php foreach ( $signers as $sig ) : ?>
@@ -274,28 +321,43 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                         </select>
                     <?php endif; ?>
 
-                    <label class="aura-dv-label" for="aura-dv-signer-name"><?php esc_html_e( 'Nombre del Firmante', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-signer-name">
+                        <?php esc_html_e( 'Nombre del Firmante', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Persona con autoridad legal o institucional cuya firma aparece en el PDF subido.', 'aura-suite' ) ); ?>
+                    </label>
                     <input type="text" id="aura-dv-signer-name" name="signer_name" class="form-control" style="margin-bottom:10px;"
                            value="<?php echo esc_attr( (string) $val( 'signer_name' ) ); ?>"
                            placeholder="<?php esc_attr_e( 'Ej: Dr. Carlos Méndez', 'aura-suite' ); ?>">
 
-                    <label class="aura-dv-label" for="aura-dv-signer-title"><?php esc_html_e( 'Cargo Institucional', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-signer-title">
+                        <?php esc_html_e( 'Cargo Institucional', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Título o cargo oficial del firmante (se muestra en la Hoja Anexa y en la verificación pública).', 'aura-suite' ) ); ?>
+                    </label>
                     <input type="text" id="aura-dv-signer-title" name="signer_title" class="form-control" style="margin-bottom:10px;"
                            value="<?php echo esc_attr( (string) $val( 'signer_title' ) ); ?>"
                            placeholder="<?php esc_attr_e( 'Ej: Director General / Representante Legal', 'aura-suite' ); ?>">
 
-                    <label class="aura-dv-label" for="aura-dv-signer-email"><?php esc_html_e( 'Correo de Confirmación Consular', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-signer-email">
+                        <?php esc_html_e( 'Correo de Confirmación Consular', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Correo institucional visible en el pie del verificador por si la embajada o migración desea confirmar directamente.', 'aura-suite' ) ); ?>
+                    </label>
                     <input type="email" id="aura-dv-signer-email" name="signer_email" class="form-control" style="margin-bottom:14px;"
                            value="<?php echo esc_attr( (string) $val( 'signer_email', $settings['consular_email'] ) ); ?>">
 
                     <div class="aura-dv-grid-2">
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-issued-at"><?php esc_html_e( 'Fecha Emisión *', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-issued-at">
+                                <?php esc_html_e( 'Fecha Emisión *', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Fecha oficial en que se expidió y firmó el documento; define también la carpeta Año/Mes en Google Drive.', 'aura-suite' ) ); ?>
+                            </label>
                             <input type="date" id="aura-dv-issued-at" name="issued_at" class="form-control" required
                                    value="<?php echo esc_attr( (string) $val( 'issued_at', current_time( 'Y-m-d' ) ) ); ?>">
                         </div>
                         <div>
-                            <label class="aura-dv-label" for="aura-dv-expires-at"><?php esc_html_e( 'Válido Hasta', 'aura-suite' ); ?></label>
+                            <label class="aura-dv-label" for="aura-dv-expires-at">
+                                <?php esc_html_e( 'Válido Hasta', 'aura-suite' ); ?>
+                                <?php echo $dv_tip( __( 'Opcional. Si defines una fecha límite (recomendado en cartas de invitación/migración), pasada esa fecha el QR indicará automáticamente EXPIRADO.', 'aura-suite' ) ); ?>
+                            </label>
                             <input type="date" id="aura-dv-expires-at" name="expires_at" class="form-control"
                                    value="<?php echo esc_attr( (string) $val( 'expires_at' ) ); ?>">
                         </div>
@@ -303,9 +365,12 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                 </div>
 
                 <div class="aura-glass-card aura-dv-section-card">
-                    <h3><?php esc_html_e( 'Privacidad y Control Consular', 'aura-suite' ); ?></h3>
+                    <h3><?php esc_html_e( 'Privacidad y Control Consular', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Controla qué información se muestra al escanear el QR y si requiere PIN o número de pasaporte para ver detalles completos o descargar el PDF.', 'aura-suite' ) ); ?></h3>
 
-                    <label class="aura-dv-label" for="aura-dv-privacy"><?php esc_html_e( 'Nivel de Visibilidad Pública', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-privacy">
+                        <?php esc_html_e( 'Nivel de Visibilidad Pública', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Estándar Institucional muestra datos clave con pasaporte enmascarado. Protegido con PIN oculta destino, propósito y estadía hasta ingresar el PIN o número completo de pasaporte.', 'aura-suite' ) ); ?>
+                    </label>
                     <select id="aura-dv-privacy" name="privacy_mode" class="form-select form-control" style="margin-bottom:12px;">
                         <option value="standard_masked" <?php selected( $val( 'privacy_mode', $settings['default_privacy_mode'] ), 'standard_masked' ); ?>>
                             <?php esc_html_e( 'Estándar Institucional (ID/Pasaporte enmascarado)', 'aura-suite' ); ?>
@@ -318,7 +383,10 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
                         </option>
                     </select>
 
-                    <label class="aura-dv-label" for="aura-dv-pin"><?php esc_html_e( 'PIN Opcional de Acceso Consular', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-pin">
+                        <?php esc_html_e( 'PIN Opcional de Acceso Consular', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Clave adicional (ej. código de cita consular o clave compartida con el invitado). Además del PIN, el sistema acepta el número completo de pasaporte si lo registraste arriba.', 'aura-suite' ) ); ?>
+                    </label>
                     <div class="input-group" style="margin-bottom:12px;">
                         <span class="input-group-text">🔒</span>
                         <input type="text" id="aura-dv-pin" name="access_pin" class="form-control"
@@ -327,10 +395,16 @@ $val = static function ( string $field, $default = '' ) use ( $doc ) {
 
                     <label class="aura-dv-check-row">
                         <input type="checkbox" name="allow_public_pdf" value="1" <?php checked( (int) $val( 'allow_public_pdf', 0 ), 1 ); ?>>
-                        <span><?php esc_html_e( 'Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)', 'aura-suite' ); ?></span>
+                        <span>
+                            <?php esc_html_e( 'Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)', 'aura-suite' ); ?>
+                            <?php echo $dv_tip( __( 'Por defecto desactivado para proteger cartas confidenciales. Actívalo solo si deseas que la embajada o titular descargue la copia desde el enlace público.', 'aura-suite' ) ); ?>
+                        </span>
                     </label>
 
-                    <label class="aura-dv-label" for="aura-dv-notes" style="margin-top:12px;"><?php esc_html_e( 'Notas Internas (Privadas)', 'aura-suite' ); ?></label>
+                    <label class="aura-dv-label" for="aura-dv-notes" style="margin-top:12px;">
+                        <?php esc_html_e( 'Notas Internas (Privadas)', 'aura-suite' ); ?>
+                        <?php echo $dv_tip( __( 'Observaciones internas para el equipo administrativo. Nunca aparecen en el PDF ni en la página pública de verificación.', 'aura-suite' ) ); ?>
+                    </label>
                     <textarea id="aura-dv-notes" name="internal_notes" class="form-control" rows="2"><?php echo esc_textarea( (string) $val( 'internal_notes' ) ); ?></textarea>
 
                     <div id="aura-dv-submit-progress" class="loading-bar loading-bar-thick" style="display:none;margin-top:14px;"></div>

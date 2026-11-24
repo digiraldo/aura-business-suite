@@ -95,9 +95,24 @@ $audit = Aura_DocVerify_Manager::list_logs( [
                                 <th><?php esc_html_e( 'Fecha y Hora', 'aura-suite' ); ?></th>
                                 <th><?php esc_html_e( 'Folio', 'aura-suite' ); ?></th>
                                 <th><?php esc_html_e( 'Documento', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Evento', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Resultado', 'aura-suite' ); ?></th>
-                                <th><?php esc_html_e( 'Detalle Técnico', 'aura-suite' ); ?></th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Evento', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Tipo de operación: verify_qr (escaneo), verify_manual, verify_hash_ok/fail (cotejo PDF), pin_unlock, download_pdf o revoked.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Resultado', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Indica si la validación fue válida/ok, expirada, revocada, con token inválido o PIN incorrecto.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="aura-th-flex">
+                                        <?php esc_html_e( 'Detalle Técnico', 'aura-suite' ); ?>
+                                        <span class="aura-help-icon aura-tooltip-wrap" data-tooltip="<?php esc_attr_e( 'Huella anonimizada de la IP solicitante y metadatos del evento.', 'aura-suite' ); ?>">?</span>
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>

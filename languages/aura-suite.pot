@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Aura Business Suite 1.8.3\n"
 "Report-Msgid-Bugs-To: https://github.com/digiraldo/aura-business-suite\n"
-"POT-Creation-Date: 2026-11-24 21:13+0000\n"
+"POT-Creation-Date: 2026-11-24 21:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -323,7 +323,7 @@ msgstr ""
 
 #: aura-business-suite.php:1204 aura-business-suite.php:1613 modules/financial/class-financial-transactions-list.php:1316 modules/financial/class-financial-transactions-list.php:2938
 #: modules/vehicles/admin/views/page-trips.php:700 modules/vehicles/admin/views/page-vehicles.php:626 templates/areas/area-types-page.php:599 templates/calendar/modal-event-detail.php:154
-#: templates/calendar/tab-programs.php:1347 templates/certificates/signers.php:158 templates/certificates/templates-list.php:105 templates/docverify/documents-list.php:348
+#: templates/calendar/tab-programs.php:1347 templates/certificates/signers.php:158 templates/certificates/templates-list.php:105 templates/docverify/documents-list.php:375
 #: templates/financial/categories-page.php:502 templates/financial/notifications-page.php:341 templates/financial/transaction-modal.php:180 templates/financial/transaction-modal.php:273
 #: templates/forms/list.php:264 templates/inventory/loans-list.php:872 templates/students/list.php:709 assets/js/calendar-admin.js:3831
 #: assets/js/contacts.js:1524 assets/js/financial-accounts.js:381 assets/js/financial-accounts.js:190 assets/js/financial-accounts.js:2231
@@ -375,7 +375,7 @@ msgstr ""
 #: modules/financial/class-financial-approval.php:722 modules/financial/class-financial-pending-list.php:53 modules/vehicles/admin/views/page-catalogs.php:142 modules/vehicles/admin/views/page-trips.php:108
 #: modules/vehicles/admin/views/page-vehicles.php:105 templates/areas/area-types-page.php:488 templates/areas/areas-page.php:294 templates/areas/areas-page.php:429
 #: templates/calendar/tab-settings.php:324 templates/calendar/tab-settings.php:387 templates/certificates/dashboard.php:158 templates/certificates/list.php:147
-#: templates/certificates/signers.php:106 templates/common/third-parties-page.php:407 templates/contacts/contacts-page.php:394 templates/docverify/documents-list.php:154
+#: templates/certificates/signers.php:106 templates/common/third-parties-page.php:407 templates/contacts/contacts-page.php:394 templates/docverify/documents-list.php:181
 #: templates/financial/accounts-page.php:178 templates/financial/accounts-page.php:276 templates/financial/accounts-page.php:404 templates/financial/accounts-page.php:435
 #: templates/financial/accounts-page.php:641 templates/financial/accounts-page.php:679 templates/financial/accounts-page.php:898 templates/financial/tags-page.php:409
 #: templates/forms/assignments.php:404 templates/forms/enrollments-pending.php:260 templates/forms/list.php:146 templates/forms/submission-detail.php:285
@@ -967,7 +967,7 @@ msgstr ""
 #: templates/areas/area-dashboard.php:990 templates/areas/areas-page.php:240 templates/areas/areas-page.php:290 templates/calendar/modal-partials.php:98
 #: templates/calendar/modal-partials.php:440 templates/calendar/tab-settings.php:386 templates/calendar/tab-settings.php:518 templates/certificates/dashboard.php:157
 #: templates/certificates/list.php:146 templates/certificates/signers.php:105 templates/common/third-parties-page.php:400 templates/contacts/contacts-page.php:654
-#: templates/docverify/dashboard.php:168 templates/docverify/documents-list.php:153 templates/financial/accounts-page.php:177 templates/financial/accounts-page.php:275
+#: templates/docverify/dashboard.php:168 templates/docverify/documents-list.php:177 templates/financial/accounts-page.php:177 templates/financial/accounts-page.php:275
 #: templates/financial/accounts-page.php:403 templates/financial/accounts-page.php:434 templates/financial/accounts-page.php:637 templates/financial/accounts-page.php:678
 #: templates/financial/accounts-page.php:897 templates/financial/audit-log-page.php:195 templates/financial/budgets-page.php:446 templates/financial/budgets-page.php:908
 #: templates/financial/capital-expenses-page.php:193 templates/financial/edit-transaction.php:1319 templates/financial/integrations-page.php:125 templates/financial/transactions-list.php:656
@@ -1422,7 +1422,7 @@ msgstr ""
 msgid "caracteres mínimos"
 msgstr ""
 
-#: aura-business-suite.php:1878 templates/docverify/document-form.php:340 templates/financial/accounts-page.php:777 templates/financial/edit-transaction.php:1171
+#: aura-business-suite.php:1878 templates/docverify/document-form.php:414 templates/financial/accounts-page.php:777 templates/financial/edit-transaction.php:1171
 #: templates/financial/tags-page.php:636 templates/library/loans-list.php:651 templates/permissions-page.php:1167 assets/js/financial-accounts.js:5187
 #: assets/js/financial-accounts.js:5191 assets/js/transaction-edit.js:1267 assets/js/transaction-edit.js:1273
 msgid "Guardar Cambios"
@@ -1656,7 +1656,7 @@ msgstr ""
 #: aura-business-suite.php:2741 aura-business-suite.php:3111 modules/certificates/class-certificates-admin.php:63 modules/docverify/class-docverify-admin.php:68
 #: modules/electricity/class-electricity-cpt.php:241 modules/forms/class-forms-admin.php:59 modules/library/admin/class-library-admin.php:117 modules/students/class-students-admin.php:68
 #: modules/vehicles/admin/class-vehicle-admin.php:94 modules/vehicles/admin/class-vehicle-admin.php:95 templates/areas/areas-page.php:73 templates/common/third-parties-page.php:98
-#: templates/contacts/contacts-page.php:104 templates/docverify/documents-list.php:50 templates/docverify/settings.php:31 templates/inventory/dashboard.php:45
+#: templates/contacts/contacts-page.php:104 templates/docverify/documents-list.php:50 templates/docverify/settings.php:34 templates/inventory/dashboard.php:45
 #: templates/inventory/settings.php:111 templates/main-dashboard.php:575 assets/js/areas-admin.js:348 assets/js/areas-admin.js:374
 msgid "Dashboard"
 msgstr ""
@@ -2096,7 +2096,7 @@ msgstr ""
 #: modules/common/class-google-calendar.php:665 modules/contacts/class-contacts-sync.php:897 modules/contacts/class-contacts-sync.php:920 modules/contacts/class-contacts-sync.php:968
 #: modules/contacts/class-contacts.php:723 modules/contacts/class-contacts.php:804 modules/contacts/class-contacts.php:824 modules/contacts/class-contacts.php:837
 #: modules/contacts/class-contacts.php:882 modules/contacts/class-contacts.php:914 modules/contacts/class-contacts.php:1163 modules/contacts/class-contacts.php:1255
-#: modules/docverify/class-docverify-admin.php:453 modules/financial/class-financial-capital.php:95 modules/financial/class-financial-capital.php:174 modules/financial/class-financial-export.php:154
+#: modules/docverify/class-docverify-admin.php:479 modules/financial/class-financial-capital.php:95 modules/financial/class-financial-capital.php:174 modules/financial/class-financial-export.php:154
 #: modules/financial/class-financial-export.php:1227 modules/financial/class-financial-integrations.php:44 modules/financial/class-financial-integrations.php:58 modules/financial/class-financial-integrations.php:72
 #: modules/financial/class-financial-integrations.php:92 modules/financial/class-financial-integrations.php:129 modules/financial/class-financial-user-dashboard.php:388 modules/financial/class-financial-user-dashboard.php:438
 #: modules/forms/class-forms-builder.php:183 modules/forms/class-forms-builder.php:474 modules/forms/class-forms-builder.php:505 modules/forms/class-forms-builder.php:537
@@ -3166,7 +3166,7 @@ msgstr ""
 msgid "(mín. %d palabras)"
 msgstr ""
 
-#: modules/calendar/class-calendar-frontend.php:1426 modules/students/class-students-admin.php:297 templates/calendar/tab-tasks.php:122 templates/docverify/documents-list.php:209
+#: modules/calendar/class-calendar-frontend.php:1426 modules/students/class-students-admin.php:297 templates/calendar/tab-tasks.php:122 templates/docverify/documents-list.php:236
 #: templates/students/frontend/tasks.php:279 assets/js/students-admin.js:555
 msgid "Vence:"
 msgstr ""
@@ -3302,7 +3302,7 @@ msgstr ""
 #: templates/calendar/tab-programs.php:1774 templates/calendar/tab-programs.php:1951 templates/calendar/tab-programs.php:2022 templates/calendar/tab-programs.php:2074
 #: templates/calendar/tab-programs.php:2112 templates/calendar/tab-settings.php:635 templates/calendar/tab-tasks.php:267 templates/certificates/list.php:228
 #: templates/certificates/view.php:234 templates/common/portable-bundle-modal.php:98 templates/common/portable-bundle-modal.php:186 templates/common/third-parties-page.php:984
-#: templates/common/third-parties-page.php:1152 templates/contacts/contacts-page.php:1819 templates/contacts/contacts-page.php:2209 templates/docverify/documents-list.php:381
+#: templates/common/third-parties-page.php:1152 templates/contacts/contacts-page.php:1819 templates/contacts/contacts-page.php:2209 templates/docverify/documents-list.php:408
 #: templates/financial/accounts-page.php:1139 templates/financial/accounts-page.php:1570 templates/financial/accounts-page.php:1766 templates/financial/accounts-page.php:1857
 #: templates/financial/accounts-page.php:1887 templates/financial/accounts-page.php:1951 templates/financial/accounts-page.php:2017 templates/financial/accounts-page.php:2204
 #: templates/financial/accounts-page.php:2324 templates/financial/budgets-page.php:814 templates/financial/budgets-page.php:1120 templates/financial/categories-page.php:475
@@ -3344,7 +3344,7 @@ msgstr ""
 #: templates/calendar/modal-partials.php:453 templates/calendar/tab-settings.php:666 templates/calendar/tab-settings.php:842 templates/common/portable-bundle-modal.php:36
 #: templates/common/third-parties-page.php:794 templates/common/third-parties-page.php:1009 templates/common/third-parties-page.php:1092 templates/contacts/contacts-page.php:709
 #: templates/contacts/contacts-page.php:1531 templates/contacts/contacts-page.php:1558 templates/contacts/contacts-page.php:1883 templates/contacts/contacts-page.php:2071
-#: templates/docverify/documents-list.php:331 templates/docverify/documents-list.php:353 templates/docverify/documents-list.php:364 templates/financial/accounts-page.php:931
+#: templates/docverify/documents-list.php:358 templates/docverify/documents-list.php:380 templates/docverify/documents-list.php:391 templates/financial/accounts-page.php:931
 #: templates/financial/accounts-page.php:1159 templates/financial/accounts-page.php:1591 templates/financial/accounts-page.php:1606 templates/financial/accounts-page.php:1786
 #: templates/financial/accounts-page.php:1796 templates/financial/accounts-page.php:1814 templates/financial/accounts-page.php:1877 templates/financial/accounts-page.php:1901
 #: templates/financial/accounts-page.php:1966 templates/financial/accounts-page.php:2037 templates/financial/accounts-page.php:2227 templates/financial/accounts-page.php:2347
@@ -5975,7 +5975,7 @@ msgstr ""
 
 #: modules/common/class-nav-login-menu.php:471 modules/common/class-page-manager.php:477 modules/contacts/auth/class-google-auth-service-account.php:377 modules/contacts/auth/class-google-auth-service-account.php:408
 #: modules/contacts/auth/class-google-auth-service-account.php:428 modules/contacts/class-contacts-merge.php:637 modules/contacts/class-contacts.php:1029 modules/contacts/class-contacts.php:1665
-#: modules/contacts/class-contacts.php:1916 modules/contacts/class-contacts.php:2100 modules/docverify/class-docverify-admin.php:294 modules/docverify/class-docverify-settings.php:184
+#: modules/contacts/class-contacts.php:1916 modules/contacts/class-contacts.php:2100 modules/docverify/class-docverify-admin.php:320 modules/docverify/class-docverify-settings.php:184
 #: modules/students/class-students-settings.php:122 modules/students/class-students-settings.php:139
 msgid "Sin permisos suficientes."
 msgstr ""
@@ -9512,7 +9512,7 @@ msgstr ""
 msgid "Auditoría de Verificaciones"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:110 templates/docverify/settings.php:26
+#: modules/docverify/class-docverify-admin.php:110 templates/docverify/settings.php:29
 msgid "Configuración — Validación Documental"
 msgstr ""
 
@@ -9524,7 +9524,7 @@ msgstr ""
 msgid "Documento registrado y sellado correctamente."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:165 modules/docverify/class-docverify-admin.php:267
+#: modules/docverify/class-docverify-admin.php:165 modules/docverify/class-docverify-admin.php:293
 msgid "Documento actualizado correctamente."
 msgstr ""
 
@@ -9552,56 +9552,163 @@ msgstr ""
 msgid "Selecciona primero el archivo PDF firmado."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:208
+#: modules/docverify/class-docverify-admin.php:173 templates/docverify/dashboard.php:189 templates/docverify/documents-list.php:243
+msgid "Vigente"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:174 templates/docverify/dashboard.php:191 templates/docverify/documents-list.php:245 templates/forms/assignments.php:41
+#: templates/forms/assignments.php:162 templates/forms/assignments.php:393 templates/library/reservations-list.php:117 templates/library/reservations-list.php:231
+msgid "Expirado"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:175 templates/certificates/dashboard.php:185 templates/certificates/list.php:173 templates/certificates/view.php:88
+#: templates/docverify/dashboard.php:193 templates/docverify/documents-list.php:247
+msgid "Revocado"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:176
+msgid "Google Drive (Privado)"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:177 assets/js/advanced-search.js:901 assets/js/calendar-admin.js:3824
+msgid "Almacenamiento Local"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:178
+msgid "Código de Verificación"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:179 templates/docverify/documents-list.php:165
+msgid "Titular / Invitado"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:180
+msgid "Entidad Destinataria"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:181
+msgid "Lugar de Estadía / Respaldo"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:182 templates/docverify/documents-list.php:290
+msgid "Firmante Autorizado"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:183 templates/docverify/documents-list.php:171
+msgid "Emisión / Vigencia"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:184 templates/docverify/documents-list.php:237
+msgid "Sin vencimiento"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:185
+msgid "Consultas Públicas"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:186
+msgid "Motivo de revocación"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:187
+msgid "URL Pública de Verificación"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:188 modules/vehicles/admin/views/page-vehicles.php:681 templates/docverify/documents-list.php:298 templates/forms/list.php:208
+#: templates/forms/list.php:298
+msgid "Copiar URL"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:189
+msgid "Abrir"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:190
+msgid "SHA-256 PDF Original"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:191
+msgid "SHA-256 PDF Sellado / Anexo"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:192
+msgid "Descargar PDF Original"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:193
+msgid "Descargar PDF Certificado / Anexo"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:194
+msgid "Se calculará en servidor"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:195
+msgid "Ej: Autoridad Migratoria / Control Fronterizo"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:196
+msgid "Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:197 templates/docverify/document-form.php:186
+msgid "Ej: Embajada de los Estados Unidos / Sección Consular"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:198 templates/docverify/document-form.php:212
+msgid "Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional"
+msgstr ""
+
+#: modules/docverify/class-docverify-admin.php:234
 msgid "Plantilla de Validación Documental no encontrada."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:226
+#: modules/docverify/class-docverify-admin.php:252
 msgid "Sin permisos para editar documentos."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:229
+#: modules/docverify/class-docverify-admin.php:255
 msgid "Sin permisos para registrar documentos."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:282
+#: modules/docverify/class-docverify-admin.php:308
 msgid "Documento registrado con QR y verificación criptográfica."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:300 modules/docverify/class-docverify-admin.php:461 modules/docverify/class-docverify-manager.php:333 modules/docverify/class-docverify-manager.php:388
+#: modules/docverify/class-docverify-admin.php:326 modules/docverify/class-docverify-admin.php:487 modules/docverify/class-docverify-manager.php:333 modules/docverify/class-docverify-manager.php:388
 #: modules/docverify/class-docverify-manager.php:420 modules/docverify/class-docverify-manager.php:448 modules/docverify/class-docverify-manager.php:480
 msgid "Documento no encontrado."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:368
+#: modules/docverify/class-docverify-admin.php:394
 msgid "Sin permisos para revocar documentos."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:378
+#: modules/docverify/class-docverify-admin.php:404
 msgid "Documento revocado correctamente."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:388
+#: modules/docverify/class-docverify-admin.php:414
 msgid "Sin permisos para reactivar documentos."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:396
+#: modules/docverify/class-docverify-admin.php:422
 msgid "Documento reactivado."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:406
+#: modules/docverify/class-docverify-admin.php:432
 msgid "Sin permisos para eliminar documentos."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:414
+#: modules/docverify/class-docverify-admin.php:440
 msgid "Documento eliminado definitivamente."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:424
+#: modules/docverify/class-docverify-admin.php:450
 msgid "Sin permisos para descargar este documento."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:471
+#: modules/docverify/class-docverify-admin.php:497
 msgid "No se pudo generar la imagen QR."
 msgstr ""
 
@@ -9872,7 +9979,7 @@ msgstr ""
 msgid "Se enviará una alerta cuando el consumo diario supere este valor."
 msgstr ""
 
-#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:256 templates/settings-page.php:1837
+#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:259 templates/settings-page.php:1837
 msgid "Guardar Configuración"
 msgstr ""
 
@@ -20898,10 +21005,6 @@ msgstr ""
 msgid "Descargar PNG"
 msgstr ""
 
-#: modules/vehicles/admin/views/page-vehicles.php:681 templates/docverify/documents-list.php:271 templates/forms/list.php:208 templates/forms/list.php:298
-msgid "Copiar URL"
-msgstr ""
-
 #: modules/vehicles/admin/views/page-vehicles.php:683
 msgid "Genera una etiqueta lista para recortar y pegar en el tablero o colgar del vehículo"
 msgstr ""
@@ -23856,7 +23959,7 @@ msgstr ""
 msgid "Errores"
 msgstr ""
 
-#: templates/calendar/tab-settings.php:516 templates/docverify/audit-log.php:98 templates/docverify/dashboard.php:231 assets/js/calendar-admin.js:104
+#: templates/calendar/tab-settings.php:516 templates/docverify/audit-log.php:100 templates/docverify/dashboard.php:231 assets/js/calendar-admin.js:104
 #: assets/js/calendar-admin.js:3295
 msgid "Evento"
 msgstr ""
@@ -24263,11 +24366,6 @@ msgstr ""
 msgid "Fecha Emisión"
 msgstr ""
 
-#: templates/certificates/dashboard.php:185 templates/certificates/list.php:173 templates/certificates/view.php:88 templates/docverify/dashboard.php:193
-#: templates/docverify/documents-list.php:220
-msgid "Revocado"
-msgstr ""
-
 #: templates/certificates/dashboard.php:191 assets/js/certificates.js:471
 msgid "Ver Certificado"
 msgstr ""
@@ -24493,7 +24591,7 @@ msgstr ""
 msgid "Motivo de revocación…"
 msgstr ""
 
-#: templates/certificates/list.php:230 templates/certificates/view.php:236 templates/docverify/documents-list.php:383
+#: templates/certificates/list.php:230 templates/certificates/view.php:236 templates/docverify/documents-list.php:410
 msgid "Confirmar Revocación"
 msgstr ""
 
@@ -25647,7 +25745,7 @@ msgstr ""
 msgid "Paquete generado previamente por Aura Business Suite"
 msgstr ""
 
-#: templates/common/portable-bundle-modal.php:142 templates/docverify/document-form.php:84
+#: templates/common/portable-bundle-modal.php:142 templates/docverify/document-form.php:88
 msgid "Cambiar archivo"
 msgstr ""
 
@@ -27599,30 +27697,42 @@ msgstr ""
 msgid "Fecha y Hora"
 msgstr ""
 
-#: templates/docverify/audit-log.php:99 templates/docverify/dashboard.php:232
+#: templates/docverify/audit-log.php:101
+msgid "Tipo de operación: verify_qr (escaneo), verify_manual, verify_hash_ok/fail (cotejo PDF), pin_unlock, download_pdf o revoked."
+msgstr ""
+
+#: templates/docverify/audit-log.php:106 templates/docverify/dashboard.php:232
 msgid "Resultado"
 msgstr ""
 
-#: templates/docverify/audit-log.php:100
+#: templates/docverify/audit-log.php:107
+msgid "Indica si la validación fue válida/ok, expirada, revocada, con token inválido o PIN incorrecto."
+msgstr ""
+
+#: templates/docverify/audit-log.php:112
 msgid "Detalle Técnico"
 msgstr ""
 
-#: templates/docverify/audit-log.php:111
+#: templates/docverify/audit-log.php:113
+msgid "Huella anonimizada de la IP solicitante y metadatos del evento."
+msgstr ""
+
+#: templates/docverify/audit-log.php:126
 msgid "(No localizado)"
 msgstr ""
 
-#: templates/docverify/audit-log.php:138
+#: templates/docverify/audit-log.php:153
 #, php-format
 msgid "Página %1$d de %2$d (%3$d eventos)"
 msgstr ""
 
-#: templates/docverify/audit-log.php:158 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:348 templates/docverify/documents-list.php:316
-#: templates/docverify/settings.php:263
+#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
+#: templates/docverify/settings.php:266
 msgid "Desarrollado con"
 msgstr ""
 
-#: templates/docverify/audit-log.php:158 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:348 templates/docverify/documents-list.php:316
-#: templates/docverify/settings.php:263
+#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
+#: templates/docverify/settings.php:266
 msgid "por"
 msgstr ""
 
@@ -27634,7 +27744,7 @@ msgstr ""
 msgid "Control de documentos oficiales firmados, cartas de invitación para embajadas, códigos QR y cotejo SHA-256"
 msgstr ""
 
-#: templates/docverify/dashboard.php:30 templates/docverify/settings.php:37
+#: templates/docverify/dashboard.php:30 templates/docverify/settings.php:40
 msgid "Ver Documentos"
 msgstr ""
 
@@ -27727,15 +27837,6 @@ msgstr ""
 msgid "Nube"
 msgstr ""
 
-#: templates/docverify/dashboard.php:189 templates/docverify/documents-list.php:216
-msgid "Vigente"
-msgstr ""
-
-#: templates/docverify/dashboard.php:191 templates/docverify/documents-list.php:218 templates/forms/assignments.php:41 templates/forms/assignments.php:162
-#: templates/forms/assignments.php:393 templates/library/reservations-list.php:117 templates/library/reservations-list.php:231
-msgid "Expirado"
-msgstr ""
-
 #: templates/docverify/dashboard.php:214
 msgid "Actividad y Consultas Recientes"
 msgstr ""
@@ -27752,275 +27853,391 @@ msgstr ""
 msgid "Cada escaneo QR, búsqueda manual, cotejo SHA-256 o descarga se registrará aquí."
 msgstr ""
 
-#: templates/docverify/document-form.php:35
+#: templates/docverify/document-form.php:39
 #, php-format
 msgid "Editar Documento — %s"
 msgstr ""
 
-#: templates/docverify/document-form.php:36
+#: templates/docverify/document-form.php:40
 msgid "Registrar y Sellar Documento PDF"
 msgstr ""
 
-#: templates/docverify/document-form.php:37
+#: templates/docverify/document-form.php:41
 msgid "Sube un PDF ya firmado (carta de invitación, oficio o constancia), genera su folio/QR y guárdalo de forma segura en Google Drive"
 msgstr ""
 
-#: templates/docverify/document-form.php:41 templates/financial/edit-transaction.php:328
+#: templates/docverify/document-form.php:45 templates/financial/edit-transaction.php:328
 msgid "Volver al Listado"
 msgstr ""
 
-#: templates/docverify/document-form.php:58
+#: templates/docverify/document-form.php:62
 msgid "Archivo PDF Firmado"
 msgstr ""
 
-#: templates/docverify/document-form.php:60
+#: templates/docverify/document-form.php:62
+msgid "Sube el documento PDF ya firmado (con firma escaneada o firma electrónica). AURA calculará su huella SHA-256 original para detectar cualquier alteración futura."
+msgstr ""
+
+#: templates/docverify/document-form.php:64
+msgid "El PDF original y su versión sellada se guardarán de forma privada en Google Drive de AURA sin acceso público abierto."
+msgstr ""
+
+#: templates/docverify/document-form.php:64
 msgid "Destino: Google Drive (Privado)"
 msgstr ""
 
-#: templates/docverify/document-form.php:62
+#: templates/docverify/document-form.php:66
+msgid "Google Drive no está configurado; el archivo se almacenará en la bóveda local protegida con .htaccess."
+msgstr ""
+
+#: templates/docverify/document-form.php:66
 msgid "Destino: Bóveda Local (.htaccess)"
 msgstr ""
 
-#: templates/docverify/document-form.php:70
+#: templates/docverify/document-form.php:74
 msgid "Arrastra aquí tu PDF firmado o haz clic para seleccionarlo"
 msgstr ""
 
-#: templates/docverify/document-form.php:75
+#: templates/docverify/document-form.php:79
 #, php-format
 msgid "Solo formato PDF (%d MB máx.). Se calculará su huella criptográfica SHA-256."
 msgstr ""
 
-#: templates/docverify/document-form.php:83
+#: templates/docverify/document-form.php:87
 msgid "Calculando…"
 msgstr ""
 
-#: templates/docverify/document-form.php:90
+#: templates/docverify/document-form.php:95
 msgid "Modo de Sellado / QR en PDF"
 msgstr ""
 
-#: templates/docverify/document-form.php:93
+#: templates/docverify/document-form.php:96
+msgid "Hoja Anexa Oficial añade una página final bilingüe sin tocar las páginas originales (ideal si ya trae firma digital certificada). Estampar QR pega el bloque de verificación en la última página. Solo QR conserva el PDF intacto y te permite descargar el PNG/SVG."
+msgstr ""
+
+#: templates/docverify/document-form.php:100
 msgid "Hoja Anexa Oficial ES/EN (Recomendado si el PDF tiene firma digital)"
 msgstr ""
 
-#: templates/docverify/document-form.php:96
+#: templates/docverify/document-form.php:103
 msgid "Estampar Sello QR compacto sobre la última página"
 msgstr ""
 
-#: templates/docverify/document-form.php:99
+#: templates/docverify/document-form.php:106
 msgid "No modificar el PDF (solo registrar SHA-256 y descargar QR PNG/SVG)"
 msgstr ""
 
-#: templates/docverify/document-form.php:104
+#: templates/docverify/document-form.php:112
 msgid "Posición del Sello QR"
 msgstr ""
 
-#: templates/docverify/document-form.php:106
+#: templates/docverify/document-form.php:113
+msgid "Ubicación donde se estampará el cuadro con QR, Folio, Código de verificación y SHA-256 en la última página del PDF."
+msgstr ""
+
+#: templates/docverify/document-form.php:116
 msgid "Esquina inferior derecha"
 msgstr ""
 
-#: templates/docverify/document-form.php:107
+#: templates/docverify/document-form.php:117
 msgid "Esquina inferior izquierda"
 msgstr ""
 
-#: templates/docverify/document-form.php:108
+#: templates/docverify/document-form.php:118
 msgid "Franja horizontal inferior completa"
 msgstr ""
 
-#: templates/docverify/document-form.php:118
+#: templates/docverify/document-form.php:128
 msgid "Datos Institucionales y del Trámite"
 msgstr ""
 
-#: templates/docverify/document-form.php:123
+#: templates/docverify/document-form.php:128
+msgid "Información oficial que verá la embajada, autoridad migratoria o entidad receptora al escanear el QR."
+msgstr ""
+
+#: templates/docverify/document-form.php:134
 msgid "Tipo de Documento *"
 msgstr ""
 
 #: templates/docverify/document-form.php:135
+msgid "Define la clasificación oficial y el prefijo automático del folio (INV para Visa/Embajada, MIG para Migración/Frontera sin visa, OFI para Oficios, CON para Constancias)."
+msgstr ""
+
+#: templates/docverify/document-form.php:149
 msgid "Idioma del Documento"
 msgstr ""
 
-#: templates/docverify/document-form.php:139 templates/library/book-form.php:318 assets/js/library-books.js:596 assets/js/library-books.js:645
+#: templates/docverify/document-form.php:150
+msgid "Indica en qué idioma está redactado el PDF firmado. El verificador web público igual ofrece cambio instantáneo Español / English."
+msgstr ""
+
+#: templates/docverify/document-form.php:155 templates/library/book-form.php:318 assets/js/library-books.js:596 assets/js/library-books.js:645
 #: assets/js/library-books.js:1256
 msgid "Español"
 msgstr ""
 
-#: templates/docverify/document-form.php:141
+#: templates/docverify/document-form.php:157
 msgid "Bilingüe (ES / EN)"
 msgstr ""
 
-#: templates/docverify/document-form.php:148
+#: templates/docverify/document-form.php:165
 msgid "Título / Asunto Oficial *"
 msgstr ""
 
-#: templates/docverify/document-form.php:153
+#: templates/docverify/document-form.php:166
+msgid "Nombre o asunto principal del documento tal como aparece en el encabezado del PDF firmado."
+msgstr ""
+
+#: templates/docverify/document-form.php:172
 msgid "Ej: Carta de Invitación Institucional para Solicitud de Visa — Conferencia Anual 2026"
 msgstr ""
 
-#: templates/docverify/document-form.php:159
+#: templates/docverify/document-form.php:179
 msgid "Entidad Destinataria / Embajada / Consulado"
 msgstr ""
 
-#: templates/docverify/document-form.php:164
-msgid "Ej: Embajada de los Estados Unidos / Sección Consular"
+#: templates/docverify/document-form.php:180
+msgid "Institución ante la cual se presenta el documento (ej: Embajada, Consulado General, Autoridad Migratoria o entidad contratante)."
 msgstr ""
 
-#: templates/docverify/document-form.php:168
+#: templates/docverify/document-form.php:191
 msgid "País de Destino / Jurisdicción"
 msgstr ""
 
-#: templates/docverify/document-form.php:173
+#: templates/docverify/document-form.php:192
+msgid "País de la embajada, puesto fronterizo o jurisdicción donde surtirá efecto el documento."
+msgstr ""
+
+#: templates/docverify/document-form.php:198
 msgid "Ej: Estados Unidos / España / Canadá"
 msgstr ""
 
-#: templates/docverify/document-form.php:179
+#: templates/docverify/document-form.php:205
 msgid "Propósito / Trámite"
 msgstr ""
 
-#: templates/docverify/document-form.php:184
-msgid "Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional"
+#: templates/docverify/document-form.php:206
+msgid "Describe brevemente el trámite o motivo del documento (ej: Visa B1/B2, ingreso migratorio por evento/misión, certificación laboral)."
 msgstr ""
 
-#: templates/docverify/document-form.php:192
+#: templates/docverify/document-form.php:220
 msgid "Titular o Persona Invitada"
 msgstr ""
 
-#: templates/docverify/document-form.php:197 assets/js/financial-accounts.js:3984
+#: templates/docverify/document-form.php:220
+msgid "Persona a favor de quien se emite el documento o viajero invitado en cartas consulares/migratorias."
+msgstr ""
+
+#: templates/docverify/document-form.php:226 assets/js/financial-accounts.js:3984
 msgid "Nombre Completo *"
 msgstr ""
 
-#: templates/docverify/document-form.php:202
+#: templates/docverify/document-form.php:227
+msgid "Escribe nombres y apellidos completos exactamente como figuran en el pasaporte o documento de identidad."
+msgstr ""
+
+#: templates/docverify/document-form.php:233
 msgid "Nombre tal como figura en el pasaporte"
 msgstr ""
 
-#: templates/docverify/document-form.php:206
+#: templates/docverify/document-form.php:238
 msgid "Tipo de Identificación"
 msgstr ""
 
-#: templates/docverify/document-form.php:208 templates/students/list.php:336 templates/students/student-form.php:156
+#: templates/docverify/document-form.php:239
+msgid "Documento que acredita la identidad del titular (Pasaporte es el estándar recomendado para visas y migración)."
+msgstr ""
+
+#: templates/docverify/document-form.php:242 templates/students/list.php:336 templates/students/student-form.php:156
 msgid "Pasaporte"
 msgstr ""
 
-#: templates/docverify/document-form.php:209
+#: templates/docverify/document-form.php:243
 msgid "Cédula / DNI / ID Nacional"
 msgstr ""
 
-#: templates/docverify/document-form.php:210
+#: templates/docverify/document-form.php:244
 msgid "NIT / RUC / Tax ID"
 msgstr ""
 
-#: templates/docverify/document-form.php:211
+#: templates/docverify/document-form.php:245
 msgid "No aplica"
 msgstr ""
 
-#: templates/docverify/document-form.php:216
+#: templates/docverify/document-form.php:250
 msgid "Número (se enmascara en público)"
 msgstr ""
 
-#: templates/docverify/document-form.php:221
+#: templates/docverify/document-form.php:251
+msgid "Por privacidad (Habeas Data), nunca se publica completo en la web: solo se muestran los últimos 4 caracteres (ej: *****4821) y su hash SHA-256 para permitir desbloqueo consular."
+msgstr ""
+
+#: templates/docverify/document-form.php:256
 #, php-format
 msgid "Actual: %s (dejar vacío para conservar)"
 msgstr ""
 
-#: templates/docverify/document-form.php:221
+#: templates/docverify/document-form.php:256
 msgid "Ej: AB9874821"
 msgstr ""
 
-#: templates/docverify/document-form.php:228
+#: templates/docverify/document-form.php:264
 msgid "Inicio de Evento / Estadía (Opcional)"
 msgstr ""
 
-#: templates/docverify/document-form.php:236
+#: templates/docverify/document-form.php:265
+msgid "Fecha de ingreso al país o inicio del evento/actividad que respalda la invitación."
+msgstr ""
+
+#: templates/docverify/document-form.php:275
 msgid "Fin de Evento / Estadía (Opcional)"
 msgstr ""
 
-#: templates/docverify/document-form.php:246
+#: templates/docverify/document-form.php:276
+msgid "Fecha de salida prevista o clausura del evento. Muy solicitada en controles migratorios sin visa."
+msgstr ""
+
+#: templates/docverify/document-form.php:288
 msgid "Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)"
 msgstr ""
 
-#: templates/docverify/document-form.php:251
+#: templates/docverify/document-form.php:289
+msgid "Hotel, sede institucional o dirección física donde se hospedará el visitante junto con la entidad o persona anfitriona que lo respalda al ingresar por migración."
+msgstr ""
+
+#: templates/docverify/document-form.php:295
 msgid "Ej: Sede Centro Mateo / Hotel / Dirección de hospedaje y contacto anfitrión"
 msgstr ""
 
-#: templates/docverify/document-form.php:260
+#: templates/docverify/document-form.php:304
 msgid "Firmante y Vigencia"
 msgstr ""
 
-#: templates/docverify/document-form.php:263
-msgid "Autocompletar Firmante Registrado"
-msgstr ""
-
-#: templates/docverify/document-form.php:265
-msgid "— Seleccionar o escribir manual —"
-msgstr ""
-
-#: templates/docverify/document-form.php:277
-msgid "Nombre del Firmante"
-msgstr ""
-
-#: templates/docverify/document-form.php:280
-msgid "Ej: Dr. Carlos Méndez"
-msgstr ""
-
-#: templates/docverify/document-form.php:282
-msgid "Cargo Institucional"
-msgstr ""
-
-#: templates/docverify/document-form.php:285
-msgid "Ej: Director General / Representante Legal"
-msgstr ""
-
-#: templates/docverify/document-form.php:287
-msgid "Correo de Confirmación Consular"
-msgstr ""
-
-#: templates/docverify/document-form.php:293
-msgid "Fecha Emisión *"
-msgstr ""
-
-#: templates/docverify/document-form.php:298
-msgid "Válido Hasta"
-msgstr ""
-
-#: templates/docverify/document-form.php:306
-msgid "Privacidad y Control Consular"
+#: templates/docverify/document-form.php:304
+msgid "Identifica quién autoriza y firma el documento y hasta qué fecha conserva validez oficial."
 msgstr ""
 
 #: templates/docverify/document-form.php:308
-msgid "Nivel de Visibilidad Pública"
+msgid "Autocompletar Firmante Registrado"
 msgstr ""
 
-#: templates/docverify/document-form.php:311
-msgid "Estándar Institucional (ID/Pasaporte enmascarado)"
+#: templates/docverify/document-form.php:309
+msgid "Carga automáticamente nombre y cargo desde el catálogo de firmantes autorizados de AURA."
 msgstr ""
 
-#: templates/docverify/document-form.php:314
-msgid "Protegido con PIN o Pasaporte para ver detalle completo"
-msgstr ""
-
-#: templates/docverify/document-form.php:317
-msgid "Resumen Público Completo"
-msgstr ""
-
-#: templates/docverify/document-form.php:321
-msgid "PIN Opcional de Acceso Consular"
+#: templates/docverify/document-form.php:312
+msgid "— Seleccionar o escribir manual —"
 msgstr ""
 
 #: templates/docverify/document-form.php:325
-msgid "PIN configurado (escribir para cambiar)"
+msgid "Nombre del Firmante"
 msgstr ""
 
-#: templates/docverify/document-form.php:325
-msgid "Opcional (ej. código de cita)"
+#: templates/docverify/document-form.php:326
+msgid "Persona con autoridad legal o institucional cuya firma aparece en el PDF subido."
 msgstr ""
 
 #: templates/docverify/document-form.php:330
-msgid "Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)"
+msgid "Ej: Dr. Carlos Méndez"
 msgstr ""
 
 #: templates/docverify/document-form.php:333
+msgid "Cargo Institucional"
+msgstr ""
+
+#: templates/docverify/document-form.php:334
+msgid "Título o cargo oficial del firmante (se muestra en la Hoja Anexa y en la verificación pública)."
+msgstr ""
+
+#: templates/docverify/document-form.php:338
+msgid "Ej: Director General / Representante Legal"
+msgstr ""
+
+#: templates/docverify/document-form.php:341
+msgid "Correo de Confirmación Consular"
+msgstr ""
+
+#: templates/docverify/document-form.php:342
+msgid "Correo institucional visible en el pie del verificador por si la embajada o migración desea confirmar directamente."
+msgstr ""
+
+#: templates/docverify/document-form.php:350
+msgid "Fecha Emisión *"
+msgstr ""
+
+#: templates/docverify/document-form.php:351
+msgid "Fecha oficial en que se expidió y firmó el documento; define también la carpeta Año/Mes en Google Drive."
+msgstr ""
+
+#: templates/docverify/document-form.php:358
+msgid "Válido Hasta"
+msgstr ""
+
+#: templates/docverify/document-form.php:359
+msgid "Opcional. Si defines una fecha límite (recomendado en cartas de invitación/migración), pasada esa fecha el QR indicará automáticamente EXPIRADO."
+msgstr ""
+
+#: templates/docverify/document-form.php:368
+msgid "Privacidad y Control Consular"
+msgstr ""
+
+#: templates/docverify/document-form.php:368
+msgid "Controla qué información se muestra al escanear el QR y si requiere PIN o número de pasaporte para ver detalles completos o descargar el PDF."
+msgstr ""
+
+#: templates/docverify/document-form.php:371
+msgid "Nivel de Visibilidad Pública"
+msgstr ""
+
+#: templates/docverify/document-form.php:372
+msgid "Estándar Institucional muestra datos clave con pasaporte enmascarado. Protegido con PIN oculta destino, propósito y estadía hasta ingresar el PIN o número completo de pasaporte."
+msgstr ""
+
+#: templates/docverify/document-form.php:376
+msgid "Estándar Institucional (ID/Pasaporte enmascarado)"
+msgstr ""
+
+#: templates/docverify/document-form.php:379
+msgid "Protegido con PIN o Pasaporte para ver detalle completo"
+msgstr ""
+
+#: templates/docverify/document-form.php:382
+msgid "Resumen Público Completo"
+msgstr ""
+
+#: templates/docverify/document-form.php:387
+msgid "PIN Opcional de Acceso Consular"
+msgstr ""
+
+#: templates/docverify/document-form.php:388
+msgid "Clave adicional (ej. código de cita consular o clave compartida con el invitado). Además del PIN, el sistema acepta el número completo de pasaporte si lo registraste arriba."
+msgstr ""
+
+#: templates/docverify/document-form.php:393
+msgid "PIN configurado (escribir para cambiar)"
+msgstr ""
+
+#: templates/docverify/document-form.php:393
+msgid "Opcional (ej. código de cita)"
+msgstr ""
+
+#: templates/docverify/document-form.php:399
+msgid "Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)"
+msgstr ""
+
+#: templates/docverify/document-form.php:400
+msgid "Por defecto desactivado para proteger cartas confidenciales. Actívalo solo si deseas que la embajada o titular descargue la copia desde el enlace público."
+msgstr ""
+
+#: templates/docverify/document-form.php:405
 msgid "Notas Internas (Privadas)"
 msgstr ""
 
-#: templates/docverify/document-form.php:340
+#: templates/docverify/document-form.php:406
+msgid "Observaciones internas para el equipo administrativo. Nunca aparecen en el PDF ni en la página pública de verificación."
+msgstr ""
+
+#: templates/docverify/document-form.php:414
 msgid "Registrar, Generar QR y Subir a Nube"
 msgstr ""
 
@@ -28057,296 +28274,404 @@ msgid "Ajusta los filtros o registra un nuevo PDF firmado."
 msgstr ""
 
 #: templates/docverify/documents-list.php:143
-msgid "QR"
-msgstr ""
-
-#: templates/docverify/documents-list.php:146
-msgid "Folio y Código"
+msgid "Desplegar hashes SHA-256, firmante y enlace público directo."
 msgstr ""
 
 #: templates/docverify/documents-list.php:147
+msgid "QR"
+msgstr ""
+
+#: templates/docverify/documents-list.php:148
+msgid "Vista previa rápida del QR y acceso al modal completo."
+msgstr ""
+
+#: templates/docverify/documents-list.php:153
+msgid "Folio y Código"
+msgstr ""
+
+#: templates/docverify/documents-list.php:154
 msgid "Folio único institucional y código aleatorio anti-enumeración."
 msgstr ""
 
-#: templates/docverify/documents-list.php:150
+#: templates/docverify/documents-list.php:159
 msgid "Documento y Destinatario"
 msgstr ""
 
-#: templates/docverify/documents-list.php:151
-msgid "Titular / Invitado"
+#: templates/docverify/documents-list.php:160
+msgid "Asunto, tipo de documento y embajada o autoridad migratoria receptora."
 msgstr ""
 
-#: templates/docverify/documents-list.php:152
-msgid "Emisión / Vigencia"
+#: templates/docverify/documents-list.php:166
+msgid "Nombre del titular/invitado y documento de identidad enmascarado."
 msgstr ""
 
-#: templates/docverify/documents-list.php:169
+#: templates/docverify/documents-list.php:172
+msgid "Fecha de expedición y límite de validez pública del documento."
+msgstr ""
+
+#: templates/docverify/documents-list.php:178
+msgid "Vigencia actual, almacenamiento (Drive o Local) y cantidad de verificaciones."
+msgstr ""
+
+#: templates/docverify/documents-list.php:196
 msgid "Ver detalles criptográficos y hashes"
 msgstr ""
 
-#: templates/docverify/documents-list.php:210
-msgid "Sin vencimiento"
-msgstr ""
-
-#: templates/docverify/documents-list.php:231
+#: templates/docverify/documents-list.php:258
 msgid "QR y Ficha 360°"
 msgstr ""
 
-#: templates/docverify/documents-list.php:236
+#: templates/docverify/documents-list.php:263
 msgid "Descargar PDF sellado / certificado"
 msgstr ""
 
-#: templates/docverify/documents-list.php:243
+#: templates/docverify/documents-list.php:270
 msgid "Editar metadatos o vigencia"
 msgstr ""
 
-#: templates/docverify/documents-list.php:255
+#: templates/docverify/documents-list.php:282
 msgid "SHA-256 Original"
 msgstr ""
 
-#: templates/docverify/documents-list.php:259
+#: templates/docverify/documents-list.php:286
 msgid "SHA-256 Sellado / Anexo"
 msgstr ""
 
-#: templates/docverify/documents-list.php:263
-msgid "Firmante Autorizado"
-msgstr ""
-
-#: templates/docverify/documents-list.php:267
+#: templates/docverify/documents-list.php:294
 msgid "URL de Verificación Pública"
 msgstr ""
 
-#: templates/docverify/documents-list.php:290
+#: templates/docverify/documents-list.php:317
 #, php-format
 msgid "Página %1$d de %2$d (%3$d documentos)"
 msgstr ""
 
-#: templates/docverify/documents-list.php:329
+#: templates/docverify/documents-list.php:356
 msgid "Credencial de Verificación y Código QR"
 msgstr ""
 
-#: templates/docverify/documents-list.php:340
+#: templates/docverify/documents-list.php:367
 msgid "Revocar Documento"
 msgstr ""
 
-#: templates/docverify/documents-list.php:343 assets/js/areas-admin.js:287 assets/js/areas-admin.js:360 assets/js/financial-accounts.js:2821
+#: templates/docverify/documents-list.php:370 assets/js/areas-admin.js:287 assets/js/areas-admin.js:360 assets/js/financial-accounts.js:2821
 msgid "Reactivar"
 msgstr ""
 
-#: templates/docverify/documents-list.php:363
+#: templates/docverify/documents-list.php:390
 msgid "Revocar Autenticidad del Documento"
 msgstr ""
 
-#: templates/docverify/documents-list.php:372
+#: templates/docverify/documents-list.php:399
 msgid "Efecto inmediato en la verificación pública"
 msgstr ""
 
-#: templates/docverify/documents-list.php:373
+#: templates/docverify/documents-list.php:400
 msgid "Cualquier embajada o entidad que escanee el código QR verá el documento como REVOCADO junto con este motivo."
 msgstr ""
 
-#: templates/docverify/documents-list.php:376
+#: templates/docverify/documents-list.php:403
 msgid "Motivo oficial de revocación *"
 msgstr ""
 
-#: templates/docverify/documents-list.php:378
+#: templates/docverify/documents-list.php:405
 msgid "Ej: Carta cancelada por cambio de fechas de evento / reemplazada por folio INV-2026-0015."
 msgstr ""
 
-#: templates/docverify/settings.php:27
+#: templates/docverify/settings.php:30
 msgid "Personaliza datos consulares de la organización, prefijos de folios, sellado FPDI/QR y respaldo en Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:47
+#: templates/docverify/settings.php:50
 msgid "Pestañas de configuración"
 msgstr ""
 
-#: templates/docverify/settings.php:50
+#: templates/docverify/settings.php:53
 msgid "Institución y Contacto Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:54
+#: templates/docverify/settings.php:57
 msgid "Folios y URL Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:58
+#: templates/docverify/settings.php:61
 msgid "Google Drive y Sellado PDF"
 msgstr ""
 
-#: templates/docverify/settings.php:62
+#: templates/docverify/settings.php:65
 msgid "Seguridad y Página Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:70
+#: templates/docverify/settings.php:73
 msgid "Identidad Institucional para Embajadas y Hoja Anexa"
 msgstr ""
 
-#: templates/docverify/settings.php:72
+#: templates/docverify/settings.php:75
 msgid "Se hereda automáticamente de Configuración → Organización de AURA; puedes especificar aquí datos adicionales de verificación consular."
 msgstr ""
 
-#: templates/docverify/settings.php:77
+#: templates/docverify/settings.php:80
 msgid "Nombre Oficial de la Institución"
 msgstr ""
 
-#: templates/docverify/settings.php:81
+#: templates/docverify/settings.php:80
+msgid "Razón social o nombre institucional mostrado en la Hoja Anexa del PDF y en el portal de verificación."
+msgstr ""
+
+#: templates/docverify/settings.php:84
 msgid "NIT / Registro Legal / Tax ID"
 msgstr ""
 
-#: templates/docverify/settings.php:88
+#: templates/docverify/settings.php:84
+msgid "Identificación tributaria o personería jurídica de la entidad emisora, muy útil ante consulados y notarías."
+msgstr ""
+
+#: templates/docverify/settings.php:91
 msgid "Dirección Física Oficial"
 msgstr ""
 
-#: templates/docverify/settings.php:92
+#: templates/docverify/settings.php:91
+msgid "Sede principal física de la organización emisora."
+msgstr ""
+
+#: templates/docverify/settings.php:95
 msgid "Ciudad y País"
 msgstr ""
 
-#: templates/docverify/settings.php:94
+#: templates/docverify/settings.php:95
+msgid "Ciudad y país de domicilio legal de la institución."
+msgstr ""
+
+#: templates/docverify/settings.php:97
 msgid "Ej: Bogotá, Colombia"
 msgstr ""
 
-#: templates/docverify/settings.php:100
+#: templates/docverify/settings.php:103
 msgid "Correo Oficial de Confirmación Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:107
+#: templates/docverify/settings.php:103
+msgid "Correo institucional que aparece como canal directo de confirmación para embajadas o autoridades migratorias."
+msgstr ""
+
+#: templates/docverify/settings.php:110
 msgid "Teléfono de Atención Institucional / Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:116
+#: templates/docverify/settings.php:110
+msgid "Teléfono de contacto directo para verificación telefónica por parte de entidades receptoras."
+msgstr ""
+
+#: templates/docverify/settings.php:119
 msgid "URL del Logo Institucional"
 msgstr ""
 
-#: templates/docverify/settings.php:120
+#: templates/docverify/settings.php:119
+msgid "Logotipo impreso en el encabezado de la Hoja Anexa del PDF y en la tarjeta pública web."
+msgstr ""
+
+#: templates/docverify/settings.php:123
 msgid "Elegir de Medios"
 msgstr ""
 
-#: templates/docverify/settings.php:125
+#: templates/docverify/settings.php:128
 msgid "Prefijos de Folios y Ruta Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:128
+#: templates/docverify/settings.php:131
 msgid "Slug Amigable de Verificación"
 msgstr ""
 
-#: templates/docverify/settings.php:135
+#: templates/docverify/settings.php:131
+msgid "Segmento de URL usado en los QR cuando no hay página asignada (ej: /verificar-documento/MIG-2026-0001)."
+msgstr ""
+
+#: templates/docverify/settings.php:138
 msgid "Dígitos de Secuencia (Padding)"
 msgstr ""
 
-#: templates/docverify/settings.php:142
+#: templates/docverify/settings.php:138
+msgid "Cantidad de ceros a la izquierda en el consecutivo del folio (4 = 0001, 5 = 00001)."
+msgstr ""
+
+#: templates/docverify/settings.php:145
 msgid "Prefijo Carta de Invitación (Visa)"
 msgstr ""
 
-#: templates/docverify/settings.php:146
+#: templates/docverify/settings.php:145
+msgid "Prefijo del folio cuando se selecciona Carta de Invitación para embajada/visa (por defecto INV)."
+msgstr ""
+
+#: templates/docverify/settings.php:149
 msgid "Prefijo Carta Migración / Frontera"
 msgstr ""
 
-#: templates/docverify/settings.php:150
+#: templates/docverify/settings.php:149
+msgid "Prefijo del folio para cartas presentadas en migración al entrar a un país sin visa (por defecto MIG)."
+msgstr ""
+
+#: templates/docverify/settings.php:153
 msgid "Prefijo Oficio / Comunicado"
 msgstr ""
 
-#: templates/docverify/settings.php:154
+#: templates/docverify/settings.php:153
+msgid "Prefijo para oficios y comunicados oficiales (por defecto OFI)."
+msgstr ""
+
+#: templates/docverify/settings.php:157
 msgid "Prefijo Constancia"
 msgstr ""
 
-#: templates/docverify/settings.php:158
+#: templates/docverify/settings.php:157
+msgid "Prefijo para constancias institucionales o laborales (por defecto CON)."
+msgstr ""
+
+#: templates/docverify/settings.php:161
 msgid "Prefijo Carta Patrocinio"
 msgstr ""
 
-#: templates/docverify/settings.php:162
+#: templates/docverify/settings.php:161
+msgid "Prefijo para cartas de patrocinio o respaldo económico (por defecto PAT)."
+msgstr ""
+
+#: templates/docverify/settings.php:165
 msgid "Prefijo Autorización"
 msgstr ""
 
-#: templates/docverify/settings.php:166
+#: templates/docverify/settings.php:165
+msgid "Prefijo para permisos o autorizaciones oficiales (por defecto AUT)."
+msgstr ""
+
+#: templates/docverify/settings.php:169
 msgid "Prefijo Otros Documentos"
 msgstr ""
 
-#: templates/docverify/settings.php:172
+#: templates/docverify/settings.php:169
+msgid "Prefijo genérico para otros documentos institucionales (por defecto DOC)."
+msgstr ""
+
+#: templates/docverify/settings.php:175
 msgid "Almacenamiento en Google Drive y Sellado PDF"
 msgstr ""
 
-#: templates/docverify/settings.php:179
+#: templates/docverify/settings.php:182
 msgid "Google Drive de AURA está activo y listo"
 msgstr ""
 
-#: templates/docverify/settings.php:180
+#: templates/docverify/settings.php:183
 msgid "Google Drive de AURA no está configurado aún"
 msgstr ""
 
-#: templates/docverify/settings.php:183
+#: templates/docverify/settings.php:186
 msgid "Este módulo comparte las credenciales Service Account de Configuración → Google Drive y almacena cada PDF de forma privada (sin enlace público abierto) dentro de la subcarpeta dedicada."
 msgstr ""
 
-#: templates/docverify/settings.php:184
+#: templates/docverify/settings.php:187
 msgid "Ir a Configuración de Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:193
+#: templates/docverify/settings.php:196
 msgid "Guardar PDFs originales y sellados en Google Drive de AURA"
 msgstr ""
 
-#: templates/docverify/settings.php:197
+#: templates/docverify/settings.php:196
+msgid "Utiliza la conexión Google Drive de AURA para subir los PDFs originales y sellados de forma privada en carpetas Año/Mes."
+msgstr ""
+
+#: templates/docverify/settings.php:200
 msgid "Conservar también una copia local en el servidor tras subir a Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:201
+#: templates/docverify/settings.php:200
+msgid "Si lo activas, mantiene también copia en uploads/aura-docverify/pdf/ (protegida con .htaccess) además de Google Drive."
+msgstr ""
+
+#: templates/docverify/settings.php:204
 msgid "Nombre de Subcarpeta en Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:208
-msgid "Modo de Sellado por Defecto"
-msgstr ""
-
-#: templates/docverify/settings.php:210
-msgid "Hoja Anexa Oficial ES/EN"
+#: templates/docverify/settings.php:204
+msgid "Carpeta raíz del módulo dentro de la carpeta configurada en AURA Google Drive."
 msgstr ""
 
 #: templates/docverify/settings.php:211
+msgid "Modo de Sellado por Defecto"
+msgstr ""
+
+#: templates/docverify/settings.php:211
+msgid "Preselección al abrir Registrar PDF. Hoja Anexa Oficial ES/EN es la opción más segura si el PDF ya tiene firma electrónica."
+msgstr ""
+
+#: templates/docverify/settings.php:213
+msgid "Hoja Anexa Oficial ES/EN"
+msgstr ""
+
+#: templates/docverify/settings.php:214
 msgid "Sello QR en Esquina/Pie"
 msgstr ""
 
-#: templates/docverify/settings.php:212
+#: templates/docverify/settings.php:215
 msgid "Solo generar QR"
 msgstr ""
 
-#: templates/docverify/settings.php:216
+#: templates/docverify/settings.php:219
 msgid "Posición Sello Esquina"
 msgstr ""
 
-#: templates/docverify/settings.php:218
+#: templates/docverify/settings.php:219
+msgid "Posición predeterminada cuando se elige estampar el sello sobre la última página del PDF."
+msgstr ""
+
+#: templates/docverify/settings.php:221
 msgid "Inferior derecha"
 msgstr ""
 
-#: templates/docverify/settings.php:219
+#: templates/docverify/settings.php:222
 msgid "Inferior izquierda"
 msgstr ""
 
-#: templates/docverify/settings.php:220
+#: templates/docverify/settings.php:223
 msgid "Franja inferior"
 msgstr ""
 
-#: templates/docverify/settings.php:224
+#: templates/docverify/settings.php:227
 msgid "Tamaño máximo PDF (MB)"
 msgstr ""
 
-#: templates/docverify/settings.php:230
-msgid "Seguridad Anti-Enumeración y Página de Verificación"
+#: templates/docverify/settings.php:227
+msgid "Límite máximo permitido por archivo PDF subido (entre 2 y 50 MB)."
 msgstr ""
 
 #: templates/docverify/settings.php:233
+msgid "Seguridad Anti-Enumeración y Página de Verificación"
+msgstr ""
+
+#: templates/docverify/settings.php:236
 msgid "Página WP del Shortcode [aura_verificar_documento]"
 msgstr ""
 
-#: templates/docverify/settings.php:235
+#: templates/docverify/settings.php:236
+msgid "Página pública de WordPress vinculada al verificador; también puedes gestionarla desde Configuración → Páginas."
+msgstr ""
+
+#: templates/docverify/settings.php:238
 msgid "— Automático (Aura Page Manager) —"
 msgstr ""
 
-#: templates/docverify/settings.php:244
+#: templates/docverify/settings.php:247
 msgid "Máximo de búsquedas por IP"
 msgstr ""
 
-#: templates/docverify/settings.php:248
+#: templates/docverify/settings.php:247
+msgid "Número máximo de consultas o intentos de PIN permitidos desde una misma IP dentro de la ventana de tiempo."
+msgstr ""
+
+#: templates/docverify/settings.php:251
 msgid "Ventana de bloqueo (minutos)"
+msgstr ""
+
+#: templates/docverify/settings.php:251
+msgid "Duración en minutos de la ventana para el límite anti-fuerza bruta."
 msgstr ""
 
 #: templates/docverify/verify-public.php:162
@@ -45929,10 +46254,6 @@ msgstr ""
 
 #: assets/js/advanced-search.js:876
 msgid "Motivo Rechazo:"
-msgstr ""
-
-#: assets/js/advanced-search.js:901 assets/js/calendar-admin.js:3824
-msgid "Almacenamiento Local"
 msgstr ""
 
 #: assets/js/advanced-search.js:328

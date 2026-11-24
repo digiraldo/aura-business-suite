@@ -70,15 +70,16 @@
     }
 
     function renderDetailModalBody(d) {
+        var i18n = cfg.i18n || {};
         var statusBadge = d.effective_status === 'active'
-            ? '<span class="badge badge-traffic-success"><span class="traffic-dot traffic-dot-success"></span> Vigente</span>'
+            ? '<span class="badge badge-traffic-success"><span class="traffic-dot traffic-dot-success"></span> ' + escHtml(i18n.statusActive || 'Vigente') + '</span>'
             : (d.effective_status === 'expired'
-                ? '<span class="badge badge-traffic-warning"><span class="traffic-dot traffic-dot-warning"></span> Expirado</span>'
-                : '<span class="badge badge-traffic-danger"><span class="traffic-dot traffic-dot-danger"></span> Revocado</span>');
+                ? '<span class="badge badge-traffic-warning"><span class="traffic-dot traffic-dot-warning"></span> ' + escHtml(i18n.statusExpired || 'Expirado') + '</span>'
+                : '<span class="badge badge-traffic-danger"><span class="traffic-dot traffic-dot-danger"></span> ' + escHtml(i18n.statusRevoked || 'Revocado') + '</span>');
 
         var driveBadge = d.storage_driver === 'google_drive'
-            ? '<span class="badge badge-cyan badge-sm">☁️ Google Drive (Privado)</span>'
-            : '<span class="badge badge-slate badge-sm">🔒 Almacenamiento Local</span>';
+            ? '<span class="badge badge-cyan badge-sm">☁️ ' + escHtml(i18n.drivePrivate || 'Google Drive (Privado)') + '</span>'
+            : '<span class="badge badge-slate badge-sm">🔒 ' + escHtml(i18n.localVault || 'Almacenamiento Local') + '</span>';
 
         var html = '<div class="aura-dv-modal-hero">';
         html += '<div class="aura-dv-modal-qr-box">' +
@@ -96,36 +97,36 @@
                 '</div>' +
                 '<h3 style="margin:0 0 10px;font-size:16px;">' + escHtml(d.title_subject) + '</h3>' +
                 '<div class="aura-dv-modal-specs">' +
-                    '<div class="aura-dv-spec-box"><small>Código de Verificación</small><strong><code>' + escHtml(d.verification_code) + '</code></strong></div>' +
-                    '<div class="aura-dv-spec-box"><small>Titular / Invitado</small><strong>' + escHtml(d.holder_name) + (d.holder_doc_masked ? ' (' + escHtml(d.holder_doc_masked) + ')' : '') + '</strong></div>' +
-                    '<div class="aura-dv-spec-box"><small>Entidad Destinataria</small><strong>' + escHtml(d.recipient_entity || '—') + (d.recipient_country ? ' · ' + escHtml(d.recipient_country) : '') + '</strong></div>' +
-                    (d.stay_address ? '<div class="aura-dv-spec-box"><small>Lugar de Estadía / Respaldo</small><strong>' + escHtml(d.stay_address) + '</strong></div>' : '') +
-                    '<div class="aura-dv-spec-box"><small>Firmante Autorizado</small><strong>' + escHtml((d.signer_name || '—') + (d.signer_title ? ' — ' + d.signer_title : '')) + '</strong></div>' +
-                    '<div class="aura-dv-spec-box"><small>Emisión / Vigencia</small><strong>' + escHtml(d.issued_at) + ' → ' + escHtml(d.expires_at || 'Sin vencimiento') + '</strong></div>' +
-                    '<div class="aura-dv-spec-box"><small>Consultas Públicas</small><strong>' + escHtml(String(d.verified_count || 0)) + '</strong></div>' +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.verifCode || 'Código de Verificación') + '</small><strong><code>' + escHtml(d.verification_code) + '</code></strong></div>' +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.holderLabel || 'Titular / Invitado') + '</small><strong>' + escHtml(d.holder_name) + (d.holder_doc_masked ? ' (' + escHtml(d.holder_doc_masked) + ')' : '') + '</strong></div>' +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.recipientLabel || 'Entidad Destinataria') + '</small><strong>' + escHtml(d.recipient_entity || '—') + (d.recipient_country ? ' · ' + escHtml(d.recipient_country) : '') + '</strong></div>' +
+                    (d.stay_address ? '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.stayLabel || 'Lugar de Estadía / Respaldo') + '</small><strong>' + escHtml(d.stay_address) + '</strong></div>' : '') +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.signerLabel || 'Firmante Autorizado') + '</small><strong>' + escHtml((d.signer_name || '—') + (d.signer_title ? ' — ' + d.signer_title : '')) + '</strong></div>' +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.validityLabel || 'Emisión / Vigencia') + '</small><strong>' + escHtml(d.issued_at) + ' → ' + escHtml(d.expires_at || i18n.noExpiration || 'Sin vencimiento') + '</strong></div>' +
+                    '<div class="aura-dv-spec-box"><small>' + escHtml(i18n.publicQueries || 'Consultas Públicas') + '</small><strong>' + escHtml(String(d.verified_count || 0)) + '</strong></div>' +
                 '</div>';
 
         if (d.revoke_reason) {
-            html += '<div class="alert-card alert-danger" style="margin-top:12px;"><span class="alert-icon">⚠️</span><div><div class="alert-title">Motivo de revocación</div><p style="margin:3px 0 0;">' + escHtml(d.revoke_reason) + '</p></div></div>';
+            html += '<div class="alert-card alert-danger" style="margin-top:12px;"><span class="alert-icon">⚠️</span><div><div class="alert-title">' + escHtml(i18n.revokeReasonTitle || 'Motivo de revocación') + '</div><p style="margin:3px 0 0;">' + escHtml(d.revoke_reason) + '</p></div></div>';
         }
 
         html += '<div class="aura-dv-spec-box" style="margin-top:10px;">' +
-                '<small>URL Pública de Verificación</small>' +
+                '<small>' + escHtml(i18n.publicUrlLabel || 'URL Pública de Verificación') + '</small>' +
                 '<div class="aura-dv-inline-copy" style="margin-top:4px;">' +
                 '<code style="font-size:11.5px;word-break:break-all;">' + escHtml(d.verify_url) + '</code>' +
-                '<button type="button" class="btn btn-secondary btn-sm aura-dv-copy-btn" data-copy="' + escHtml(d.verify_url) + '">Copiar URL</button>' +
-                '<a href="' + escHtml(d.verify_url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-glass btn-sm">Abrir</a>' +
+                '<button type="button" class="btn btn-secondary btn-sm aura-dv-copy-btn" data-copy="' + escHtml(d.verify_url) + '">' + escHtml(i18n.copyUrl || 'Copiar URL') + '</button>' +
+                '<a href="' + escHtml(d.verify_url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-glass btn-sm">' + escHtml(i18n.openLink || 'Abrir') + '</a>' +
                 '</div></div>';
 
         html += '<div class="aura-dv-spec-box" style="margin-top:10px;">' +
-                '<small>SHA-256 PDF Original</small>' +
+                '<small>' + escHtml(i18n.shaOrigLabel || 'SHA-256 PDF Original') + '</small>' +
                 '<code style="font-size:11px;word-break:break-all;">' + escHtml(d.sha256_original || '—') + '</code>' +
-                (d.sha256_stamped ? '<small style="margin-top:6px;">SHA-256 PDF Sellado / Anexo</small><code style="font-size:11px;word-break:break-all;">' + escHtml(d.sha256_stamped) + '</code>' : '') +
+                (d.sha256_stamped ? '<small style="margin-top:6px;">' + escHtml(i18n.shaStampLabel || 'SHA-256 PDF Sellado / Anexo') + '</small><code style="font-size:11px;word-break:break-all;">' + escHtml(d.sha256_stamped) + '</code>' : '') +
                 '</div>';
 
         html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">' +
-                '<a href="' + escHtml(d.download_original_url) + '" class="btn btn-secondary btn-sm"><span class="dashicons dashicons-download"></span> Descargar PDF Original</a>' +
-                (d.has_stamped_pdf ? '<a href="' + escHtml(d.download_stamped_url) + '" class="btn btn-primary btn-shimmer btn-sm"><span class="dashicons dashicons-shield"></span> Descargar PDF Certificado / Anexo</a>' : '') +
+                '<a href="' + escHtml(d.download_original_url) + '" class="btn btn-secondary btn-sm"><span class="dashicons dashicons-download"></span> ' + escHtml(i18n.dlOrigBtn || 'Descargar PDF Original') + '</a>' +
+                (d.has_stamped_pdf ? '<a href="' + escHtml(d.download_stamped_url) + '" class="btn btn-primary btn-shimmer btn-sm"><span class="dashicons dashicons-shield"></span> ' + escHtml(i18n.dlStampBtn || 'Descargar PDF Certificado / Anexo') + '</a>' : '') +
                 '</div>';
 
         html += '</div></div>';
@@ -299,7 +300,7 @@
             $('#aura-dv-dz-filesize').text('(' + (file.size / 1024 / 1024).toFixed(2) + ' MB)');
             $('#aura-dv-dz-sha256').text('Calculando…');
             computeFileSha256(file, function (hex) {
-                $('#aura-dv-dz-sha256').text(hex || 'Se calculará en servidor');
+                $('#aura-dv-dz-sha256').text(hex || (cfg.i18n && cfg.i18n.calcInServer) || 'Se calculará en servidor');
             });
         }
 
@@ -338,12 +339,13 @@
 
         $('#aura-dv-doc-type').on('change', function () {
             var v = $(this).val();
+            var i18n = cfg.i18n || {};
             if (v === 'migration_invitation') {
-                $('#aura-dv-recipient').attr('placeholder', 'Ej: Autoridad Migratoria / Control Fronterizo');
-                $('#aura-dv-purpose').attr('placeholder', 'Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional');
+                $('#aura-dv-recipient').attr('placeholder', i18n.phMigRecipient || 'Ej: Autoridad Migratoria / Control Fronterizo');
+                $('#aura-dv-purpose').attr('placeholder', i18n.phMigPurpose || 'Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional');
             } else if (v === 'invitation_letter') {
-                $('#aura-dv-recipient').attr('placeholder', 'Ej: Embajada de los Estados Unidos / Sección Consular');
-                $('#aura-dv-purpose').attr('placeholder', 'Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional');
+                $('#aura-dv-recipient').attr('placeholder', i18n.phInvRecipient || 'Ej: Embajada de los Estados Unidos / Sección Consular');
+                $('#aura-dv-purpose').attr('placeholder', i18n.phInvPurpose || 'Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional');
             }
         });
 
