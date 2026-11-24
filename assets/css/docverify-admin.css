@@ -1,0 +1,363 @@
+/**
+ * Estilos exclusivos del módulo Validación Documental (Admin)
+ * Sin duplicar botones, KPIs, badges ni modales del core aura-design-system.css.
+ */
+
+.aura-docverify-wrap .aura-dv-status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+
+.aura-dv-status-strip__left,
+.aura-dv-status-strip__right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-dv-status-note {
+    font-size: 13px;
+    color: var(--tx-secondary, #475569);
+}
+
+.aura-dv-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.aura-dv-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aura-dv-card-head h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tx-primary, #0f172a);
+}
+
+.aura-dv-subtext {
+    font-size: 12px;
+    color: var(--tx-muted, #64748b);
+    margin-top: 3px;
+}
+
+.aura-dv-code-line {
+    margin-top: 4px;
+}
+
+/* Filtros Full-Width */
+.aura-dv-filters-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1.2fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.aura-dv-filters-grid--audit {
+    grid-template-columns: 1.8fr 1.2fr auto;
+}
+
+.aura-dv-filter-btns,
+.aura-dv-row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Child rows */
+.aura-dv-child-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--bg-alt, #f8fafc);
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.28));
+}
+
+.aura-dv-child-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+}
+
+.aura-dv-child-grid small {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--tx-muted, #64748b);
+    margin-bottom: 4px;
+}
+
+.aura-dv-child-grid code {
+    word-break: break-all;
+    font-size: 11.5px;
+}
+
+.aura-dv-inline-copy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Formulario registro / subida */
+.aura-dv-form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.aura-dv-section-card {
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.aura-dv-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aura-dv-section-head h3,
+.aura-dv-section-card > h3 {
+    margin: 0 0 12px;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--tx-primary, #0f172a);
+}
+
+.aura-dv-section-head h3 {
+    margin: 0;
+}
+
+.aura-dv-label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--tx-secondary, #334155);
+    margin-bottom: 6px;
+}
+
+.aura-dv-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.aura-dv-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.aura-dv-dropzone {
+    border: 2px dashed rgba(2, 132, 199, 0.45);
+    border-radius: 14px;
+    padding: 26px 18px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(2, 132, 199, 0.04);
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.12s ease;
+}
+
+.aura-dv-dropzone:hover,
+.aura-dv-dropzone.is-dragover {
+    border-color: #0284c7;
+    background: rgba(2, 132, 199, 0.09);
+}
+
+.aura-dv-dz-icon {
+    font-size: 34px;
+    margin-bottom: 6px;
+}
+
+.aura-dv-dropzone-empty strong {
+    display: block;
+    font-size: 14px;
+    color: var(--tx-primary, #0f172a);
+    margin-bottom: 4px;
+}
+
+.aura-dv-dropzone-empty span {
+    font-size: 12.5px;
+    color: var(--tx-muted, #64748b);
+}
+
+.aura-dv-dropzone-ready {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-dv-dz-sha {
+    font-size: 12px;
+    color: var(--tx-secondary, #334155);
+    word-break: break-all;
+}
+
+.aura-dv-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.8px;
+    color: var(--tx-secondary, #334155);
+    cursor: pointer;
+}
+
+/* Modal Ficha 360 + QR */
+.aura-dv-modal-container {
+    max-width: 820px !important;
+}
+
+.aura-dv-modal-hero {
+    display: grid;
+    grid-template-columns: 185px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.aura-dv-modal-qr-box {
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.3));
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    background: #ffffff;
+}
+
+.aura-dv-modal-qr-box img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.aura-dv-modal-specs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.aura-dv-spec-box {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-alt, #f8fafc);
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.25));
+}
+
+.aura-dv-spec-box small {
+    display: block;
+    font-size: 11px;
+    color: var(--tx-muted, #64748b);
+    margin-bottom: 2px;
+}
+
+.aura-dv-spec-box strong {
+    font-size: 13px;
+    color: var(--tx-primary, #0f172a);
+    word-break: break-word;
+}
+
+.aura-dv-modal-footer-left,
+.aura-dv-modal-footer-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-dv-modal-footer-left {
+    margin-right: auto;
+}
+
+/* Multi-Driver Dark Mode */
+[data-theme="dark"] .aura-dv-child-card,
+[data-theme="dark"] .aura-dv-spec-box,
+.wp-dark-mode-active .aura-dv-child-card,
+.wp-dark-mode-active .aura-dv-spec-box,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-child-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-spec-box,
+.aura-dark-mode .aura-dv-child-card,
+.aura-dark-mode .aura-dv-spec-box,
+body.admin-color-midnight .aura-dv-child-card,
+body.admin-color-midnight .aura-dv-spec-box {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .aura-dv-dropzone,
+.wp-dark-mode-active .aura-dv-dropzone,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-dropzone,
+.aura-dark-mode .aura-dv-dropzone,
+body.admin-color-midnight .aura-dv-dropzone {
+    background: rgba(14, 165, 233, 0.08);
+    border-color: rgba(56, 189, 248, 0.45);
+}
+
+[data-theme="dark"] .aura-dv-label,
+[data-theme="dark"] .aura-dv-status-note,
+[data-theme="dark"] .aura-dv-dz-sha,
+[data-theme="dark"] .aura-dv-check-row,
+.wp-dark-mode-active .aura-dv-label,
+.wp-dark-mode-active .aura-dv-status-note,
+.wp-dark-mode-active .aura-dv-dz-sha,
+.wp-dark-mode-active .aura-dv-check-row,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-label,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-status-note,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-dz-sha,
+html[data-wp-dark-mode-scheme="dark"] .aura-dv-check-row,
+.aura-dark-mode .aura-dv-label,
+.aura-dark-mode .aura-dv-status-note,
+.aura-dark-mode .aura-dv-dz-sha,
+.aura-dark-mode .aura-dv-check-row {
+    color: var(--tx-secondary, #cbd5e1);
+}
+
+[data-theme="dark"] .aura-dv-spec-box strong,
+[data-theme="dark"] .aura-dv-dropzone-empty strong,
+[data-theme="dark"] .aura-dv-card-head h3,
+[data-theme="dark"] .aura-dv-section-head h3,
+[data-theme="dark"] .aura-dv-section-card > h3,
+.wp-dark-mode-active .aura-dv-spec-box strong,
+.wp-dark-mode-active .aura-dv-dropzone-empty strong,
+.aura-dark-mode .aura-dv-spec-box strong,
+.aura-dark-mode .aura-dv-dropzone-empty strong {
+    color: #f8fafc;
+}
+
+@media (max-width: 1100px) {
+    .aura-dv-dashboard-grid,
+    .aura-dv-form-layout,
+    .aura-dv-filters-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 782px) {
+    .aura-dv-grid-2,
+    .aura-dv-grid-3,
+    .aura-dv-child-grid,
+    .aura-dv-modal-hero,
+    .aura-dv-modal-specs {
+        grid-template-columns: 1fr;
+    }
+}

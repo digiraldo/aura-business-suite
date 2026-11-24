@@ -104,6 +104,62 @@ class Aura_Drive_Manager {
     }
 
     /**
+     * Obtener instancia autenticada de Google\Client
+     *
+     * @return \Google\Client|null
+     */
+    public function get_client() {
+        return $this->is_ready() ? $this->client : null;
+    }
+
+    /**
+     * Obtener instancia autenticada de Google\Service\Drive
+     *
+     * @return \Google\Service\Drive|null
+     */
+    public function get_service() {
+        return $this->is_ready() ? $this->service : null;
+    }
+
+    /**
+     * Descargar el contenido binario de un archivo almacenado en Google Drive.
+     * Útil para servir documentos privados vía proxy PHP sin otorgar permiso público.
+     *
+     * @param string $file_id ID del archivo en Google Drive.
+     * @return string|false Contenido binario o false en error.
+     */
+    public function download_file_content($file_id) {
+        if (!$this->is_ready() || empty($file_id)) {
+            return false;
+        }
+
+        try {
+            $response = $this->service->files->get($file_id, [
+                'alt'               => 'media',
+                'supportsAllDrives' => true,
+            ]);
+
+            if ($response instanceof \Psr\Http\Message\ResponseInterface) {
+                $status = $response->getStatusCode();
+                if ($status >= 400) {
+                    error_log(sprintf('Aura Drive download error HTTP %d (%s)', $status, $file_id));
+                    return false;
+                }
+                return (string) $response->getBody();
+            }
+
+            if (is_object($response) && method_exists($response, 'getBody')) {
+                return (string) $response->getBody();
+            }
+
+            return is_string($response) ? $response : false;
+        } catch (\Throwable $e) {
+            error_log('Aura Drive download exception (' . $file_id . '): ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Extraer el ID de archivo de un enlace o ID de Google Drive
      */
     public static function extract_file_id($url_or_id) {
@@ -200,9 +256,10 @@ class Aura_Drive_Manager {
      * @param string $mime_type Tipo MIME del archivo
      * @param string $module_folder_name Nombre de la carpeta del módulo (ej. 'Finanzas')
      * @param string|null $target_date Fecha de operación de la transacción (YYYY-MM-DD o timestamp)
+     * @param bool $make_public Si es true asigna permiso 'anyone/reader'; si es false permanece privado para Service Account/unidad.
      * @return array|false Datos del archivo subido o false si falla
      */
-    public function upload_file($file_path, $file_name, $mime_type, $module_folder_name = 'Finanzas', $target_date = null) {
+    public function upload_file($file_path, $file_name, $mime_type, $module_folder_name = 'Finanzas', $target_date = null, $make_public = true) {
         if (!$this->is_ready() || !file_exists($file_path)) {
             return false;
         }
@@ -272,17 +329,19 @@ class Aura_Drive_Manager {
                 return false;
             }
 
-            // 5. Asignar permiso público de lectura (anyone / reader) para previsualización in-app
-            try {
-                $permission = new \Google\Service\Drive\Permission([
-                    'role' => 'reader',
-                    'type' => 'anyone'
-                ]);
-                $this->service->permissions->create($result->id, $permission, [
-                    'supportsAllDrives' => true
-                ]);
-            } catch (\Exception $perm_err) {
-                error_log('Aura Drive: Aviso de permisos al compartir comprobante (posible política de dominio Workspace): ' . $perm_err->getMessage());
+            // 5. Asignar permiso público de lectura (anyone / reader) solo si se solicita explícitamente
+            if ($make_public) {
+                try {
+                    $permission = new \Google\Service\Drive\Permission([
+                        'role' => 'reader',
+                        'type' => 'anyone'
+                    ]);
+                    $this->service->permissions->create($result->id, $permission, [
+                        'supportsAllDrives' => true
+                    ]);
+                } catch (\Exception $perm_err) {
+                    error_log('Aura Drive: Aviso de permisos al compartir comprobante (posible política de dominio Workspace): ' . $perm_err->getMessage());
+                }
             }
 
             $file_id = $result->id;
@@ -301,7 +360,8 @@ class Aura_Drive_Manager {
                 'download_url'  => $download_link,
                 'filename'      => $file_name,
                 'mime_type'     => $mime_type,
-                'is_drive'      => true
+                'is_drive'      => true,
+                'is_public'     => (bool) $make_public
             ];
             
         } catch (\Exception $e) {

@@ -339,6 +339,17 @@ class Aura_Roles_Manager {
                 'aura_cert_settings'          => __('Configurar el módulo de certificados', 'aura-suite'),
                 'aura_cert_reports'           => __('Ver reportes de certificados emitidos', 'aura-suite'),
             ),
+            // Módulo de Validación Documental (Documentos Oficiales, Cartas de Invitación y QR)
+            'docverify' => array(
+                'aura_docverify_view_all'     => __('Ver listado completo de documentos verificables', 'aura-suite'),
+                'aura_docverify_create'       => __('Registrar documentos y subir PDFs firmados', 'aura-suite'),
+                'aura_docverify_edit'         => __('Editar vigencia y metadatos de documentos', 'aura-suite'),
+                'aura_docverify_download_pdf' => __('Descargar PDFs privados (original y sellado)', 'aura-suite'),
+                'aura_docverify_revoke'       => __('Revocar o reactivar autenticidad de documentos', 'aura-suite'),
+                'aura_docverify_delete'       => __('Eliminar registros documentales (solo admin)', 'aura-suite'),
+                'aura_docverify_audit'        => __('Ver historial de auditoría y verificaciones QR', 'aura-suite'),
+                'aura_docverify_settings'     => __('Configurar el módulo de validación documental', 'aura-suite'),
+            ),
             // Módulo de Estudiantes e Inscripciones
             'students' => array(
                 'aura_students_create'              => __('Crear/registrar estudiantes manualmente', 'aura-suite'),
@@ -568,6 +579,22 @@ class Aura_Roles_Manager {
                     'aura_cert_settings'          => array('label' => __('Configuración del módulo de certificados', 'aura-suite'), 'code' => 'settings', 'star' => true),
                     'aura_cert_revoke'            => array('label' => __('Revocar certificados emitidos', 'aura-suite'), 'code' => 'revoke', 'star' => true),
                     'aura_cert_template_delete'   => array('label' => __('Eliminar plantillas', 'aura-suite'), 'code' => 'template_delete', 'star' => true),
+                ),
+            ),
+            array(
+                'group'        => 'institutional',
+                'module'       => 'docverify',
+                'icon'         => '🛡️',
+                'title'        => __('MÓDULO: VALIDACIÓN DOCUMENTAL (QR & CONSULAR)', 'aura-suite'),
+                'capabilities' => array(
+                    'aura_docverify_view_all'     => array('label' => __('Ver listado de documentos registrados', 'aura-suite'), 'code' => 'view_all'),
+                    'aura_docverify_create'       => array('label' => __('Subir PDFs firmados y emitir QR/Folio', 'aura-suite'), 'code' => 'create', 'star' => true),
+                    'aura_docverify_edit'         => array('label' => __('Editar metadatos y vigencia consular', 'aura-suite'), 'code' => 'edit'),
+                    'aura_docverify_download_pdf' => array('label' => __('Descargar PDFs originales y sellados', 'aura-suite'), 'code' => 'download_pdf'),
+                    'aura_docverify_audit'        => array('label' => __('Ver auditoría de consultas y cotejos SHA-256', 'aura-suite'), 'code' => 'audit'),
+                    'aura_docverify_revoke'       => array('label' => __('Revocar o reactivar documentos', 'aura-suite'), 'code' => 'revoke', 'star' => true),
+                    'aura_docverify_settings'     => array('label' => __('Configurar Validación Documental', 'aura-suite'), 'code' => 'settings', 'star' => true),
+                    'aura_docverify_delete'       => array('label' => __('Eliminar documentos del registro', 'aura-suite'), 'code' => 'delete', 'star' => true),
                 ),
             ),
             array(
@@ -2055,6 +2082,9 @@ class Aura_Roles_Manager {
             'aura_cert_template_delete', 'aura_cert_issue', 'aura_cert_revoke',
             'aura_cert_view_all', 'aura_cert_download_any', 'aura_cert_signatures_manage',
             'aura_cert_settings', 'aura_cert_reports',
+            'aura_docverify_view_all', 'aura_docverify_create', 'aura_docverify_edit',
+            'aura_docverify_download_pdf', 'aura_docverify_revoke', 'aura_docverify_delete',
+            'aura_docverify_audit', 'aura_docverify_settings',
             'aura_forms_create', 'aura_forms_edit', 'aura_forms_delete',
             'aura_forms_view_responses_all', 'aura_forms_export', 'aura_forms_analytics',
             'aura_forms_assign', 'aura_forms_enrollment_review', 'aura_forms_settings', 'aura_forms_reports',
