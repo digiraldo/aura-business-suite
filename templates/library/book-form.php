@@ -32,14 +32,34 @@ $dewey_classes = [
 <form id="aura-lib-book-form" class="aura-lib-form" novalidate>
     <input type="hidden" id="aura-lib-book-id" name="id" value="0">
 
+    <?php
+    $aura_prompt_locales = class_exists( 'Aura_I18n' )
+        ? Aura_I18n::get_available_locales()
+        : [ 'es_ES' => [ 'code' => 'es_ES', 'short' => 'ES', 'native' => 'Español', 'label' => 'Español' ] ];
+    $aura_active_prompt_locale = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_active_locale() : 'es_ES';
+    if ( ! isset( $aura_prompt_locales[ $aura_active_prompt_locale ] ) ) {
+        $aura_active_prompt_locale = array_key_first( $aura_prompt_locales ) ?: 'es_ES';
+    }
+    ?>
     <!-- ══ BANNER: PROMPT IA ════════════════════════════════════════ -->
     <div class="aura-lib-ai-prompt-banner">
         <div class="aura-lib-ai-prompt-icon">🤖</div>
         <div class="aura-lib-ai-prompt-text">
             <strong><?php esc_html_e( '¿No tienes todos los datos? Usa IA para obtenerlos', 'aura-suite' ); ?></strong>
-            <span><?php esc_html_e( 'Escribe el Título y Autor(es) abajo: copia el prompt listo o ábrelo directo en tu IA favorita.', 'aura-suite' ); ?></span>
+            <span><?php esc_html_e( 'Escribe el Título y Autor(es) abajo, elige el idioma de búsqueda, copia el prompt o ábrelo en tu IA favorita.', 'aura-suite' ); ?></span>
         </div>
         <div class="aura-lib-ai-prompt-actions">
+            <select id="aura-lib-ai-lang-select" class="aura-lib-ai-lang-select"
+                    aria-label="<?php esc_attr_e( 'Idioma de búsqueda para el prompt de IA', 'aura-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Idioma en que la IA buscará y responderá la ficha del libro', 'aura-suite' ); ?>">
+                <?php foreach ( $aura_prompt_locales as $lcode => $lmeta ) : ?>
+                    <option value="<?php echo esc_attr( $lcode ); ?>"
+                            data-lang-name="<?php echo esc_attr( $lmeta['native'] ); ?>"
+                            <?php selected( $aura_active_prompt_locale, $lcode ); ?>>
+                        <?php echo esc_html( ( $lmeta['short'] ?? strtoupper( substr( $lcode, 0, 2 ) ) ) . ' · ' . $lmeta['native'] ); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
             <button type="button" id="aura-lib-copy-prompt-btn" class="aura-lib-ai-prompt-copy-btn">
                 <span class="dashicons dashicons-clipboard"></span>
                 <span><?php esc_html_e( 'Copiar prompt', 'aura-suite' ); ?></span>
@@ -53,8 +73,9 @@ $dewey_classes = [
     </div>
     <textarea id="aura-lib-ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px;" readonly
               aria-hidden="true"><?php echo esc_textarea( '[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]
+Idioma de búsqueda y respuesta: [IDIOMA_BUSQUEDA]
 
-Actúa como un bibliotecario experto. Proporcióname los datos del libro escrito anteriormente, para ingresarlos en un sistema de inventario. Necesito la información organizada exactamente de la siguiente manera:
+Actúa como un bibliotecario experto. Proporcióname los datos del libro escrito anteriormente en el idioma [IDIOMA_BUSQUEDA], para ingresarlos en un sistema de inventario. Necesito la información organizada exactamente de la siguiente manera:
 
 Título:
 
@@ -68,11 +89,11 @@ Número Dewey:
 
 ISBN-10 o ISBN-13:
 
-Año: (De la edición más reciente o estándar en español)
+Año: (De la edición más reciente o estándar en [IDIOMA_BUSQUEDA])
 
 Idioma:
 
-Edición (Prioriza la edición en español más conocida):
+Edición (Prioriza la edición en [IDIOMA_BUSQUEDA] más conocida):
 
 Páginas:
 
@@ -80,13 +101,12 @@ Categoría: (Ej: Literatura, Ciencia, Religión, etc.)
 
 Subcategoría: (Ej: Novela, Física Cuántica, Vida Cristiana, etc.)
 
-Descripción / Resumen: (Un párrafo conciso pero completo)
+Descripción / Resumen: (Un párrafo conciso pero completo en [IDIOMA_BUSQUEDA])
 
-Palabras clave: (Al menos 5 términos separados por comas)
+Palabras clave: (Al menos 5 términos separados por comas en [IDIOMA_BUSQUEDA])
 
 Por favor, asegúrate de que el Número Dewey sea el correcto según la clasificación temática del libro.
-
-Por favor busca la caratula del libro' ); ?></textarea>
+Responde todos los campos en [IDIOMA_BUSQUEDA] y busca la carátula del libro.' ); ?></textarea>
 
     <!-- ══ BANNER: ESCÁNER / BÚSQUEDA POR ISBN ═════════════════════ -->
     <div class="aura-lib-isbn-toolbar">

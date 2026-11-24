@@ -628,17 +628,39 @@ body.aura-lib-modal-open {
     transform: scale(0.97);
 }
 
+.aura-lib-ai-lang-select,
+.aura-lib-ai-modal-lang-select {
+    height: 34px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--aura-blue-border, #bfdbfe);
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-text, #0f172a);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    max-width: 170px;
+}
+
 /* ── Modal Selector de IAs ── */
 .aura-lib-ai-modal-overlay {
-    z-index: 100060 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1000010 !important;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 18px;
+    overflow-y: auto;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .aura-lib-ai-modal-container {
-    max-width: 640px !important;
+    position: relative;
+    z-index: 1;
+    max-width: 660px !important;
     width: 100% !important;
 }
 
@@ -650,13 +672,37 @@ body.aura-lib-modal-open {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 10px;
+    justify-content: space-between;
+    gap: 10px 14px;
     padding: 10px 14px;
     border-radius: 10px;
     background: var(--aura-blue-bg, #eff6ff);
     border: 1px solid var(--aura-blue-border, #bfdbfe);
     margin-bottom: 12px;
     font-size: 13px;
+}
+
+.aura-lib-ai-book-pill-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.aura-lib-ai-modal-lang-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.aura-lib-ai-modal-lang-wrap label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--aura-text-muted, #475569);
 }
 
 .aura-lib-ai-book-pill-label {
@@ -821,24 +867,34 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-provider-tag.is-clip,
 }
 [data-theme="dark"] .aura-lib-ai-preview-details,
 [data-theme="dark"] .aura-lib-ai-modal-preview,
+[data-theme="dark"] .aura-lib-ai-lang-select,
+[data-theme="dark"] .aura-lib-ai-modal-lang-select,
 .wp-dark-mode-active .aura-lib-ai-preview-details,
 .wp-dark-mode-active .aura-lib-ai-modal-preview,
+.wp-dark-mode-active .aura-lib-ai-lang-select,
+.wp-dark-mode-active .aura-lib-ai-modal-lang-select,
 html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-preview-details,
 html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-modal-preview,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-lang-select,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-ai-modal-lang-select,
 .aura-dark-mode .aura-lib-ai-preview-details,
-.aura-dark-mode .aura-lib-ai-modal-preview {
+.aura-dark-mode .aura-lib-ai-modal-preview,
+.aura-dark-mode .aura-lib-ai-lang-select,
+.aura-dark-mode .aura-lib-ai-modal-lang-select {
     background: var(--aura-surface, #16152b);
-    border-color: var(--aura-border, rgba(255, 255, 255, 0.12));
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.14));
     color: #f1f5f9;
 }
 
 @media (max-width: 600px) {
     .aura-lib-ai-providers-grid { grid-template-columns: 1fr; }
+    .aura-lib-ai-modal-lang-wrap { width: 100%; justify-content: space-between; }
 }
 
 @media (max-width: 520px) {
     .aura-lib-ai-prompt-banner { flex-wrap: wrap; }
-    .aura-lib-ai-prompt-actions { width: 100%; }
+    .aura-lib-ai-prompt-actions { width: 100%; flex-wrap: wrap; }
+    .aura-lib-ai-lang-select { width: 100%; max-width: 100%; }
     .aura-lib-ai-prompt-copy-btn { flex: 1; justify-content: center; }
     .aura-lib-ai-prompt-ia-btn { justify-content: center; }
 }

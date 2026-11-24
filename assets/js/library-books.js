@@ -55,15 +55,42 @@
         return tpl;
     }
 
-    function buildDynamicAiPrompt(title, author) {
+    function getSelectedPromptLocale() {
+        var $sel = $('#aura-lib-ai-lang-select');
+        if (!$sel.length) $sel = $('#aura-lib-ai-modal-lang-select');
+        var code = $sel.length ? String($sel.val() || 'es_ES') : 'es_ES';
+        var $opt = $sel.find('option:selected');
+        var name = ($opt.length && $opt.data('langName')) ? String($opt.data('langName')) : ($opt.text() || 'Español');
+        return { code: code, name: $.trim(name) };
+    }
+
+    function syncPromptLocaleSelects(localeCode) {
+        if (!localeCode) return;
+        $('#aura-lib-ai-lang-select, #aura-lib-ai-modal-lang-select').each(function () {
+            if ($(this).find('option[value="' + localeCode + '"]').length) {
+                $(this).val(localeCode);
+            }
+        });
+        syncAiPromptTextarea();
+        if ($('#aura-lib-ai-picker-modal').hasClass('is-open')) {
+            var lang = getSelectedPromptLocale();
+            $('#aura-lib-ai-modal-preview').val(buildDynamicAiPrompt($('#aura-lib-f-title').val(), $('#aura-lib-f-author').val(), lang));
+        }
+    }
+
+    function buildDynamicAiPrompt(title, author, langInfo) {
         var tpl = getAiPromptTemplate();
         if (!tpl) return '';
         var t = $.trim(title || '');
         var a = $.trim(author || '');
+        var lang = langInfo || getSelectedPromptLocale();
+        var langLabel = lang.name || 'Español';
         var header = (t && a)
             ? ('Libro: "' + t + '" — Autor(es): ' + a)
             : (t ? ('Libro: "' + t + '"') : (a ? ('Autor(es): ' + a) : '[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]'));
-        return tpl.replace('[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]', header);
+        return tpl
+            .replace('[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]', header)
+            .split('[IDIOMA_BUSQUEDA]').join(langLabel);
     }
 
     function syncAiPromptTextarea() {
@@ -90,7 +117,8 @@
         markFieldValid($title);
         markFieldValid($author);
         syncAiPromptTextarea();
-        return { title: title, author: author, prompt: buildDynamicAiPrompt(title, author) };
+        var lang = getSelectedPromptLocale();
+        return { title: title, author: author, lang: lang, prompt: buildDynamicAiPrompt(title, author, lang) };
     }
 
     function copyTextToClipboard(text, onSuccess, onFail) {
@@ -131,13 +159,20 @@
     }
 
     function openAiPickerModal(info) {
+        var $m = $('#aura-lib-ai-picker-modal');
+        if ($m.length && $m.parent()[0] !== document.body) {
+            $m.appendTo(document.body);
+        }
         $('#aura-lib-ai-modal-book-summary').text(info.title + ' — ' + info.author);
+        if (info.lang && info.lang.code) {
+            $('#aura-lib-ai-modal-lang-select').val(info.lang.code);
+        }
         $('#aura-lib-ai-modal-preview').val(info.prompt);
-        $('#aura-lib-ai-picker-modal').css('display', 'flex').addClass('active is-active').attr('aria-hidden', 'false');
+        $m.css('display', 'flex').addClass('is-open').attr('aria-hidden', 'false');
     }
 
     function closeAiPickerModal() {
-        $('#aura-lib-ai-picker-modal').removeClass('active is-active').hide().attr('aria-hidden', 'true');
+        $('#aura-lib-ai-picker-modal').removeClass('is-open active is-active').hide().attr('aria-hidden', 'true');
     }
 
     function bindEvents() {
@@ -149,6 +184,9 @@
         // Prompt IA dinámico y modal selector de IAs
         $(document).on('input', '#aura-lib-f-title, #aura-lib-f-author', function () {
             syncAiPromptTextarea();
+        });
+        $(document).on('change', '#aura-lib-ai-lang-select, #aura-lib-ai-modal-lang-select', function () {
+            syncPromptLocaleSelects($(this).val());
         });
 
         $(document).on('click', '#aura-lib-copy-prompt-btn', function () {
@@ -268,12 +306,19 @@
             }
             _libBackdropDown = false;
         });
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Escape') {
-                if ($('#aura-lib-ai-picker-modal').is(':visible')) {
+        if (!window.__auraLibAiEscBound) {
+            window.__auraLibAiEscBound = true;
+            window.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && $('#aura-lib-ai-picker-modal').hasClass('is-open')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
                     closeAiPickerModal();
-                    return;
                 }
+            }, true);
+        }
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && !$('#aura-lib-ai-picker-modal').hasClass('is-open')) {
                 closeAllModals();
             }
         });
@@ -873,7 +918,7 @@
         // Re-enable save button
         setSaveLoading(false);
         $('.aura-lib-save-msg').hide();
-        syncAiPromptTextarea();
+        syncPromptLocaleSelects(getSelectedPromptLocale().code);
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -1370,6 +1415,7 @@
         $('body').addClass('aura-lib-modal-open');
     }
     function closeAllModals() {
+        closeAiPickerModal();
         stopBarcodeScanner();
         stopRemoteScan();
         $('.aura-lib-modal').each(function () {

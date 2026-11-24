@@ -443,8 +443,17 @@ $js_data = wp_json_encode([
     </div>
 <?php endif; ?>
 
+<?php
+$aura_ai_modal_locales = class_exists('Aura_I18n')
+    ? Aura_I18n::get_available_locales()
+    : ['es_ES' => ['code' => 'es_ES', 'short' => 'ES', 'native' => 'Español', 'label' => 'Español']];
+$aura_ai_modal_active = class_exists('Aura_I18n') ? Aura_I18n::get_active_locale() : 'es_ES';
+if (!isset($aura_ai_modal_locales[$aura_ai_modal_active])) {
+    $aura_ai_modal_active = array_key_first($aura_ai_modal_locales) ?: 'es_ES';
+}
+?>
 <!-- Modal: Selector de IA para Prompt de Libro -->
-<div id="aura-lib-ai-picker-modal" class="aura-modal-overlay aura-lib-ai-modal-overlay" style="display:none;" role="dialog"
+<div id="aura-lib-ai-picker-modal" class="aura-lib-ai-modal-overlay" style="display:none;" role="dialog"
     aria-modal="true" aria-labelledby="aura-lib-ai-picker-title" aria-hidden="true">
     <div class="aura-modal-container aura-lib-modal-container aura-lib-ai-modal-container">
         <div class="aura-modal-header">
@@ -457,8 +466,22 @@ $js_data = wp_json_encode([
         </div>
         <div class="aura-modal-body aura-lib-ai-modal-body">
             <div class="aura-lib-ai-book-pill">
-                <span class="aura-lib-ai-book-pill-label"><?php esc_html_e('Libro seleccionado:', 'aura-suite'); ?></span>
-                <strong id="aura-lib-ai-modal-book-summary">—</strong>
+                <div class="aura-lib-ai-book-pill-info">
+                    <span class="aura-lib-ai-book-pill-label"><?php esc_html_e('Libro seleccionado:', 'aura-suite'); ?></span>
+                    <strong id="aura-lib-ai-modal-book-summary">—</strong>
+                </div>
+                <div class="aura-lib-ai-modal-lang-wrap">
+                    <label for="aura-lib-ai-modal-lang-select"><?php esc_html_e('Idioma de búsqueda:', 'aura-suite'); ?></label>
+                    <select id="aura-lib-ai-modal-lang-select" class="aura-lib-ai-modal-lang-select">
+                        <?php foreach ($aura_ai_modal_locales as $lcode => $lmeta): ?>
+                            <option value="<?php echo esc_attr($lcode); ?>"
+                                    data-lang-name="<?php echo esc_attr($lmeta['native']); ?>"
+                                    <?php selected($aura_ai_modal_active, $lcode); ?>>
+                                <?php echo esc_html(($lmeta['short'] ?? strtoupper(substr($lcode, 0, 2))) . ' · ' . $lmeta['native']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
             <p class="aura-lib-ai-modal-desc">
                 <?php esc_html_e('Elige tu asistente de IA favorito. El prompt con el Título y Autor(es) se copiará al portapapeles y se abrirá la plataforma lista para consultar:', 'aura-suite'); ?>

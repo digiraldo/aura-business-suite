@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Aura Business Suite 1.8.3\n"
 "Report-Msgid-Bugs-To: https://github.com/digiraldo/aura-business-suite\n"
-"POT-Creation-Date: 2026-11-23 22:57+0000\n"
+"POT-Creation-Date: 2026-11-23 23:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -246,7 +246,7 @@ msgstr ""
 
 #: aura-business-suite.php:1170 modules/calendar/class-calendar-frontend.php:143 modules/financial/class-financial-accounts.php:639 modules/students/class-students-admin.php:289
 #: modules/vehicles/admin/views/page-trips.php:146 modules/vehicles/admin/views/page-vehicles.php:152 templates/financial/integrations-page.php:311 templates/inventory/maintenance-list.php:333
-#: templates/library/books-list.php:369 templates/library/loans-list.php:798 templates/library/reservations-list.php:223 assets/js/library-books.js:1799
+#: templates/library/books-list.php:369 templates/library/loans-list.php:798 templates/library/reservations-list.php:223 assets/js/library-books.js:1845
 #: assets/js/permissions-page.js:640
 msgid "Error al procesar la solicitud."
 msgstr ""
@@ -315,7 +315,7 @@ msgstr ""
 #: templates/students/list.php:212 templates/students/list.php:706 assets/js/areas-admin.js:347 assets/js/areas-admin.js:373
 #: assets/js/financial-accounts.js:329 assets/js/financial-accounts.js:187 assets/js/financial-accounts.js:2820 assets/js/financial-accounts.js:4644
 #: assets/js/financial-categories.js:510 assets/js/forms-builder.js:486 assets/js/inventory-equipment.js:131 assets/js/inventory-equipment.js:201
-#: assets/js/inventory-loans.js:169 assets/js/inventory-loans.js:222 assets/js/inventory-maintenance.js:176 assets/js/library-books.js:607
+#: assets/js/inventory-loans.js:169 assets/js/inventory-loans.js:222 assets/js/inventory-maintenance.js:176 assets/js/library-books.js:652
 #: assets/js/library-loans.js:1363 assets/js/parent-categories.js:100 assets/js/tags.js:335 assets/js/third-parties-directory.js:468
 #: modules/vehicles/assets/js/vehicle-catalogs.js:194 modules/vehicles/assets/js/vehicle-settings.js:381 modules/vehicles/assets/js/vehicle-trips.js:271 modules/vehicles/assets/js/vehicle-vehicles.js:154
 msgid "Editar"
@@ -347,14 +347,14 @@ msgstr ""
 #: templates/financial/pending-transactions.php:298 templates/financial/search-page.php:373 templates/financial/tags-page.php:863 templates/financial/transactions-list.php:653
 #: templates/financial/user-dashboard.php:794 templates/financial/visual-analytics.php:306 templates/financial/visual-analytics.php:358 templates/financial/visual-analytics.php:415
 #: templates/inventory/equipment-form.php:184 templates/inventory/equipment-list.php:191 templates/inventory/loans-list.php:577 templates/inventory/loans-list.php:631
-#: templates/inventory/reports-page.php:109 templates/inventory/reports-page.php:284 templates/inventory/reports-page.php:338 templates/library/book-form.php:342
+#: templates/inventory/reports-page.php:109 templates/inventory/reports-page.php:284 templates/inventory/reports-page.php:338 templates/library/book-form.php:362
 #: templates/library/books-list.php:101 templates/library/books-list.php:222 assets/js/advanced-search.js:964 assets/js/budgets.js:1435
 #: assets/js/budgets.js:1757 assets/js/budgets.js:1950 assets/js/budgets.js:2088 assets/js/budgets.js:2227
 #: assets/js/budgets.js:2327 assets/js/financial-accounts.js:1177 assets/js/financial-categories.js:1021 assets/js/financial-reports.js:287
 #: assets/js/financial-reports.js:751 assets/js/financial-reports.js:814 assets/js/financial-reports.js:975 assets/js/financial-reports.js:1037
 #: assets/js/integrations.js:146 assets/js/inventory-equipment.js:111 assets/js/inventory-equipment.js:178 assets/js/inventory-equipment.js:536
-#: assets/js/inventory-equipment.js:604 assets/js/inventory-settings.js:109 assets/js/library-books.js:597 assets/js/library-books.js:697
-#: assets/js/library-books.js:1213
+#: assets/js/inventory-equipment.js:604 assets/js/inventory-settings.js:109 assets/js/library-books.js:642 assets/js/library-books.js:742
+#: assets/js/library-books.js:1258
 msgid "Categoría"
 msgstr ""
 
@@ -383,7 +383,7 @@ msgstr ""
 #: templates/library/books-list.php:238 templates/library/loans-list.php:210 templates/library/reservations-list.php:151 templates/permissions-page.php:420
 #: templates/students/course-list.php:105 templates/students/enrollments.php:83 templates/students/enrollments.php:141 templates/students/list.php:162
 #: templates/students/payments.php:131 templates/students/paz-salvo.php:94 templates/students/scholarships.php:162 assets/js/budgets.js:233
-#: assets/js/library-books.js:700 assets/js/library-loans.js:789 assets/js/library-reservations.js:248 modules/vehicles/assets/js/vehicle-settings.js:362
+#: assets/js/library-books.js:745 assets/js/library-loans.js:789 assets/js/library-reservations.js:248 modules/vehicles/assets/js/vehicle-settings.js:362
 #: modules/vehicles/assets/js/vehicle-trips.js:262
 msgid "Acciones"
 msgstr ""
@@ -975,7 +975,7 @@ msgstr ""
 #: templates/forms/assignments.php:402 templates/forms/builder.php:203 templates/forms/dashboard.php:260 templates/forms/enrollments-pending.php:259
 #: templates/forms/list.php:143 templates/forms/submission-detail.php:203 templates/forms/submissions-list.php:254 templates/inventory/equipment-form.php:202
 #: templates/inventory/equipment-list.php:186 templates/inventory/loans-list.php:204 templates/inventory/reports-page.php:201 templates/inventory/reports-page.php:291
-#: templates/inventory/reports-page.php:389 templates/library/book-form.php:417 templates/library/books-list.php:115 templates/library/books-list.php:198
+#: templates/inventory/reports-page.php:389 templates/library/book-form.php:437 templates/library/books-list.php:115 templates/library/books-list.php:198
 #: templates/library/loans-list.php:129 templates/library/loans-list.php:198 templates/library/loans-list.php:629 templates/library/reports.php:269
 #: templates/library/reservations-list.php:113 templates/library/reservations-list.php:150 templates/students/course-list.php:103 templates/students/course-list.php:160
 #: templates/students/course-list.php:597 templates/students/enrollments.php:391 templates/students/frontend/payment-history.php:42 templates/students/list.php:159
@@ -983,8 +983,8 @@ msgstr ""
 #: templates/students/payments.php:483 templates/students/paz-salvo.php:92 assets/js/advanced-search.js:964 assets/js/budgets.js:492
 #: assets/js/financial-accounts.js:5107 assets/js/financial-accounts.js:6176 assets/js/financial-reports.js:814 assets/js/financial-reports.js:929
 #: assets/js/financial-reports.js:975 assets/js/financial-reports.js:1037 assets/js/inventory-equipment.js:112 assets/js/inventory-equipment.js:604
-#: assets/js/inventory-loans.js:127 assets/js/library-books.js:594 assets/js/library-books.js:691 assets/js/library-books.js:1250
-#: assets/js/library-books.js:1267 assets/js/library-loans.js:784 assets/js/library-loans.js:1341 assets/js/library-reports.js:219
+#: assets/js/inventory-loans.js:127 assets/js/library-books.js:639 assets/js/library-books.js:736 assets/js/library-books.js:1295
+#: assets/js/library-books.js:1312 assets/js/library-loans.js:784 assets/js/library-loans.js:1341 assets/js/library-reports.js:219
 #: assets/js/library-reports.js:224 assets/js/library-reservations.js:247 assets/js/library-reservations.js:373 assets/js/students-admin.js:493
 #: assets/js/students-admin.js:556 assets/js/transaction-edit.js:955 assets/js/transaction-modal.js:575 modules/vehicles/assets/js/vehicle-settings.js:361
 #: modules/vehicles/assets/js/vehicle-trips.js:256 modules/vehicles/assets/js/vehicle-vehicles.js:394
@@ -1828,7 +1828,7 @@ msgid "Inventario — AURA"
 msgstr ""
 
 #: aura-business-suite.php:3081 modules/inventory/class-inventory-notifications.php:714 templates/inventory/dashboard.php:44 templates/inventory/reports-page.php:24
-#: templates/library/book-form.php:398 templates/library/reports.php:53 templates/main-dashboard.php:601
+#: templates/library/book-form.php:418 templates/library/reports.php:53 templates/main-dashboard.php:601
 msgid "Inventario"
 msgstr ""
 
@@ -3359,8 +3359,8 @@ msgstr ""
 #: templates/inventory/loans-list.php:776 templates/inventory/maintenance-form.php:706 templates/inventory/maintenance-form.php:806 templates/inventory/maintenance-list.php:305
 #: templates/inventory/maintenance-list.php:309 templates/inventory/settings.php:798 templates/library/audit.php:244 templates/library/audit.php:249
 #: templates/library/books-list.php:314 templates/library/books-list.php:315 templates/library/books-list.php:332 templates/library/books-list.php:333
-#: templates/library/books-list.php:348 templates/library/books-list.php:405 templates/library/books-list.php:406 templates/library/books-list.php:455
-#: templates/library/books-list.php:456 templates/library/books-list.php:549 templates/library/loans-list.php:314 templates/library/loans-list.php:315
+#: templates/library/books-list.php:348 templates/library/books-list.php:405 templates/library/books-list.php:406 templates/library/books-list.php:464
+#: templates/library/books-list.php:465 templates/library/books-list.php:572 templates/library/loans-list.php:314 templates/library/loans-list.php:315
 #: templates/library/loans-list.php:511 templates/library/loans-list.php:512 templates/library/loans-list.php:588 templates/library/loans-list.php:589
 #: templates/library/loans-list.php:606 templates/library/loans-list.php:607 templates/library/loans-list.php:667 templates/library/loans-list.php:668
 #: templates/library/loans-list.php:730 templates/library/loans-list.php:773 templates/library/reservations-list.php:205 templates/library/reservations-list.php:206
@@ -3822,7 +3822,7 @@ msgstr ""
 #: modules/vehicles/admin/views/page-vehicles.php:171 modules/vehicles/admin/views/page-vehicles.php:315 modules/vehicles/api/class-vehicle-rest-qr.php:264 modules/vehicles/class-vehicle-reports.php:227
 #: modules/vehicles/class-vehicle-reports.php:454 modules/vehicles/templates/vehicle-qr-mobile.php:1019 templates/calendar/modal-partials.php:92 templates/calendar/tab-grades.php:141
 #: templates/calendar/tab-settings.php:350 templates/calendar/tab-settings.php:605 templates/financial/accounts-page.php:1920 templates/financial/edit-transaction.php:199
-#: templates/financial/edit-transaction.php:611 templates/financial/transaction-form.php:283 templates/library/book-form.php:304 templates/students/frontend/enrollment-form.php:143
+#: templates/financial/edit-transaction.php:611 templates/financial/transaction-form.php:283 templates/library/book-form.php:324 templates/students/frontend/enrollment-form.php:143
 #: templates/students/list.php:339 templates/students/list.php:360 templates/students/payments.php:214 templates/students/reports.php:150
 #: templates/students/student-form.php:159 templates/students/student-form.php:186 assets/js/financial-accounts.js:109 assets/js/financial-reports.js:932
 #: assets/js/inventory-loans.js:879 assets/js/inventory-loans.js:898 assets/js/students-frontend.js:276 assets/js/transaction-edit.js:1048
@@ -4006,7 +4006,7 @@ msgstr ""
 
 #: modules/calendar/class-calendar-google-sync.php:932 modules/library/admin/class-library-notifications.php:498 modules/library/admin/class-library-reports.php:681 templates/library/loans-list.php:186
 #: templates/library/reports.php:124 templates/library/reports.php:208 templates/library/reports.php:222 templates/library/reservations-list.php:146
-#: assets/js/library-books.js:1250 assets/js/library-books.js:1263 assets/js/library-loans.js:780 assets/js/library-loans.js:1016
+#: assets/js/library-books.js:1295 assets/js/library-books.js:1308 assets/js/library-loans.js:780 assets/js/library-loans.js:1016
 #: assets/js/library-loans.js:1118 assets/js/library-loans.js:1209 assets/js/library-loans.js:1337 assets/js/library-reports.js:92
 #: assets/js/library-reports.js:97 assets/js/library-reports.js:157 assets/js/library-reports.js:164 assets/js/library-reports.js:179
 #: assets/js/library-reports.js:185 assets/js/library-reservations.js:242 assets/js/library-reservations.js:366
@@ -4642,7 +4642,7 @@ msgid "Ocurrió un error. Intenta de nuevo."
 msgstr ""
 
 #: modules/certificates/class-certificates-admin.php:330 templates/financial/integrations-page.php:309 templates/inventory/equipment-form.php:652 templates/inventory/maintenance-form.php:823
-#: templates/inventory/settings.php:864 templates/library/book-form.php:516 templates/library/loans-list.php:494 templates/library/settings.php:423
+#: templates/inventory/settings.php:864 templates/library/book-form.php:536 templates/library/loans-list.php:494 templates/library/settings.php:423
 #: templates/students/course-list.php:625 templates/students/list.php:996 templates/students/payments.php:594 templates/students/scholarships.php:681
 #: assets/js/certificate-builder.js:2940 assets/js/certificate-builder.new.js:880 modules/vehicles/assets/js/vehicle-catalogs.js:328 modules/vehicles/assets/js/vehicle-trips.js:752
 #: modules/vehicles/assets/js/vehicle-trips.js:954
@@ -5693,7 +5693,7 @@ msgstr ""
 msgid "Escanear y Recompilar Todos"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1304 templates/library/book-form.php:294 assets/js/library-books.js:600 assets/js/library-books.js:1211
+#: modules/common/class-aura-i18n.php:1304 templates/library/book-form.php:314 assets/js/library-books.js:645 assets/js/library-books.js:1256
 msgid "Idioma"
 msgstr ""
 
@@ -6562,7 +6562,7 @@ msgstr ""
 
 #: modules/common/class-roles-manager.php:113 modules/library/admin/class-library-reports.php:644 modules/library/admin/class-library-reports.php:662 modules/library/admin/class-library-reports.php:688
 #: templates/library/books-list.php:190 templates/library/reports.php:111 templates/library/reports.php:161 templates/library/reports.php:296
-#: templates/main-dashboard.php:25 assets/js/library-books.js:690 assets/js/library-reports.js:74 assets/js/library-reports.js:80
+#: templates/main-dashboard.php:25 assets/js/library-books.js:735 assets/js/library-reports.js:74 assets/js/library-reports.js:80
 #: assets/js/library-reports.js:121 assets/js/library-reports.js:127 assets/js/library-reports.js:256 assets/js/library-reports.js:261
 #: assets/js/transaction-modal.js:539
 msgid "Autor"
@@ -11593,7 +11593,7 @@ msgid "Refrescar"
 msgstr ""
 
 #: modules/financial/class-financial-dashboard.php:110 modules/vehicles/admin/views/page-vehicles.php:281 modules/vehicles/class-vehicle-cpt.php:157 modules/vehicles/class-vehicle-reports.php:470
-#: templates/financial/visual-analytics.php:194 templates/library/book-form.php:285 modules/vehicles/assets/js/vehicle-vehicles.js:329
+#: templates/financial/visual-analytics.php:194 templates/library/book-form.php:305 modules/vehicles/assets/js/vehicle-vehicles.js:329
 msgid "Año"
 msgstr ""
 
@@ -14919,7 +14919,7 @@ msgid "Salario / Nómina"
 msgstr ""
 
 #: modules/financial/class-financial-user-dashboard.php:491 templates/financial/transactions-list.php:964 templates/library/audit.php:140 templates/library/audit.php:599
-#: assets/js/library-books.js:1250 assets/js/library-books.js:1264
+#: assets/js/library-books.js:1295 assets/js/library-books.js:1309
 msgid "Préstamo"
 msgstr ""
 
@@ -17182,7 +17182,7 @@ msgstr ""
 msgid "Error al eliminar el libro."
 msgstr ""
 
-#: modules/library/admin/class-library-books.php:335 templates/library/books-list.php:370 assets/js/library-books.js:1111
+#: modules/library/admin/class-library-books.php:335 templates/library/books-list.php:370 assets/js/library-books.js:1156
 msgid "Libro eliminado correctamente."
 msgstr ""
 
@@ -17715,16 +17715,16 @@ msgid "mPDF no está disponible. Usa la exportación CSV."
 msgstr ""
 
 #: modules/library/admin/class-library-reports.php:643 modules/library/admin/class-library-reports.php:662 modules/library/admin/class-library-reports.php:688 templates/certificates/template-builder.php:116
-#: templates/forms/list.php:139 templates/library/book-form.php:193 templates/library/books-list.php:182 templates/library/reports.php:110
-#: templates/library/reports.php:160 templates/library/reports.php:282 templates/library/reports.php:295 assets/js/library-books.js:686
+#: templates/forms/list.php:139 templates/library/book-form.php:213 templates/library/books-list.php:182 templates/library/reports.php:110
+#: templates/library/reports.php:160 templates/library/reports.php:282 templates/library/reports.php:295 assets/js/library-books.js:731
 #: assets/js/library-reports.js:73 assets/js/library-reports.js:79 assets/js/library-reports.js:120 assets/js/library-reports.js:126
 #: assets/js/library-reports.js:237 assets/js/library-reports.js:243 assets/js/library-reports.js:255 assets/js/library-reports.js:260
 msgid "Título"
 msgstr ""
 
 #: modules/library/admin/class-library-reports.php:645 modules/library/admin/class-library-reports.php:662 modules/library/admin/class-library-reports.php:688 templates/library/books-list.php:214
-#: templates/library/reports.php:159 templates/library/reports.php:283 assets/js/library-books.js:595 assets/js/library-books.js:696
-#: assets/js/library-books.js:1207 assets/js/library-loans.js:657 assets/js/library-reports.js:119 assets/js/library-reports.js:238
+#: templates/library/reports.php:159 templates/library/reports.php:283 assets/js/library-books.js:640 assets/js/library-books.js:741
+#: assets/js/library-books.js:1252 assets/js/library-loans.js:657 assets/js/library-reports.js:119 assets/js/library-reports.js:238
 #: assets/js/library-reports.js:244 assets/js/library-reservations.js:165 assets/js/students-admin.js:554
 msgid "Dewey"
 msgstr ""
@@ -17778,7 +17778,7 @@ msgstr ""
 msgid "Ya tienes una reserva activa para este libro."
 msgstr ""
 
-#: modules/library/admin/class-library-reservations.php:209 assets/js/library-books.js:1795
+#: modules/library/admin/class-library-reservations.php:209 assets/js/library-books.js:1841
 msgid "Error al crear la reserva."
 msgstr ""
 
@@ -18915,7 +18915,7 @@ msgstr ""
 msgid "Cuota #"
 msgstr ""
 
-#: modules/students/class-students-reports.php:586 assets/js/library-books.js:1250 assets/js/library-books.js:1265 assets/js/library-reports.js:165
+#: modules/students/class-students-reports.php:586 assets/js/library-books.js:1295 assets/js/library-books.js:1310 assets/js/library-reports.js:165
 msgid "Vencimiento"
 msgstr ""
 
@@ -19208,7 +19208,7 @@ msgid "Buscar en operación / detalles…"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-audit.php:143 templates/financial/accounts-page.php:536 templates/financial/audit-log-page.php:105 templates/forms/assignments.php:135
-#: templates/library/audit.php:171 templates/library/book-form.php:108
+#: templates/library/audit.php:171 templates/library/book-form.php:128
 msgid "Buscar"
 msgstr ""
 
@@ -19233,13 +19233,13 @@ msgid "Aplica los filtros y haz clic en Buscar para cargar el log."
 msgstr ""
 
 #: modules/vehicles/admin/views/page-audit.php:193 templates/financial/integrations-page.php:209 templates/financial/integrations-page.php:245 templates/financial/transaction-modal.php:331
-#: templates/financial/user-dashboard.php:887 templates/financial/user-ledger.php:990 templates/library/book-form.php:436 templates/library/book-form.php:508
+#: templates/financial/user-dashboard.php:887 templates/financial/user-ledger.php:990 templates/library/book-form.php:456 templates/library/book-form.php:528
 #: templates/students/student-form.php:321 assets/js/advanced-search.js:936 assets/js/financial-accounts.js:815 assets/js/third-parties-directory.js:533
 msgid "Anterior"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-audit.php:195 templates/financial/transaction-modal.php:335 templates/financial/user-dashboard.php:888 templates/financial/user-ledger.php:991
-#: templates/library/book-form.php:329 templates/library/book-form.php:439 templates/students/student-form.php:324 assets/js/advanced-search.js:948
+#: templates/library/book-form.php:349 templates/library/book-form.php:459 templates/students/student-form.php:324 assets/js/advanced-search.js:948
 #: assets/js/financial-accounts.js:815 assets/js/third-parties-directory.js:534
 msgid "Siguiente"
 msgstr ""
@@ -19278,7 +19278,7 @@ msgstr ""
 
 #: modules/vehicles/admin/views/page-catalogs.php:28 templates/inventory/equipment-form.php:214 templates/inventory/equipment-list.php:196 templates/inventory/loans-list.php:632
 #: templates/library/books-list.php:230 assets/js/inventory-equipment.js:115 assets/js/inventory-equipment.js:181 assets/js/inventory-equipment.js:537
-#: assets/js/library-books.js:601 assets/js/library-books.js:698 assets/js/library-books.js:1214
+#: assets/js/library-books.js:646 assets/js/library-books.js:743 assets/js/library-books.js:1259
 msgid "Ubicación"
 msgstr ""
 
@@ -19314,7 +19314,7 @@ msgstr ""
 msgid "Grupo"
 msgstr ""
 
-#: modules/vehicles/admin/views/page-catalogs.php:41 templates/library/books-list.php:525 templates/library/books-list.php:535
+#: modules/vehicles/admin/views/page-catalogs.php:41 templates/library/books-list.php:548 templates/library/books-list.php:558
 msgid "Portapapeles"
 msgstr ""
 
@@ -20524,7 +20524,7 @@ msgid "Añadir fotos (máx 10, 2 MB, JPG/PNG/WebP):"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-vehicles.php:555 templates/certificates/signers.php:71 templates/forms/builder.php:112 templates/inventory/equipment-form.php:461
-#: templates/library/book-form.php:496 assets/js/areas-admin.js:606
+#: templates/library/book-form.php:516 assets/js/areas-admin.js:606
 msgid "Seleccionar imagen"
 msgstr ""
 
@@ -24195,7 +24195,7 @@ msgstr ""
 msgid "Emisión"
 msgstr ""
 
-#: templates/certificates/settings.php:15 templates/library/book-form.php:316 templates/settings-page.php:339 assets/js/library-books.js:1212
+#: templates/certificates/settings.php:15 templates/library/book-form.php:336 templates/settings-page.php:339 assets/js/library-books.js:1257
 msgid "Páginas"
 msgstr ""
 
@@ -29061,7 +29061,7 @@ msgstr ""
 
 #: templates/financial/audit-log-page.php:183 templates/financial/notifications-page.php:348 templates/financial/search-page.php:450 templates/financial/user-dashboard.php:895
 #: templates/students/course-list.php:503 templates/students/enrollments.php:893 templates/students/list.php:738 templates/students/payments.php:623
-#: templates/students/paz-salvo.php:366 assets/js/capital-expenses.js:198 assets/js/import-wizard.js:217 assets/js/library-books.js:588
+#: templates/students/paz-salvo.php:366 assets/js/capital-expenses.js:198 assets/js/import-wizard.js:217 assets/js/library-books.js:633
 #: assets/js/library-loans.js:1342 assets/js/third-party-selector.js:663
 msgid "de"
 msgstr ""
@@ -32345,7 +32345,7 @@ msgstr ""
 msgid "Descripción o Propósito"
 msgstr ""
 
-#: templates/financial/tags-page.php:521 templates/library/book-form.php:211 assets/js/contacts.js:612 assets/js/import-wizard.js:103
+#: templates/financial/tags-page.php:521 templates/library/book-form.php:231 assets/js/contacts.js:612 assets/js/import-wizard.js:103
 msgid "Opcional"
 msgstr ""
 
@@ -32848,7 +32848,7 @@ msgstr ""
 msgid "Subir Comprobante"
 msgstr ""
 
-#: templates/financial/transaction-modal.php:175 assets/js/library-books.js:1174 assets/js/transaction-modal.js:730
+#: templates/financial/transaction-modal.php:175 assets/js/library-books.js:1219 assets/js/transaction-modal.js:730
 msgid "Ampliar"
 msgstr ""
 
@@ -37074,8 +37074,8 @@ msgstr ""
 msgid "Bajo demanda"
 msgstr ""
 
-#: templates/inventory/maintenance-form.php:255 templates/inventory/maintenance-form.php:337 templates/library/book-form.php:490 assets/js/inventory-equipment.js:570
-#: assets/js/library-books.js:852 assets/js/library-books.js:1308
+#: templates/inventory/maintenance-form.php:255 templates/inventory/maintenance-form.php:337 templates/library/book-form.php:510 assets/js/inventory-equipment.js:570
+#: assets/js/library-books.js:897 assets/js/library-books.js:1353
 msgid "o"
 msgstr ""
 
@@ -38582,7 +38582,7 @@ msgstr ""
 msgid "Abrir en Modal Comparativo"
 msgstr ""
 
-#: templates/library/audit.php:616 assets/js/inventory-equipment.js:621 assets/js/library-books.js:682
+#: templates/library/audit.php:616 assets/js/inventory-equipment.js:621 assets/js/library-books.js:727
 msgid "Detalle"
 msgstr ""
 
@@ -38676,339 +38676,347 @@ msgstr ""
 msgid "No hay registros con los filtros aplicados."
 msgstr ""
 
-#: templates/library/book-form.php:20 templates/library/books-list.php:78 assets/js/library-books.js:333
+#: templates/library/book-form.php:20 templates/library/books-list.php:78 assets/js/library-books.js:378
 msgid "000 — Informática y Generalidades"
 msgstr ""
 
-#: templates/library/book-form.php:21 templates/library/books-list.php:80 assets/js/library-books.js:333
+#: templates/library/book-form.php:21 templates/library/books-list.php:80 assets/js/library-books.js:378
 msgid "100 — Filosofía y Psicología"
 msgstr ""
 
-#: templates/library/book-form.php:22 templates/library/books-list.php:82 templates/library/loans-list.php:747 assets/js/library-books.js:334
+#: templates/library/book-form.php:22 templates/library/books-list.php:82 templates/library/loans-list.php:747 assets/js/library-books.js:379
 msgid "200 — Religión"
 msgstr ""
 
-#: templates/library/book-form.php:23 templates/library/books-list.php:83 templates/library/loans-list.php:748 assets/js/library-books.js:334
+#: templates/library/book-form.php:23 templates/library/books-list.php:83 templates/library/loans-list.php:748 assets/js/library-books.js:379
 msgid "300 — Ciencias Sociales"
 msgstr ""
 
-#: templates/library/book-form.php:24 templates/library/books-list.php:84 assets/js/library-books.js:334
+#: templates/library/book-form.php:24 templates/library/books-list.php:84 assets/js/library-books.js:379
 msgid "400 — Lengua y Lingüística"
 msgstr ""
 
-#: templates/library/book-form.php:25 templates/library/books-list.php:86 templates/library/loans-list.php:750 assets/js/library-books.js:335
+#: templates/library/book-form.php:25 templates/library/books-list.php:86 templates/library/loans-list.php:750 assets/js/library-books.js:380
 msgid "500 — Ciencias Puras"
 msgstr ""
 
-#: templates/library/book-form.php:26 templates/library/books-list.php:87 assets/js/library-books.js:335
+#: templates/library/book-form.php:26 templates/library/books-list.php:87 assets/js/library-books.js:380
 msgid "600 — Tecnología Aplicada"
 msgstr ""
 
-#: templates/library/book-form.php:27 templates/library/books-list.php:88 assets/js/library-books.js:335
+#: templates/library/book-form.php:27 templates/library/books-list.php:88 assets/js/library-books.js:380
 msgid "700 — Artes y Recreación"
 msgstr ""
 
-#: templates/library/book-form.php:28 templates/library/books-list.php:89 templates/library/loans-list.php:753 assets/js/library-books.js:336
+#: templates/library/book-form.php:28 templates/library/books-list.php:89 templates/library/loans-list.php:753 assets/js/library-books.js:381
 msgid "800 — Literatura"
 msgstr ""
 
-#: templates/library/book-form.php:29 templates/library/books-list.php:90 assets/js/library-books.js:336
+#: templates/library/book-form.php:29 templates/library/books-list.php:90 assets/js/library-books.js:381
 msgid "900 — Historia y Geografía"
 msgstr ""
 
-#: templates/library/book-form.php:39
+#: templates/library/book-form.php:48
 msgid "¿No tienes todos los datos? Usa IA para obtenerlos"
 msgstr ""
 
-#: templates/library/book-form.php:40
-msgid "Escribe el Título y Autor(es) abajo: copia el prompt listo o ábrelo directo en tu IA favorita."
+#: templates/library/book-form.php:49
+msgid "Escribe el Título y Autor(es) abajo, elige el idioma de búsqueda, copia el prompt o ábrelo en tu IA favorita."
 msgstr ""
 
-#: templates/library/book-form.php:45
+#: templates/library/book-form.php:53
+msgid "Idioma de búsqueda para el prompt de IA"
+msgstr ""
+
+#: templates/library/book-form.php:54
+msgid "Idioma en que la IA buscará y responderá la ficha del libro"
+msgstr ""
+
+#: templates/library/book-form.php:65
 msgid "Copiar prompt"
 msgstr ""
 
-#: templates/library/book-form.php:48
+#: templates/library/book-form.php:68
 msgid "Elegir IA y abrir con el prompt listo"
 msgstr ""
 
-#: templates/library/book-form.php:50
+#: templates/library/book-form.php:70
 msgid "IA"
 msgstr ""
 
-#: templates/library/book-form.php:96
+#: templates/library/book-form.php:116
 msgid "Autocompletar desde ISBN o Código de Barras"
 msgstr ""
 
-#: templates/library/book-form.php:97
+#: templates/library/book-form.php:117
 msgid "Escanea el código de barras del libro o escribe su ISBN para llenar ficha, clasificación y portada."
 msgstr ""
 
-#: templates/library/book-form.php:104
+#: templates/library/book-form.php:124
 msgid "ISBN o Título y Autor…"
 msgstr ""
 
-#: templates/library/book-form.php:113
+#: templates/library/book-form.php:133
 msgid "Escanear código"
 msgstr ""
 
-#: templates/library/book-form.php:116
+#: templates/library/book-form.php:136
 msgid "Conecta tu celular (Samsung Galaxy / iPhone) por QR para escanear desde el teléfono"
 msgstr ""
 
-#: templates/library/book-form.php:118
+#: templates/library/book-form.php:138
 msgid "Cámara del celular (QR)"
 msgstr ""
 
-#: templates/library/book-form.php:126
+#: templates/library/book-form.php:146
 msgid "Apunta la cámara al código de barras (ISBN) del libro"
 msgstr ""
 
-#: templates/library/book-form.php:127
+#: templates/library/book-form.php:147
 msgid "Cerrar cámara"
 msgstr ""
 
-#: templates/library/book-form.php:130
+#: templates/library/book-form.php:150
 msgid "Cámara:"
 msgstr ""
 
-#: templates/library/book-form.php:137 assets/js/library-books.js:1592
+#: templates/library/book-form.php:157 assets/js/library-books.js:1638
 msgid "Iniciando cámara…"
 msgstr ""
 
-#: templates/library/book-form.php:144
+#: templates/library/book-form.php:164
 msgid "Escanea este QR con tu celular (Samsung Galaxy / iPhone)"
 msgstr ""
 
-#: templates/library/book-form.php:145
+#: templates/library/book-form.php:165
 msgid "Cerrar QR"
 msgstr ""
 
-#: templates/library/book-form.php:150
+#: templates/library/book-form.php:170
 msgid "¿Cómo funciona?"
 msgstr ""
 
-#: templates/library/book-form.php:152
+#: templates/library/book-form.php:172
 msgid "Abre la cámara de tu teléfono y escanea este código QR."
 msgstr ""
 
-#: templates/library/book-form.php:153
+#: templates/library/book-form.php:173
 msgid "Apunta la cámara del celular al código de barras del libro."
 msgstr ""
 
-#: templates/library/book-form.php:154
+#: templates/library/book-form.php:174
 msgid "Los datos, clasificación y portada se llenarán aquí automáticamente."
 msgstr ""
 
-#: templates/library/book-form.php:158 assets/js/library-books.js:1685
+#: templates/library/book-form.php:178 assets/js/library-books.js:1731
 msgid "Esperando escaneo desde tu celular…"
 msgstr ""
 
-#: templates/library/book-form.php:168
+#: templates/library/book-form.php:188
 msgid "Pasos del formulario"
 msgstr ""
 
-#: templates/library/book-form.php:171
+#: templates/library/book-form.php:191
 msgid "Datos esenciales"
 msgstr ""
 
-#: templates/library/book-form.php:176
+#: templates/library/book-form.php:196
 msgid "Clasificación"
 msgstr ""
 
-#: templates/library/book-form.php:181
+#: templates/library/book-form.php:201
 msgid "Descripción & Portada"
 msgstr ""
 
-#: templates/library/book-form.php:199
+#: templates/library/book-form.php:219
 msgid "Título completo del libro"
 msgstr ""
 
-#: templates/library/book-form.php:207
+#: templates/library/book-form.php:227
 msgid "Subtítulo"
 msgstr ""
 
-#: templates/library/book-form.php:218
+#: templates/library/book-form.php:238
 msgid "Autor(es)"
 msgstr ""
 
-#: templates/library/book-form.php:224
+#: templates/library/book-form.php:244
 msgid "Ej: García Márquez, Gabriel"
 msgstr ""
 
-#: templates/library/book-form.php:231 assets/js/library-books.js:1209
+#: templates/library/book-form.php:251 assets/js/library-books.js:1254
 msgid "Editorial"
 msgstr ""
 
-#: templates/library/book-form.php:235
+#: templates/library/book-form.php:255
 msgid "Nombre de la editorial"
 msgstr ""
 
-#: templates/library/book-form.php:242
+#: templates/library/book-form.php:262
 msgid "Número Dewey"
 msgstr ""
 
-#: templates/library/book-form.php:243
+#: templates/library/book-form.php:263
 msgid "Ej: 220.5, 629.8, R92 GAR"
 msgstr ""
 
-#: templates/library/book-form.php:246
+#: templates/library/book-form.php:266
 msgid "Clase Dewey rápida"
 msgstr ""
 
-#: templates/library/book-form.php:257
+#: templates/library/book-form.php:277
 msgid "xxx.x…"
 msgstr ""
 
-#: templates/library/book-form.php:265 assets/js/library-books.js:596 assets/js/library-books.js:1208
+#: templates/library/book-form.php:285 assets/js/library-books.js:641 assets/js/library-books.js:1253
 msgid "ISBN"
 msgstr ""
 
-#: templates/library/book-form.php:266
+#: templates/library/book-form.php:286
 msgid "ISBN-10 o ISBN-13"
 msgstr ""
 
-#: templates/library/book-form.php:273
+#: templates/library/book-form.php:293
 msgid "Autocompletar datos y portada por ISBN"
 msgstr ""
 
-#: templates/library/book-form.php:279
+#: templates/library/book-form.php:299
 msgid "ISBN inválido — verifica el formato"
 msgstr ""
 
-#: templates/library/book-form.php:298 assets/js/library-books.js:551 assets/js/library-books.js:600 assets/js/library-books.js:1211
+#: templates/library/book-form.php:318 assets/js/library-books.js:596 assets/js/library-books.js:645 assets/js/library-books.js:1256
 msgid "Español"
 msgstr ""
 
-#: templates/library/book-form.php:299
+#: templates/library/book-form.php:319
 msgid "Inglés"
 msgstr ""
 
-#: templates/library/book-form.php:300
+#: templates/library/book-form.php:320
 msgid "Francés"
 msgstr ""
 
-#: templates/library/book-form.php:301
+#: templates/library/book-form.php:321
 msgid "Portugués"
 msgstr ""
 
-#: templates/library/book-form.php:302
+#: templates/library/book-form.php:322
 msgid "Alemán"
 msgstr ""
 
-#: templates/library/book-form.php:303
+#: templates/library/book-form.php:323
 msgid "Italiano"
 msgstr ""
 
-#: templates/library/book-form.php:310
+#: templates/library/book-form.php:330
 msgid "Edición"
 msgstr ""
 
-#: templates/library/book-form.php:312
+#: templates/library/book-form.php:332
 msgid "1ª ed."
 msgstr ""
 
-#: templates/library/book-form.php:326
+#: templates/library/book-form.php:346
 msgid "Campo obligatorio"
 msgstr ""
 
-#: templates/library/book-form.php:345
+#: templates/library/book-form.php:365
 msgid "Ej: Literatura, Ciencia…"
 msgstr ""
 
-#: templates/library/book-form.php:349 assets/js/budgets.js:2050 assets/js/financial-categories.js:354
+#: templates/library/book-form.php:369 assets/js/budgets.js:2050 assets/js/financial-categories.js:354
 msgid "Subcategoría"
 msgstr ""
 
-#: templates/library/book-form.php:352
+#: templates/library/book-form.php:372
 msgid "Ej: Novela, Física cuántica…"
 msgstr ""
 
-#: templates/library/book-form.php:358
+#: templates/library/book-form.php:378
 msgid "Área organizacional"
 msgstr ""
 
-#: templates/library/book-form.php:359 templates/library/book-form.php:376 templates/library/book-form.php:386
+#: templates/library/book-form.php:379 templates/library/book-form.php:396 templates/library/book-form.php:406
 msgid "Llenar manual"
 msgstr ""
 
-#: templates/library/book-form.php:362
+#: templates/library/book-form.php:382
 msgid "— Sin área (global) —"
 msgstr ""
 
-#: templates/library/book-form.php:375
+#: templates/library/book-form.php:395
 msgid "Sala / Ubicación física"
 msgstr ""
 
-#: templates/library/book-form.php:380
+#: templates/library/book-form.php:400
 msgid "Ej: Sala Principal"
 msgstr ""
 
-#: templates/library/book-form.php:385
+#: templates/library/book-form.php:405
 msgid "Código de estante"
 msgstr ""
 
-#: templates/library/book-form.php:390
+#: templates/library/book-form.php:410
 msgid "Ej: A3-F2"
 msgstr ""
 
-#: templates/library/book-form.php:404
+#: templates/library/book-form.php:424
 msgid "Total ejemplares"
 msgstr ""
 
-#: templates/library/book-form.php:421 assets/js/inventory-maintenance.js:754
+#: templates/library/book-form.php:441 assets/js/inventory-maintenance.js:754
 msgid "✅ Disponible"
 msgstr ""
 
-#: templates/library/book-form.php:422
+#: templates/library/book-form.php:442
 msgid "🔴 Sin stock"
 msgstr ""
 
-#: templates/library/book-form.php:423
+#: templates/library/book-form.php:443
 msgid "📖 Solo consulta"
 msgstr ""
 
-#: templates/library/book-form.php:424
+#: templates/library/book-form.php:444
 msgid "⚠️ Perdido"
 msgstr ""
 
-#: templates/library/book-form.php:425
+#: templates/library/book-form.php:445
 msgid "🗄️ Retirado"
 msgstr ""
 
-#: templates/library/book-form.php:453
+#: templates/library/book-form.php:473
 msgid "Descripción / Resumen"
 msgstr ""
 
-#: templates/library/book-form.php:457
+#: templates/library/book-form.php:477
 msgid "Breve sinopsis o descripción del contenido del libro…"
 msgstr ""
 
-#: templates/library/book-form.php:464
+#: templates/library/book-form.php:484
 msgid "Palabras clave"
 msgstr ""
 
-#: templates/library/book-form.php:465
+#: templates/library/book-form.php:485
 msgid "Escribe y presiona Enter o coma para agregar"
 msgstr ""
 
-#: templates/library/book-form.php:470
+#: templates/library/book-form.php:490
 msgid "Ej: historia, guerra, ficción…"
 msgstr ""
 
-#: templates/library/book-form.php:480
+#: templates/library/book-form.php:500
 msgid "Imagen de Portada"
 msgstr ""
 
-#: templates/library/book-form.php:489 assets/js/library-books.js:852 assets/js/library-books.js:1308
+#: templates/library/book-form.php:509 assets/js/library-books.js:897 assets/js/library-books.js:1353
 msgid "Arrastra una imagen aquí"
 msgstr ""
 
-#: templates/library/book-form.php:499
+#: templates/library/book-form.php:519
 msgid "Quitar portada"
 msgstr ""
 
-#: templates/library/book-form.php:513
+#: templates/library/book-form.php:533
 msgid "Guardar libro"
 msgstr ""
 
@@ -39048,7 +39056,7 @@ msgstr ""
 msgid "Haz clic en + en cualquier libro para desplegar toda su información en la tabla."
 msgstr ""
 
-#: templates/library/books-list.php:174 assets/js/library-books.js:685
+#: templates/library/books-list.php:174 assets/js/library-books.js:730
 msgid "Portada"
 msgstr ""
 
@@ -39068,7 +39076,7 @@ msgstr ""
 msgid "Disponibilidad actual del título para préstamos o consulta."
 msgstr ""
 
-#: templates/library/books-list.php:206 assets/js/library-books.js:692
+#: templates/library/books-list.php:206 assets/js/library-books.js:737
 msgid "Copias"
 msgstr ""
 
@@ -39112,7 +39120,7 @@ msgstr ""
 msgid "¿Eliminar este libro? Esta acción no se puede deshacer."
 msgstr ""
 
-#: templates/library/books-list.php:371 assets/js/library-books.js:1087
+#: templates/library/books-list.php:371 assets/js/library-books.js:1132
 msgid "Libro guardado correctamente."
 msgstr ""
 
@@ -39138,40 +39146,44 @@ msgstr ""
 msgid "Confirmar Reserva"
 msgstr ""
 
-#: templates/library/books-list.php:452
+#: templates/library/books-list.php:461
 msgid "Consultar ficha con IA"
 msgstr ""
 
-#: templates/library/books-list.php:460
+#: templates/library/books-list.php:470
 msgid "Libro seleccionado:"
 msgstr ""
 
-#: templates/library/books-list.php:464
+#: templates/library/books-list.php:474
+msgid "Idioma de búsqueda:"
+msgstr ""
+
+#: templates/library/books-list.php:487
 msgid "Elige tu asistente de IA favorito. El prompt con el Título y Autor(es) se copiará al portapapeles y se abrirá la plataforma lista para consultar:"
 msgstr ""
 
-#: templates/library/books-list.php:473 templates/library/books-list.php:483 templates/library/books-list.php:503 templates/library/books-list.php:513
+#: templates/library/books-list.php:496 templates/library/books-list.php:506 templates/library/books-list.php:526 templates/library/books-list.php:536
 msgid "Abre con prompt prellenado"
 msgstr ""
 
-#: templates/library/books-list.php:475 templates/library/books-list.php:485 templates/library/books-list.php:495 templates/library/books-list.php:505
-#: templates/library/books-list.php:515 assets/js/financial-dashboard.js:529 assets/js/financial-reports.js:643 assets/js/financial-reports.js:523
+#: templates/library/books-list.php:498 templates/library/books-list.php:508 templates/library/books-list.php:518 templates/library/books-list.php:528
+#: templates/library/books-list.php:538 assets/js/financial-dashboard.js:529 assets/js/financial-reports.js:643 assets/js/financial-reports.js:523
 msgid "Directo"
 msgstr ""
 
-#: templates/library/books-list.php:493
+#: templates/library/books-list.php:516
 msgid "Busca con fuentes bibliográficas"
 msgstr ""
 
-#: templates/library/books-list.php:523 templates/library/books-list.php:533
+#: templates/library/books-list.php:546 templates/library/books-list.php:556
 msgid "Copia y abre chat (pegar Ctrl+V)"
 msgstr ""
 
-#: templates/library/books-list.php:539
+#: templates/library/books-list.php:562
 msgid "Ver vista previa del prompt generado"
 msgstr ""
 
-#: templates/library/books-list.php:546
+#: templates/library/books-list.php:569
 msgid "Solo copiar prompt"
 msgstr ""
 
@@ -51192,7 +51204,7 @@ msgstr ""
 msgid "Costo / Valor Est."
 msgstr ""
 
-#: assets/js/inventory-equipment.js:194 assets/js/library-books.js:606 assets/js/third-parties-directory.js:465
+#: assets/js/inventory-equipment.js:194 assets/js/library-books.js:651 assets/js/third-parties-directory.js:465
 msgid "Ver Ficha 360°"
 msgstr ""
 
@@ -51753,335 +51765,335 @@ msgstr ""
 msgid "Error de red al resincronizar."
 msgstr ""
 
-#: assets/js/library-books.js:87
+#: assets/js/library-books.js:114
 msgid "Ingresa primero el Título y Autor(es) del libro para generar el prompt."
 msgstr ""
 
-#: assets/js/library-books.js:126
+#: assets/js/library-books.js:154
 msgid "¡Copiado!"
 msgstr ""
 
-#: assets/js/library-books.js:160
+#: assets/js/library-books.js:198
 msgid "Prompt copiado con el Título y Autor(es) del libro."
 msgstr ""
 
-#: assets/js/library-books.js:162 assets/js/library-books.js:180
+#: assets/js/library-books.js:200 assets/js/library-books.js:218
 msgid "Copia el texto con Ctrl+C y pégalo en tu IA:"
 msgstr ""
 
-#: assets/js/library-books.js:178
+#: assets/js/library-books.js:216
 msgid "Prompt copiado al portapapeles."
 msgstr ""
 
-#: assets/js/library-books.js:196
+#: assets/js/library-books.js:234
 msgid "Abriendo"
 msgstr ""
 
-#: assets/js/library-books.js:196
+#: assets/js/library-books.js:234
 msgid "con el prompt listo (también copiado al portapapeles)."
 msgstr ""
 
-#: assets/js/library-books.js:197
+#: assets/js/library-books.js:235
 msgid "Prompt copiado al portapapeles. Pégalo con Ctrl+V en"
 msgstr ""
 
-#: assets/js/library-books.js:365
+#: assets/js/library-books.js:410
 msgid "Los lectores podrán solicitarlo en préstamo."
 msgstr ""
 
-#: assets/js/library-books.js:366
+#: assets/js/library-books.js:411
 msgid "No aparecerá disponible para nuevos préstamos."
 msgstr ""
 
-#: assets/js/library-books.js:367
+#: assets/js/library-books.js:412
 msgid "Solo consulta en sala; no se puede prestar."
 msgstr ""
 
-#: assets/js/library-books.js:368
+#: assets/js/library-books.js:413
 msgid "Marcado como perdido; no disponible."
 msgstr ""
 
-#: assets/js/library-books.js:369
+#: assets/js/library-books.js:414
 msgid "Retirado del catálogo activo."
 msgstr ""
 
-#: assets/js/library-books.js:547
+#: assets/js/library-books.js:592
 msgid "Subtítulo:"
 msgstr ""
 
-#: assets/js/library-books.js:548
+#: assets/js/library-books.js:593
 msgid "Autor:"
 msgstr ""
 
-#: assets/js/library-books.js:549
+#: assets/js/library-books.js:594
 msgid "ISBN:"
 msgstr ""
 
-#: assets/js/library-books.js:550
+#: assets/js/library-books.js:595
 msgid "Editorial:"
 msgstr ""
 
-#: assets/js/library-books.js:551
+#: assets/js/library-books.js:596
 msgid "Idioma:"
 msgstr ""
 
-#: assets/js/library-books.js:569
+#: assets/js/library-books.js:614
 msgid "Palabra clave:"
 msgstr ""
 
-#: assets/js/library-books.js:588 assets/js/library-books.js:589 assets/js/library-books.js:1195
+#: assets/js/library-books.js:633 assets/js/library-books.js:634 assets/js/library-books.js:1240
 msgid "ejemplares disponibles"
 msgstr ""
 
-#: assets/js/library-books.js:598
+#: assets/js/library-books.js:643
 msgid "Editorial / Año"
 msgstr ""
 
-#: assets/js/library-books.js:599
+#: assets/js/library-books.js:644
 msgid "Edición / Páginas"
 msgstr ""
 
-#: assets/js/library-books.js:599
+#: assets/js/library-books.js:644
 msgid "pp."
 msgstr ""
 
-#: assets/js/library-books.js:601
+#: assets/js/library-books.js:646
 msgid "Est."
 msgstr ""
 
-#: assets/js/library-books.js:603
+#: assets/js/library-books.js:648
 msgid "Sinopsis:"
 msgstr ""
 
-#: assets/js/library-books.js:606
+#: assets/js/library-books.js:651
 msgid "Abrir ficha técnica 360° e historial del libro"
 msgstr ""
 
-#: assets/js/library-books.js:607
+#: assets/js/library-books.js:652
 msgid "Editar título, ejemplares, clasificación o portada"
 msgstr ""
 
-#: assets/js/library-books.js:633 assets/js/library-loans.js:741
+#: assets/js/library-books.js:678 assets/js/library-loans.js:741
 msgid "Sin imagen de portada"
 msgstr ""
 
-#: assets/js/library-books.js:645
+#: assets/js/library-books.js:690
 msgid "Disponible para préstamo a lectores"
 msgstr ""
 
-#: assets/js/library-books.js:646
+#: assets/js/library-books.js:691
 msgid "Sin ejemplares disponibles en este momento"
 msgstr ""
 
-#: assets/js/library-books.js:647
+#: assets/js/library-books.js:692
 msgid "Solo lectura en sala; no habilitado para préstamo externo"
 msgstr ""
 
-#: assets/js/library-books.js:648
+#: assets/js/library-books.js:693
 msgid "Reportado como perdido en inventario"
 msgstr ""
 
-#: assets/js/library-books.js:649
+#: assets/js/library-books.js:694
 msgid "Retirado del catálogo activo"
 msgstr ""
 
-#: assets/js/library-books.js:650
+#: assets/js/library-books.js:695
 msgid "Todos los ejemplares se encuentran prestados actualmente"
 msgstr ""
 
-#: assets/js/library-books.js:662
+#: assets/js/library-books.js:707
 msgid "disponibles de"
 msgstr ""
 
-#: assets/js/library-books.js:662
+#: assets/js/library-books.js:707
 msgid "totales"
 msgstr ""
 
-#: assets/js/library-books.js:662
+#: assets/js/library-books.js:707
 msgid "en préstamo"
 msgstr ""
 
-#: assets/js/library-books.js:665
+#: assets/js/library-books.js:710
 msgid "Ver ficha completa del libro (360°)"
 msgstr ""
 
-#: assets/js/library-books.js:667
+#: assets/js/library-books.js:712
 msgid "Editar datos y portada del libro"
 msgstr ""
 
-#: assets/js/library-books.js:670
+#: assets/js/library-books.js:715
 msgid "Eliminar libro del catálogo"
 msgstr ""
 
-#: assets/js/library-books.js:674
+#: assets/js/library-books.js:719
 msgid "Reservar libro para lista de espera"
 msgstr ""
 
-#: assets/js/library-books.js:678
+#: assets/js/library-books.js:723
 msgid "Sin sala asignada"
 msgstr ""
 
-#: assets/js/library-books.js:678 assets/js/library-books.js:1214
+#: assets/js/library-books.js:723 assets/js/library-books.js:1259
 msgid "Estante"
 msgstr ""
 
-#: assets/js/library-books.js:683
+#: assets/js/library-books.js:728
 msgid "Desplegar información completa del libro"
 msgstr ""
 
-#: assets/js/library-books.js:694
+#: assets/js/library-books.js:739
 msgid "prestada"
 msgstr ""
 
-#: assets/js/library-books.js:694
+#: assets/js/library-books.js:739
 msgid "prestadas"
 msgstr ""
 
-#: assets/js/library-books.js:696
+#: assets/js/library-books.js:741
 msgid "Clasificación Dewey:"
 msgstr ""
 
-#: assets/js/library-books.js:696
+#: assets/js/library-books.js:741
 msgid "Sin código Dewey asignado"
 msgstr ""
 
-#: assets/js/library-books.js:1007
+#: assets/js/library-books.js:1052
 msgid "El archivo debe ser una imagen."
 msgstr ""
 
-#: assets/js/library-books.js:1016
+#: assets/js/library-books.js:1061
 msgid "Vista previa local. Usa \"Seleccionar imagen\" para cargar al servidor."
 msgstr ""
 
-#: assets/js/library-books.js:1067
+#: assets/js/library-books.js:1112
 msgid "ISBN inválido. Revisa el campo antes de guardar."
 msgstr ""
 
-#: assets/js/library-books.js:1176
+#: assets/js/library-books.js:1221
 msgid "Sin portada"
 msgstr ""
 
-#: assets/js/library-books.js:1203
+#: assets/js/library-books.js:1248
 msgid "Autor no especificado"
 msgstr ""
 
-#: assets/js/library-books.js:1210
+#: assets/js/library-books.js:1255
 msgid "Año / Ed."
 msgstr ""
 
-#: assets/js/library-books.js:1212
+#: assets/js/library-books.js:1257
 msgid "págs."
 msgstr ""
 
-#: assets/js/library-books.js:1238
+#: assets/js/library-books.js:1283
 msgid "Sinopsis"
 msgstr ""
 
-#: assets/js/library-books.js:1245
+#: assets/js/library-books.js:1290
 msgid "Historial de préstamos"
 msgstr ""
 
-#: assets/js/library-books.js:1247
+#: assets/js/library-books.js:1292
 msgid "Sin préstamos registrados para este libro."
 msgstr ""
 
-#: assets/js/library-books.js:1250 assets/js/library-books.js:1266
+#: assets/js/library-books.js:1295 assets/js/library-books.js:1311
 msgid "Devolución"
 msgstr ""
 
-#: assets/js/library-books.js:1399
+#: assets/js/library-books.js:1445
 msgid "Ingresa un ISBN válido o al menos 3 letras del Título y Autor."
 msgstr ""
 
-#: assets/js/library-books.js:1417
+#: assets/js/library-books.js:1463
 msgid "No se encontraron datos para esa búsqueda."
 msgstr ""
 
-#: assets/js/library-books.js:1425
+#: assets/js/library-books.js:1471
 msgid "Error de conexión al consultar las bases de datos de libros."
 msgstr ""
 
-#: assets/js/library-books.js:1457
+#: assets/js/library-books.js:1503
 msgid "Cargado en"
 msgstr ""
 
-#: assets/js/library-books.js:1457
+#: assets/js/library-books.js:1503
 msgid "Si buscas la edición en español, escribe el Título y Autor arriba y pulsa Buscar."
 msgstr ""
 
-#: assets/js/library-books.js:1459
+#: assets/js/library-books.js:1505
 msgid "Ficha, clasificación y portada cargadas"
 msgstr ""
 
-#: assets/js/library-books.js:1487
+#: assets/js/library-books.js:1533
 msgid "Cámara"
 msgstr ""
 
-#: assets/js/library-books.js:1521
+#: assets/js/library-books.js:1567
 msgid "Encuadra el código de barras ISBN dentro del recuadro."
 msgstr ""
 
-#: assets/js/library-books.js:1541
+#: assets/js/library-books.js:1587
 msgid "No se detectó ninguna cámara disponible."
 msgstr ""
 
-#: assets/js/library-books.js:1542 assets/js/library-books.js:1546
+#: assets/js/library-books.js:1588 assets/js/library-books.js:1592
 msgid "No se pudo acceder a la cámara. Revisa los permisos del navegador."
 msgstr ""
 
-#: assets/js/library-books.js:1545 assets/js/library-books.js:1551
+#: assets/js/library-books.js:1591 assets/js/library-books.js:1597
 msgid "No se pudo abrir la cámara:"
 msgstr ""
 
-#: assets/js/library-books.js:1552
+#: assets/js/library-books.js:1598
 msgid "No se pudo acceder a la cámara. Revisa los permisos o usa \"Cámara del celular (QR)\"."
 msgstr ""
 
-#: assets/js/library-books.js:1566
+#: assets/js/library-books.js:1612
 msgid "No se pudo descargar el lector de cámara."
 msgstr ""
 
-#: assets/js/library-books.js:1567
+#: assets/js/library-books.js:1613
 msgid "No se pudo cargar el módulo de cámara. Verifica tu conexión."
 msgstr ""
 
-#: assets/js/library-books.js:1584
+#: assets/js/library-books.js:1630
 msgid "El navegador bloqueó el acceso a la cámara (requiere HTTPS y permiso de cámara)."
 msgstr ""
 
-#: assets/js/library-books.js:1585
+#: assets/js/library-books.js:1631
 msgid "Tu navegador o conexión (HTTP sin HTTPS) no permite abrir la cámara."
 msgstr ""
 
-#: assets/js/library-books.js:1595
+#: assets/js/library-books.js:1641
 msgid "Cargando módulo de cámara…"
 msgstr ""
 
-#: assets/js/library-books.js:1607
+#: assets/js/library-books.js:1653
 msgid "Cambiando de cámara…"
 msgstr ""
 
-#: assets/js/library-books.js:1658
+#: assets/js/library-books.js:1704
 msgid "No se pudo crear la sesión de escaneo remoto."
 msgstr ""
 
-#: assets/js/library-books.js:1677
+#: assets/js/library-books.js:1723
 msgid "Abrir enlace en celular"
 msgstr ""
 
-#: assets/js/library-books.js:1682
+#: assets/js/library-books.js:1728
 msgid "Nota: En entornos locales HTTP el navegador móvil puede bloquear la cámara; en HTTPS funcionará directo."
 msgstr ""
 
-#: assets/js/library-books.js:1691
+#: assets/js/library-books.js:1737
 msgid "Error al conectar con el servidor para generar el QR."
 msgstr ""
 
-#: assets/js/library-books.js:1706
+#: assets/js/library-books.js:1752
 msgid "La sesión QR expiró. Vuelve a abrirla si deseas escanear."
 msgstr ""
 
-#: assets/js/library-books.js:1792
+#: assets/js/library-books.js:1838
 msgid "Reserva creada correctamente."
 msgstr ""
 
