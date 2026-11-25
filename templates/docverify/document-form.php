@@ -11,6 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $doc_id  = absint( $_GET['id'] ?? 0 );
+if ( $doc_id > 0 ) {
+    if ( ! current_user_can( 'aura_docverify_edit' ) && ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( 'No tienes permisos para editar documentos verificables.', 'aura-suite' ), 403 );
+    }
+} elseif ( ! current_user_can( 'aura_docverify_create' ) && ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'No tienes permisos para registrar documentos verificables.', 'aura-suite' ), 403 );
+}
+
 $doc     = $doc_id > 0 ? Aura_DocVerify_Manager::get_document( $doc_id ) : null;
 $is_edit = ( $doc !== null );
 

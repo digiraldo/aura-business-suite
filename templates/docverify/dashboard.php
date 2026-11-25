@@ -20,31 +20,38 @@ $doc_types   = Aura_DocVerify_Settings::get_document_types();
     <div class="wrap aura-app-context">
 
         <?php
+        $dv_actions = [];
+        if ( current_user_can( 'aura_docverify_view_all' ) || current_user_can( 'aura_docverify_create' ) || current_user_can( 'manage_options' ) ) {
+            $dv_actions[] = [
+                'label' => __( 'Ver Documentos', 'aura-suite' ),
+                'url'   => admin_url( 'admin.php?page=aura-docverify-list' ),
+                'class' => 'btn btn-glass btn-sm btn-lift',
+                'icon'  => 'dashicons-media-document',
+            ];
+        }
+        if ( current_user_can( 'aura_docverify_audit' ) || current_user_can( 'manage_options' ) ) {
+            $dv_actions[] = [
+                'label' => __( 'Auditoría', 'aura-suite' ),
+                'url'   => admin_url( 'admin.php?page=aura-docverify-audit' ),
+                'class' => 'btn btn-glass btn-sm btn-lift',
+                'icon'  => 'dashicons-visibility',
+            ];
+        }
+        if ( current_user_can( 'aura_docverify_create' ) || current_user_can( 'manage_options' ) ) {
+            $dv_actions[] = [
+                'label' => __( 'Registrar PDF Firmado', 'aura-suite' ),
+                'url'   => admin_url( 'admin.php?page=aura-docverify-register' ),
+                'class' => 'btn btn-primary btn-shimmer btn-sm btn-lift',
+                'icon'  => 'dashicons-plus-alt2',
+            ];
+        }
+
         Aura_UI::render_page_header( [
             'variant'  => 'wow-vip',
             'title'    => __( 'Validación Documental — Dashboard', 'aura-suite' ),
             'subtitle' => __( 'Control de documentos oficiales firmados, cartas de invitación para embajadas, códigos QR y cotejo SHA-256', 'aura-suite' ),
             'icon'     => 'dashicons-shield',
-            'actions'  => [
-                [
-                    'label' => __( 'Ver Documentos', 'aura-suite' ),
-                    'url'   => admin_url( 'admin.php?page=aura-docverify-list' ),
-                    'class' => 'btn btn-glass btn-sm btn-lift',
-                    'icon'  => 'dashicons-media-document',
-                ],
-                [
-                    'label' => __( 'Auditoría', 'aura-suite' ),
-                    'url'   => admin_url( 'admin.php?page=aura-docverify-audit' ),
-                    'class' => 'btn btn-glass btn-sm btn-lift',
-                    'icon'  => 'dashicons-visibility',
-                ],
-                [
-                    'label' => __( 'Registrar PDF Firmado', 'aura-suite' ),
-                    'url'   => admin_url( 'admin.php?page=aura-docverify-register' ),
-                    'class' => 'btn btn-primary btn-shimmer btn-sm btn-lift',
-                    'icon'  => 'dashicons-plus-alt2',
-                ],
-            ],
+            'actions'  => $dv_actions,
         ] );
 
         Aura_UI::render_stats_grid( [

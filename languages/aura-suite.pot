@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Aura Business Suite 1.8.3\n"
 "Report-Msgid-Bugs-To: https://github.com/digiraldo/aura-business-suite\n"
-"POT-Creation-Date: 2026-11-24 21:45+0000\n"
+"POT-Creation-Date: 2026-11-25 00:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -323,7 +323,7 @@ msgstr ""
 
 #: aura-business-suite.php:1204 aura-business-suite.php:1613 modules/financial/class-financial-transactions-list.php:1316 modules/financial/class-financial-transactions-list.php:2938
 #: modules/vehicles/admin/views/page-trips.php:700 modules/vehicles/admin/views/page-vehicles.php:626 templates/areas/area-types-page.php:599 templates/calendar/modal-event-detail.php:154
-#: templates/calendar/tab-programs.php:1347 templates/certificates/signers.php:158 templates/certificates/templates-list.php:105 templates/docverify/documents-list.php:375
+#: templates/calendar/tab-programs.php:1347 templates/certificates/signers.php:158 templates/certificates/templates-list.php:105 templates/docverify/documents-list.php:379
 #: templates/financial/categories-page.php:502 templates/financial/notifications-page.php:341 templates/financial/transaction-modal.php:180 templates/financial/transaction-modal.php:273
 #: templates/forms/list.php:264 templates/inventory/loans-list.php:872 templates/students/list.php:709 assets/js/calendar-admin.js:3831
 #: assets/js/contacts.js:1524 assets/js/financial-accounts.js:381 assets/js/financial-accounts.js:190 assets/js/financial-accounts.js:2231
@@ -375,7 +375,7 @@ msgstr ""
 #: modules/financial/class-financial-approval.php:722 modules/financial/class-financial-pending-list.php:53 modules/vehicles/admin/views/page-catalogs.php:142 modules/vehicles/admin/views/page-trips.php:108
 #: modules/vehicles/admin/views/page-vehicles.php:105 templates/areas/area-types-page.php:488 templates/areas/areas-page.php:294 templates/areas/areas-page.php:429
 #: templates/calendar/tab-settings.php:324 templates/calendar/tab-settings.php:387 templates/certificates/dashboard.php:158 templates/certificates/list.php:147
-#: templates/certificates/signers.php:106 templates/common/third-parties-page.php:407 templates/contacts/contacts-page.php:394 templates/docverify/documents-list.php:181
+#: templates/certificates/signers.php:106 templates/common/third-parties-page.php:407 templates/contacts/contacts-page.php:394 templates/docverify/documents-list.php:185
 #: templates/financial/accounts-page.php:178 templates/financial/accounts-page.php:276 templates/financial/accounts-page.php:404 templates/financial/accounts-page.php:435
 #: templates/financial/accounts-page.php:641 templates/financial/accounts-page.php:679 templates/financial/accounts-page.php:898 templates/financial/tags-page.php:409
 #: templates/forms/assignments.php:404 templates/forms/enrollments-pending.php:260 templates/forms/list.php:146 templates/forms/submission-detail.php:285
@@ -396,7 +396,7 @@ msgstr ""
 #: aura-business-suite.php:1214 modules/certificates/class-certificates-frontend.php:94 modules/certificates/class-certificates-frontend.php:203 modules/financial/class-financial-transactions-list.php:773
 #: modules/financial/class-financial-user-dashboard.php:499 modules/financial/class-financial-user-ledger.php:492 modules/financial/class-financial-user-ledger.php:602 modules/vehicles/admin/views/page-settings.php:57
 #: templates/calendar/tab-programs.php:1800 templates/certificates/settings.php:13 templates/financial/edit-transaction.php:470 templates/financial/edit-transaction.php:552
-#: templates/permissions-page.php:1278 assets/js/budgets.js:503
+#: templates/permissions-page.php:1283 assets/js/budgets.js:503
 msgid "General"
 msgstr ""
 
@@ -832,7 +832,7 @@ msgstr ""
 msgid "Metadatos adicionales en formato JSON"
 msgstr ""
 
-#: aura-business-suite.php:1474 templates/inventory/settings.php:808 templates/permissions-page.php:1485
+#: aura-business-suite.php:1474 templates/inventory/settings.php:808 templates/permissions-page.php:1490
 msgid "Nombre *"
 msgstr ""
 
@@ -967,7 +967,7 @@ msgstr ""
 #: templates/areas/area-dashboard.php:990 templates/areas/areas-page.php:240 templates/areas/areas-page.php:290 templates/calendar/modal-partials.php:98
 #: templates/calendar/modal-partials.php:440 templates/calendar/tab-settings.php:386 templates/calendar/tab-settings.php:518 templates/certificates/dashboard.php:157
 #: templates/certificates/list.php:146 templates/certificates/signers.php:105 templates/common/third-parties-page.php:400 templates/contacts/contacts-page.php:654
-#: templates/docverify/dashboard.php:168 templates/docverify/documents-list.php:177 templates/financial/accounts-page.php:177 templates/financial/accounts-page.php:275
+#: templates/docverify/dashboard.php:175 templates/docverify/documents-list.php:181 templates/financial/accounts-page.php:177 templates/financial/accounts-page.php:275
 #: templates/financial/accounts-page.php:403 templates/financial/accounts-page.php:434 templates/financial/accounts-page.php:637 templates/financial/accounts-page.php:678
 #: templates/financial/accounts-page.php:897 templates/financial/audit-log-page.php:195 templates/financial/budgets-page.php:446 templates/financial/budgets-page.php:908
 #: templates/financial/capital-expenses-page.php:193 templates/financial/edit-transaction.php:1319 templates/financial/integrations-page.php:125 templates/financial/transactions-list.php:656
@@ -1207,7 +1207,7 @@ msgstr ""
 #: modules/financial/class-financial-reports.php:965 modules/financial/class-financial-reports.php:1155 modules/financial/class-financial-transactions-ajax.php:251 modules/financial/class-financial-transactions-list.php:202
 #: modules/financial/class-financial-transactions-update.php:605 modules/financial/class-financial-trash-list.php:46 modules/financial/class-financial-user-dashboard.php:460 modules/financial/class-financial-user-ledger.php:468
 #: modules/financial/class-financial-user-ledger.php:573 modules/forms/class-forms-admin.php:307 modules/inventory/class-inventory-notifications.php:295 modules/library/admin/class-library-audit.php:186
-#: templates/areas/area-dashboard.php:986 templates/certificates/list.php:145 templates/docverify/dashboard.php:233 templates/financial/accounts-page.php:605
+#: templates/areas/area-dashboard.php:986 templates/certificates/list.php:145 templates/docverify/dashboard.php:240 templates/financial/accounts-page.php:605
 #: templates/financial/accounts-page.php:672 templates/financial/audit-log-page.php:192 templates/financial/budgets-page.php:904 templates/financial/capital-expenses-page.php:188
 #: templates/financial/edit-transaction.php:1305 templates/financial/integrations-page.php:119 templates/financial/search-page.php:367 templates/financial/tags-page.php:860
 #: templates/financial/transactions-list.php:651 templates/financial/usd-ledger.php:87 templates/financial/user-dashboard.php:470 templates/financial/user-ledger.php:624
@@ -1422,8 +1422,8 @@ msgstr ""
 msgid "caracteres mínimos"
 msgstr ""
 
-#: aura-business-suite.php:1878 templates/docverify/document-form.php:414 templates/financial/accounts-page.php:777 templates/financial/edit-transaction.php:1171
-#: templates/financial/tags-page.php:636 templates/library/loans-list.php:651 templates/permissions-page.php:1167 assets/js/financial-accounts.js:5187
+#: aura-business-suite.php:1878 templates/docverify/document-form.php:422 templates/financial/accounts-page.php:777 templates/financial/edit-transaction.php:1171
+#: templates/financial/tags-page.php:636 templates/library/loans-list.php:651 templates/permissions-page.php:1169 assets/js/financial-accounts.js:5187
 #: assets/js/financial-accounts.js:5191 assets/js/transaction-edit.js:1267 assets/js/transaction-edit.js:1273
 msgid "Guardar Cambios"
 msgstr ""
@@ -1580,7 +1580,7 @@ msgstr ""
 msgid "No se encontraron usuarios de WordPress que coincidan con la búsqueda."
 msgstr ""
 
-#: aura-business-suite.php:2515 templates/permissions-page.php:1189 assets/js/permissions-page.js:866
+#: aura-business-suite.php:2515 templates/permissions-page.php:1191 assets/js/permissions-page.js:866
 #, php-format
 msgid "Mostrando %d perfiles estándar"
 msgstr ""
@@ -1594,7 +1594,7 @@ msgstr ""
 msgid "permiso activo"
 msgstr ""
 
-#: aura-business-suite.php:2518 templates/permissions-page.php:1158 assets/js/permissions-page.js:810
+#: aura-business-suite.php:2518 templates/permissions-page.php:1160 assets/js/permissions-page.js:810
 msgid "permisos activos"
 msgstr ""
 
@@ -1656,7 +1656,7 @@ msgstr ""
 #: aura-business-suite.php:2741 aura-business-suite.php:3111 modules/certificates/class-certificates-admin.php:63 modules/docverify/class-docverify-admin.php:68
 #: modules/electricity/class-electricity-cpt.php:241 modules/forms/class-forms-admin.php:59 modules/library/admin/class-library-admin.php:117 modules/students/class-students-admin.php:68
 #: modules/vehicles/admin/class-vehicle-admin.php:94 modules/vehicles/admin/class-vehicle-admin.php:95 templates/areas/areas-page.php:73 templates/common/third-parties-page.php:98
-#: templates/contacts/contacts-page.php:104 templates/docverify/documents-list.php:50 templates/docverify/settings.php:34 templates/inventory/dashboard.php:45
+#: templates/contacts/contacts-page.php:104 templates/docverify/documents-list.php:54 templates/docverify/settings.php:38 templates/inventory/dashboard.php:45
 #: templates/inventory/settings.php:111 templates/main-dashboard.php:575 assets/js/areas-admin.js:348 assets/js/areas-admin.js:374
 msgid "Dashboard"
 msgstr ""
@@ -1678,7 +1678,7 @@ msgstr ""
 #: aura-business-suite.php:2762 aura-business-suite.php:3194 modules/calendar/class-calendar-admin.php:115 modules/certificates/class-certificates-admin.php:134
 #: modules/docverify/class-docverify-admin.php:111 modules/forms/class-forms-admin.php:142 modules/library/admin/class-library-admin.php:177 modules/students/class-students-admin.php:220
 #: modules/students/class-students-dashboard.php:58 modules/vehicles/admin/class-vehicle-admin.php:154 modules/vehicles/admin/class-vehicle-admin.php:155 modules/vehicles/admin/views/page-catalogs.php:54
-#: modules/vehicles/admin/views/page-settings.php:40 modules/vehicles/admin/views/page-settings.php:54 templates/calendar/main.php:117 templates/docverify/dashboard.php:137
+#: modules/vehicles/admin/views/page-settings.php:40 modules/vehicles/admin/views/page-settings.php:54 templates/calendar/main.php:117 templates/docverify/dashboard.php:144
 #: templates/forms/dashboard.php:320 templates/library/audit.php:142 templates/library/audit.php:603 templates/main-dashboard.php:1344
 msgid "Configuración"
 msgstr ""
@@ -1712,7 +1712,7 @@ msgid "📇 Contactos"
 msgstr ""
 
 #: aura-business-suite.php:2851 aura-business-suite.php:2852 templates/inventory/maintenance-form.php:656 templates/inventory/maintenance-list.php:273
-#: templates/inventory/settings.php:149 templates/main-dashboard.php:528 templates/permissions-page.php:1239 templates/settings-page.php:315
+#: templates/inventory/settings.php:149 templates/main-dashboard.php:528 templates/permissions-page.php:1241 templates/settings-page.php:315
 msgid "Finanzas"
 msgstr ""
 
@@ -1806,7 +1806,7 @@ msgstr ""
 
 #: aura-business-suite.php:3050 aura-business-suite.php:3051 modules/docverify/class-docverify-admin.php:100 modules/library/admin/class-library-admin.php:167
 #: modules/vehicles/admin/class-vehicle-admin.php:144 modules/vehicles/admin/class-vehicle-admin.php:145 modules/vehicles/admin/views/page-audit.php:63 modules/vehicles/admin/views/page-settings.php:65
-#: templates/docverify/dashboard.php:36 templates/financial/transaction-modal.php:61 templates/main-dashboard.php:1355 templates/permissions-page.php:1245
+#: templates/docverify/dashboard.php:34 templates/financial/transaction-modal.php:61 templates/main-dashboard.php:1355 templates/permissions-page.php:1247
 #: assets/js/inventory-maintenance.js:487
 msgid "Auditoría"
 msgstr ""
@@ -2732,7 +2732,7 @@ msgstr ""
 msgid "Guardado exitosamente."
 msgstr ""
 
-#: modules/calendar/class-calendar-frontend.php:188 modules/common/class-roles-manager.php:2207
+#: modules/calendar/class-calendar-frontend.php:188 modules/common/class-roles-manager.php:2294
 msgid "Miembro Institucional"
 msgstr ""
 
@@ -3062,7 +3062,7 @@ msgstr ""
 
 #: modules/calendar/class-calendar-frontend.php:1248 modules/calendar/class-calendar-frontend.php:1249 modules/calendar/class-calendar-frontend.php:1276 modules/calendar/class-calendar-frontend.php:1277
 #: modules/financial/class-financial-transactions-list.php:417 modules/vehicles/admin/views/page-catalogs.php:42 modules/vehicles/admin/views/page-trips.php:339 templates/certificates/bulk-issue.php:166
-#: templates/certificates/template-builder.php:272 templates/docverify/audit-log.php:97 assets/js/transaction-edit.js:1484
+#: templates/certificates/template-builder.php:272 templates/docverify/audit-log.php:101 assets/js/transaction-edit.js:1484
 msgid "Documento"
 msgstr ""
 
@@ -3166,7 +3166,7 @@ msgstr ""
 msgid "(mín. %d palabras)"
 msgstr ""
 
-#: modules/calendar/class-calendar-frontend.php:1426 modules/students/class-students-admin.php:297 templates/calendar/tab-tasks.php:122 templates/docverify/documents-list.php:236
+#: modules/calendar/class-calendar-frontend.php:1426 modules/students/class-students-admin.php:297 templates/calendar/tab-tasks.php:122 templates/docverify/documents-list.php:240
 #: templates/students/frontend/tasks.php:279 assets/js/students-admin.js:555
 msgid "Vence:"
 msgstr ""
@@ -3302,7 +3302,7 @@ msgstr ""
 #: templates/calendar/tab-programs.php:1774 templates/calendar/tab-programs.php:1951 templates/calendar/tab-programs.php:2022 templates/calendar/tab-programs.php:2074
 #: templates/calendar/tab-programs.php:2112 templates/calendar/tab-settings.php:635 templates/calendar/tab-tasks.php:267 templates/certificates/list.php:228
 #: templates/certificates/view.php:234 templates/common/portable-bundle-modal.php:98 templates/common/portable-bundle-modal.php:186 templates/common/third-parties-page.php:984
-#: templates/common/third-parties-page.php:1152 templates/contacts/contacts-page.php:1819 templates/contacts/contacts-page.php:2209 templates/docverify/documents-list.php:408
+#: templates/common/third-parties-page.php:1152 templates/contacts/contacts-page.php:1819 templates/contacts/contacts-page.php:2209 templates/docverify/documents-list.php:412
 #: templates/financial/accounts-page.php:1139 templates/financial/accounts-page.php:1570 templates/financial/accounts-page.php:1766 templates/financial/accounts-page.php:1857
 #: templates/financial/accounts-page.php:1887 templates/financial/accounts-page.php:1951 templates/financial/accounts-page.php:2017 templates/financial/accounts-page.php:2204
 #: templates/financial/accounts-page.php:2324 templates/financial/budgets-page.php:814 templates/financial/budgets-page.php:1120 templates/financial/categories-page.php:475
@@ -3315,7 +3315,7 @@ msgstr ""
 #: templates/forms/builder.php:693 templates/forms/enrollments-pending.php:421 templates/inventory/equipment-form.php:586 templates/inventory/equipment-form.php:633
 #: templates/inventory/loans-list.php:537 templates/inventory/loans-list.php:731 templates/inventory/loans-list.php:844 templates/inventory/maintenance-form.php:675
 #: templates/inventory/settings.php:847 templates/library/books-list.php:435 templates/library/loans-list.php:484 templates/library/loans-list.php:568
-#: templates/library/loans-list.php:648 templates/library/loans-list.php:707 templates/permissions-page.php:1471 templates/permissions-page.php:1566
+#: templates/library/loans-list.php:648 templates/library/loans-list.php:707 templates/permissions-page.php:1476 templates/permissions-page.php:1571
 #: templates/students/course-list.php:286 templates/students/enrollments.php:330 templates/students/enrollments.php:442 templates/students/list.php:494
 #: templates/students/scholarships.php:284 modules/vehicles/assets/js/vehicle-trips.js:275
 msgid "Cancelar"
@@ -3344,7 +3344,7 @@ msgstr ""
 #: templates/calendar/modal-partials.php:453 templates/calendar/tab-settings.php:666 templates/calendar/tab-settings.php:842 templates/common/portable-bundle-modal.php:36
 #: templates/common/third-parties-page.php:794 templates/common/third-parties-page.php:1009 templates/common/third-parties-page.php:1092 templates/contacts/contacts-page.php:709
 #: templates/contacts/contacts-page.php:1531 templates/contacts/contacts-page.php:1558 templates/contacts/contacts-page.php:1883 templates/contacts/contacts-page.php:2071
-#: templates/docverify/documents-list.php:358 templates/docverify/documents-list.php:380 templates/docverify/documents-list.php:391 templates/financial/accounts-page.php:931
+#: templates/docverify/documents-list.php:362 templates/docverify/documents-list.php:384 templates/docverify/documents-list.php:395 templates/financial/accounts-page.php:931
 #: templates/financial/accounts-page.php:1159 templates/financial/accounts-page.php:1591 templates/financial/accounts-page.php:1606 templates/financial/accounts-page.php:1786
 #: templates/financial/accounts-page.php:1796 templates/financial/accounts-page.php:1814 templates/financial/accounts-page.php:1877 templates/financial/accounts-page.php:1901
 #: templates/financial/accounts-page.php:1966 templates/financial/accounts-page.php:2037 templates/financial/accounts-page.php:2227 templates/financial/accounts-page.php:2347
@@ -3616,7 +3616,7 @@ msgid "Entregada"
 msgstr ""
 
 #: modules/calendar/class-calendar-frontend.php:2294 modules/certificates/class-certificates-issuer.php:300 modules/certificates/class-certificates-reports.php:333 modules/certificates/class-certificates-reports.php:371
-#: modules/certificates/class-certificates-templates.php:118 modules/common/class-roles-manager.php:137 modules/common/class-roles-manager.php:2198 modules/contacts/class-contact-selector.php:412
+#: modules/certificates/class-certificates-templates.php:118 modules/common/class-roles-manager.php:137 modules/common/class-roles-manager.php:2285 modules/contacts/class-contact-selector.php:412
 #: modules/contacts/class-contacts.php:673 modules/students/class-students-notifications.php:850 modules/students/class-students-reports.php:583 modules/students/class-students-reports.php:696
 #: modules/students/class-students-reports.php:795 templates/calendar/modal-partials.php:439 templates/calendar/tab-grades.php:82 templates/certificates/bulk-issue.php:110
 #: templates/certificates/dashboard.php:164 templates/certificates/dashboard.php:171 templates/certificates/list.php:153 templates/certificates/list.php:160
@@ -5253,7 +5253,7 @@ msgid "Curso"
 msgstr ""
 
 #: modules/certificates/class-certificates-reports.php:332 templates/certificates/dashboard.php:153 templates/certificates/list.php:141 templates/certificates/verify-public.php:62
-#: templates/docverify/audit-log.php:96 templates/docverify/dashboard.php:166 templates/docverify/dashboard.php:230 assets/js/financial-accounts.js:6176
+#: templates/docverify/audit-log.php:100 templates/docverify/dashboard.php:173 templates/docverify/dashboard.php:237 assets/js/financial-accounts.js:6176
 msgid "Folio"
 msgstr ""
 
@@ -6419,7 +6419,7 @@ msgstr ""
 msgid "Buscador público para validar un folio de certificado."
 msgstr ""
 
-#: modules/common/class-page-manager.php:126 modules/docverify/class-docverify-admin.php:57
+#: modules/common/class-page-manager.php:126 modules/docverify/class-docverify-admin.php:57 templates/permissions-page.php:1262
 msgid "Validación Documental"
 msgstr ""
 
@@ -6632,27 +6632,27 @@ msgstr ""
 msgid "Auxiliar Contable"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:127 modules/common/class-roles-manager.php:770
+#: modules/common/class-roles-manager.php:127 modules/common/class-roles-manager.php:777
 msgid "Tesorero / Administrador Financiero"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:128 modules/common/class-roles-manager.php:822
+#: modules/common/class-roles-manager.php:128 modules/common/class-roles-manager.php:829
 msgid "Director General / Gerente"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:129 modules/common/class-roles-manager.php:885
+#: modules/common/class-roles-manager.php:129 modules/common/class-roles-manager.php:898
 msgid "Auditor / Revisor Fiscal"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:130 modules/common/class-roles-manager.php:945
+#: modules/common/class-roles-manager.php:130 modules/common/class-roles-manager.php:961
 msgid "Líder de Área / Coordinador"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:131 modules/common/class-roles-manager.php:989 modules/common/class-roles-manager.php:2171
+#: modules/common/class-roles-manager.php:131 modules/common/class-roles-manager.php:1005 modules/common/class-roles-manager.php:2258
 msgid "Coordinador de Logística y Flota"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:132 modules/common/class-roles-manager.php:2189
+#: modules/common/class-roles-manager.php:132 modules/common/class-roles-manager.php:2276
 msgid "Coordinador Académico"
 msgstr ""
 
@@ -6660,7 +6660,7 @@ msgstr ""
 msgid "Profesor / Docente"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:134 modules/common/class-roles-manager.php:1126
+#: modules/common/class-roles-manager.php:134 modules/common/class-roles-manager.php:1142
 msgid "Coordinador de Horarios y Aulas"
 msgstr ""
 
@@ -6668,1749 +6668,1813 @@ msgstr ""
 msgid "Director Académico"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:136 modules/common/class-roles-manager.php:1203
+#: modules/common/class-roles-manager.php:136 modules/common/class-roles-manager.php:1219
 msgid "Estudiante / Alumno"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:138 modules/common/class-roles-manager.php:2180
+#: modules/common/class-roles-manager.php:138 modules/common/class-roles-manager.php:2267
 msgid "Bibliotecario / Documental"
 msgstr ""
 
 #: modules/common/class-roles-manager.php:139
+msgid "Secretario General / Administrador Documental"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:140 modules/common/class-roles-manager.php:1325
+msgid "Emisor / Operador de Cartas y QR"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:141 modules/common/class-roles-manager.php:1346
+msgid "Verificador y Auditor Documental"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:142
 msgid "Operador de Campo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:140 modules/students/class-students-notifications.php:851 modules/students/class-students-reports.php:796 templates/students/dashboard.php:355
+#: modules/common/class-roles-manager.php:143 modules/students/class-students-notifications.php:851 modules/students/class-students-reports.php:796 templates/students/dashboard.php:355
 #: templates/students/enrollments.php:60 templates/students/enrollments.php:531 templates/students/frontend/enrollment-form.php:18 templates/students/frontend/portal.php:28
 #: templates/students/list.php:124 templates/students/list.php:450 templates/students/list.php:585
 msgid "Voluntario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:141
+#: modules/common/class-roles-manager.php:144
 msgid "Pasante / Practicante"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:142 modules/students/class-students-notifications.php:853 modules/students/class-students-reports.php:798 templates/students/dashboard.php:357
+#: modules/common/class-roles-manager.php:145 modules/students/class-students-notifications.php:853 modules/students/class-students-reports.php:798 templates/students/dashboard.php:357
 #: templates/students/enrollments.php:62 templates/students/enrollments.php:533 templates/students/frontend/enrollment-form.php:20 templates/students/frontend/portal.php:30
 #: templates/students/list.php:126 templates/students/list.php:452 templates/students/list.php:587
 msgid "Participante"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:180
+#: modules/common/class-roles-manager.php:183
 msgid "Crear transacciones financieras"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:181
+#: modules/common/class-roles-manager.php:184
 msgid "Editar propias transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:182 modules/common/class-roles-manager.php:490
+#: modules/common/class-roles-manager.php:185 modules/common/class-roles-manager.php:493
 msgid "Editar todas las transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:183
+#: modules/common/class-roles-manager.php:186
 msgid "Eliminar propias transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:184 modules/common/class-roles-manager.php:503
+#: modules/common/class-roles-manager.php:187 modules/common/class-roles-manager.php:506
 msgid "Eliminar cualquier transacción"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:185
+#: modules/common/class-roles-manager.php:188
 msgid "Aprobar/rechazar gastos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:186 modules/common/class-roles-manager.php:480
+#: modules/common/class-roles-manager.php:189 modules/common/class-roles-manager.php:483
 msgid "Ver solo transacciones propias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:187 modules/common/class-roles-manager.php:481
+#: modules/common/class-roles-manager.php:190 modules/common/class-roles-manager.php:484
 msgid "Ver todas las transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:188 modules/common/class-roles-manager.php:484
+#: modules/common/class-roles-manager.php:191 modules/common/class-roles-manager.php:487
 msgid "Ver gráficos financieros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:189
+#: modules/common/class-roles-manager.php:192
 msgid "Exportar reportes financieros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:190
+#: modules/common/class-roles-manager.php:193
 msgid "Gestionar categorías de gastos/ingresos (ej: Suministros, Salarios)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:191
+#: modules/common/class-roles-manager.php:194
 msgid "Edición masiva de transacciones (cambiar en lote área, método de pago, vinculado, creador o categoría)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:193
+#: modules/common/class-roles-manager.php:196
 msgid "Vincular usuario del sistema a una transacción"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:194
+#: modules/common/class-roles-manager.php:197
 msgid "Ver libro mayor agrupado por usuario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:195
+#: modules/common/class-roles-manager.php:198
 msgid "Ver propio dashboard financiero personal"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:196 modules/common/class-roles-manager.php:483
+#: modules/common/class-roles-manager.php:199 modules/common/class-roles-manager.php:486
 msgid "Ver dashboard financiero de otros usuarios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:198
+#: modules/common/class-roles-manager.php:201
 msgid "Gestionar integraciones contables (QuickBooks, SAP, Contabilidad MX, Excel XML)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:199
+#: modules/common/class-roles-manager.php:202
 msgid "Ver y auditar logs de trazabilidad financiera"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:200
+#: modules/common/class-roles-manager.php:203
 msgid "Importar transacciones desde archivos CSV / Excel"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:201
+#: modules/common/class-roles-manager.php:204
 msgid "Gestionar presupuestos y techos de gasto por área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:202
+#: modules/common/class-roles-manager.php:205
 msgid "Gestionar y fusionar etiquetas de transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:203
+#: modules/common/class-roles-manager.php:206
 msgid "Gestionar cuentas bancarias, números de cuenta y cajas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:204 modules/common/class-roles-manager.php:499
+#: modules/common/class-roles-manager.php:207 modules/common/class-roles-manager.php:502
 msgid "Ver saldos y totales de cuentas bancarias y cajas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:205 modules/common/class-roles-manager.php:501
+#: modules/common/class-roles-manager.php:208 modules/common/class-roles-manager.php:504
 msgid "Aprobar / rechazar gastos de caja chica"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:207
+#: modules/common/class-roles-manager.php:210
 msgid "Ver historial y auditoría de cambio de divisas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:208
+#: modules/common/class-roles-manager.php:211
 msgid "Realizar y registrar operaciones de cambio de divisas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:209
+#: modules/common/class-roles-manager.php:212
 msgid "Editar notas y referencias de operaciones de cambio de divisas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:210
+#: modules/common/class-roles-manager.php:213
 msgid "Anular y revertir operaciones de cambio de divisas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:213 modules/common/class-roles-manager.php:660
+#: modules/common/class-roles-manager.php:216 modules/common/class-roles-manager.php:667
 msgid "Crear/registrar vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:214
+#: modules/common/class-roles-manager.php:217
 msgid "Editar vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:215 modules/common/class-roles-manager.php:670
+#: modules/common/class-roles-manager.php:218 modules/common/class-roles-manager.php:677
 msgid "Eliminar vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:216
+#: modules/common/class-roles-manager.php:219
 msgid "Registrar salidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:217
+#: modules/common/class-roles-manager.php:220
 msgid "Editar propias salidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:218 modules/common/class-roles-manager.php:664
+#: modules/common/class-roles-manager.php:221 modules/common/class-roles-manager.php:671
 msgid "Editar todas las salidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:219 modules/common/class-roles-manager.php:668
+#: modules/common/class-roles-manager.php:222 modules/common/class-roles-manager.php:675
 msgid "Eliminar propias salidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:220
+#: modules/common/class-roles-manager.php:223
 msgid "Eliminar todas las salidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:221
+#: modules/common/class-roles-manager.php:224
 msgid "Actualizar kilometraje"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:222 modules/common/class-roles-manager.php:657
+#: modules/common/class-roles-manager.php:225 modules/common/class-roles-manager.php:664
 msgid "Ver todos los vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:223
+#: modules/common/class-roles-manager.php:226
 msgid "Ver reportes de vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:224 modules/common/class-roles-manager.php:634 modules/common/class-roles-manager.php:659
+#: modules/common/class-roles-manager.php:227 modules/common/class-roles-manager.php:641 modules/common/class-roles-manager.php:666
 msgid "Recibir alertas de mantenimiento"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:225
+#: modules/common/class-roles-manager.php:228
 msgid "Ver auditoría de vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:226 modules/common/class-roles-manager.php:667
+#: modules/common/class-roles-manager.php:229 modules/common/class-roles-manager.php:674
 msgid "Configurar módulo de vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:229
+#: modules/common/class-roles-manager.php:232
 msgid "Llenar formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:230
+#: modules/common/class-roles-manager.php:233
 msgid "Crear formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:231
+#: modules/common/class-roles-manager.php:234
 msgid "Editar formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:232 modules/common/class-roles-manager.php:616
+#: modules/common/class-roles-manager.php:235 modules/common/class-roles-manager.php:603
 msgid "Eliminar formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:233
+#: modules/common/class-roles-manager.php:236
 msgid "Ver respuestas propias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:234
+#: modules/common/class-roles-manager.php:237
 msgid "Ver todas las respuestas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:235
+#: modules/common/class-roles-manager.php:238
 msgid "Exportar respuestas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:236
+#: modules/common/class-roles-manager.php:239
 msgid "Ver análisis y gráficos de encuestas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:237
+#: modules/common/class-roles-manager.php:240
 msgid "Asignar encuestas a estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:238
+#: modules/common/class-roles-manager.php:241
 msgid "Revisar postulantes de inscripción"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:239
+#: modules/common/class-roles-manager.php:242
 msgid "Configurar el módulo de formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:240 modules/common/class-roles-manager.php:610
+#: modules/common/class-roles-manager.php:243 modules/common/class-roles-manager.php:597
 msgid "Ver reportes de formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:243
+#: modules/common/class-roles-manager.php:246
 msgid "Registrar lecturas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:244 modules/common/class-roles-manager.php:708
+#: modules/common/class-roles-manager.php:247 modules/common/class-roles-manager.php:715
 msgid "Editar propias lecturas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:245 modules/common/class-roles-manager.php:709
+#: modules/common/class-roles-manager.php:248 modules/common/class-roles-manager.php:716
 msgid "Editar todas las lecturas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:246
+#: modules/common/class-roles-manager.php:249
 msgid "Eliminar lecturas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:247 modules/common/class-roles-manager.php:703
+#: modules/common/class-roles-manager.php:250 modules/common/class-roles-manager.php:710
 msgid "Ver dashboard de consumo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:248 modules/common/class-roles-manager.php:704
+#: modules/common/class-roles-manager.php:251 modules/common/class-roles-manager.php:711
 msgid "Ver gráficos de tendencias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:249 modules/common/class-roles-manager.php:705
+#: modules/common/class-roles-manager.php:252 modules/common/class-roles-manager.php:712
 msgid "Recibir alertas de consumo alto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:250 modules/common/class-roles-manager.php:710
+#: modules/common/class-roles-manager.php:253 modules/common/class-roles-manager.php:717
 msgid "Configurar umbrales de alerta"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:251 modules/common/class-roles-manager.php:706
+#: modules/common/class-roles-manager.php:254 modules/common/class-roles-manager.php:713
 msgid "Exportar datos de consumo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:255 modules/common/class-roles-manager.php:679
+#: modules/common/class-roles-manager.php:258 modules/common/class-roles-manager.php:686
 msgid "Acceder al módulo de biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:256 modules/common/class-roles-manager.php:685
+#: modules/common/class-roles-manager.php:259 modules/common/class-roles-manager.php:692
 msgid "Agregar libros al catálogo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:257 modules/common/class-roles-manager.php:690
+#: modules/common/class-roles-manager.php:260 modules/common/class-roles-manager.php:697
 msgid "Editar información de libros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:258 modules/common/class-roles-manager.php:694
+#: modules/common/class-roles-manager.php:261 modules/common/class-roles-manager.php:701
 msgid "Eliminar libros del catálogo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:259
+#: modules/common/class-roles-manager.php:262
 msgid "Ver catálogo completo de libros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:260
+#: modules/common/class-roles-manager.php:263
 msgid "Registrar préstamo de libro"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:261
+#: modules/common/class-roles-manager.php:264
 msgid "Registrar devolución de libro"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:262 modules/common/class-roles-manager.php:688
+#: modules/common/class-roles-manager.php:265 modules/common/class-roles-manager.php:695
 msgid "Extender plazo de préstamo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:263 modules/common/class-roles-manager.php:689
+#: modules/common/class-roles-manager.php:266 modules/common/class-roles-manager.php:696
 msgid "Editar datos de un préstamo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:264
+#: modules/common/class-roles-manager.php:267
 msgid "Cancelar/eliminar un préstamo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:265
+#: modules/common/class-roles-manager.php:268
 msgid "Ver solo préstamos propios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:266 modules/common/class-roles-manager.php:682
+#: modules/common/class-roles-manager.php:269 modules/common/class-roles-manager.php:689
 msgid "Ver todos los préstamos activos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:267 modules/common/class-roles-manager.php:683
+#: modules/common/class-roles-manager.php:270 modules/common/class-roles-manager.php:690
 msgid "Ver reportes de biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:268
+#: modules/common/class-roles-manager.php:271
 msgid "Recibir alertas de devoluciones vencidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:269 modules/common/class-roles-manager.php:692
+#: modules/common/class-roles-manager.php:272 modules/common/class-roles-manager.php:699
 msgid "Configurar módulo de biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:270 modules/common/class-roles-manager.php:691
+#: modules/common/class-roles-manager.php:273 modules/common/class-roles-manager.php:698
 msgid "Ver auditoría de biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:273
+#: modules/common/class-roles-manager.php:276
 msgid "Crear nuevos usuarios (como suscriptor)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:274 modules/common/class-roles-manager.php:429
+#: modules/common/class-roles-manager.php:277 modules/common/class-roles-manager.php:432
 msgid "Gestionar usuarios existentes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:275 modules/common/class-roles-manager.php:431
+#: modules/common/class-roles-manager.php:278 modules/common/class-roles-manager.php:434
 msgid "Asignar permisos a usuarios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:276
+#: modules/common/class-roles-manager.php:279
 msgid "Configurar sistema"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:277
+#: modules/common/class-roles-manager.php:280
 msgid "Configurar y probar conexión con Google Drive"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:278
+#: modules/common/class-roles-manager.php:281
 msgid "Ver centro de notificaciones y alertas globales"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:279
+#: modules/common/class-roles-manager.php:282
 msgid "Activar/desactivar módulos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:280
+#: modules/common/class-roles-manager.php:283
 msgid "Gestionar backups"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:281
+#: modules/common/class-roles-manager.php:284
 msgid "Ver logs de auditoría"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:285 modules/common/class-roles-manager.php:463
+#: modules/common/class-roles-manager.php:288 modules/common/class-roles-manager.php:466
 msgid "Ver directorio de terceros y empresas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:286
+#: modules/common/class-roles-manager.php:289
 msgid "Registrar nuevos terceros y empresas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:287 modules/common/class-roles-manager.php:465
+#: modules/common/class-roles-manager.php:290 modules/common/class-roles-manager.php:468
 msgid "Editar terceros y empresas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:288 modules/common/class-roles-manager.php:466
+#: modules/common/class-roles-manager.php:291 modules/common/class-roles-manager.php:469
 msgid "Eliminar/desactivar terceros y empresas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:289 modules/common/class-roles-manager.php:467
+#: modules/common/class-roles-manager.php:292 modules/common/class-roles-manager.php:470
 msgid "Crear usuarios de WordPress (Suscriptor) desde Terceros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:293
+#: modules/common/class-roles-manager.php:296
 msgid "Gestionar áreas y programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:294
+#: modules/common/class-roles-manager.php:297
 msgid "Gestionar tipos de área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:295
+#: modules/common/class-roles-manager.php:298
 msgid "Ver todas las áreas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:296 modules/common/class-roles-manager.php:446
+#: modules/common/class-roles-manager.php:299 modules/common/class-roles-manager.php:449
 msgid "Ver solo área asignada como responsable"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:297 modules/common/class-roles-manager.php:452
+#: modules/common/class-roles-manager.php:300 modules/common/class-roles-manager.php:455
 msgid "Gestionar presupuesto de área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:298
+#: modules/common/class-roles-manager.php:301
 msgid "Ver presupuesto de área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:299
+#: modules/common/class-roles-manager.php:302
 msgid "Asignar responsable a área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:300 modules/common/class-roles-manager.php:449
+#: modules/common/class-roles-manager.php:303 modules/common/class-roles-manager.php:452
 msgid "Crear formularios propios del área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:301 modules/common/class-roles-manager.php:450
+#: modules/common/class-roles-manager.php:304 modules/common/class-roles-manager.php:453
 msgid "Gestionar inscripciones del área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:305
+#: modules/common/class-roles-manager.php:308
 msgid "Crear/registrar equipos y herramientas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:306
+#: modules/common/class-roles-manager.php:309
 msgid "Editar datos de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:307 modules/common/class-roles-manager.php:648
+#: modules/common/class-roles-manager.php:310 modules/common/class-roles-manager.php:655
 msgid "Eliminar equipos del inventario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:308
+#: modules/common/class-roles-manager.php:311
 msgid "Ver todo el inventario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:309
+#: modules/common/class-roles-manager.php:312
 msgid "Registrar préstamo/salida de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:310 modules/common/class-roles-manager.php:637
+#: modules/common/class-roles-manager.php:313 modules/common/class-roles-manager.php:644
 msgid "Registrar devolución de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:311 modules/common/class-roles-manager.php:638
+#: modules/common/class-roles-manager.php:314 modules/common/class-roles-manager.php:645
 msgid "Editar registros de préstamos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:312
+#: modules/common/class-roles-manager.php:315
 msgid "Eliminar registros de préstamos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:313 modules/common/class-roles-manager.php:639 templates/main-dashboard.php:1216
+#: modules/common/class-roles-manager.php:316 modules/common/class-roles-manager.php:646 templates/main-dashboard.php:1216
 msgid "Registrar mantenimiento realizado"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:314 modules/common/class-roles-manager.php:640
+#: modules/common/class-roles-manager.php:317 modules/common/class-roles-manager.php:647
 msgid "Editar registros de mantenimiento"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:315 modules/common/class-roles-manager.php:647
+#: modules/common/class-roles-manager.php:318 modules/common/class-roles-manager.php:654
 msgid "Eliminar registros de mantenimiento"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:316 modules/common/class-roles-manager.php:644
+#: modules/common/class-roles-manager.php:319 modules/common/class-roles-manager.php:651
 msgid "Configurar calendarios de mantenimiento"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:317 modules/common/class-roles-manager.php:630
+#: modules/common/class-roles-manager.php:320 modules/common/class-roles-manager.php:637
 msgid "Ver historial de mantenimientos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:318
+#: modules/common/class-roles-manager.php:321
 msgid "Recibir notificaciones de mantenimientos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:319 modules/common/class-roles-manager.php:641
+#: modules/common/class-roles-manager.php:322 modules/common/class-roles-manager.php:648
 msgid "Registrar servicios en talleres externos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:320 modules/common/class-roles-manager.php:643
+#: modules/common/class-roles-manager.php:323 modules/common/class-roles-manager.php:650
 msgid "Configurar stock mínimo y alertas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:321 modules/common/class-roles-manager.php:633
+#: modules/common/class-roles-manager.php:324 modules/common/class-roles-manager.php:640
 msgid "Ver reportes de disponibilidad y uso"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:322 modules/common/class-roles-manager.php:645
+#: modules/common/class-roles-manager.php:325 modules/common/class-roles-manager.php:652
 msgid "Gestionar categorías de inventario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:323 modules/common/class-roles-manager.php:631
+#: modules/common/class-roles-manager.php:326 modules/common/class-roles-manager.php:638
 msgid "Ver costos de mantenimiento por equipo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:324
+#: modules/common/class-roles-manager.php:327
 msgid "Ver vida útil y depreciación de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:328
+#: modules/common/class-roles-manager.php:331
 msgid "Ver plantillas de certificados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:329
+#: modules/common/class-roles-manager.php:332
 msgid "Crear nuevas plantillas de diseño"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:330
+#: modules/common/class-roles-manager.php:333
 msgid "Editar plantillas existentes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:331
+#: modules/common/class-roles-manager.php:334
 msgid "Eliminar plantillas (solo admin)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:332 modules/common/class-roles-manager.php:577
+#: modules/common/class-roles-manager.php:335 modules/common/class-roles-manager.php:580
 msgid "Emitir certificados a estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:333
+#: modules/common/class-roles-manager.php:336
 msgid "Revocar certificados emitidos (solo admin)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:334
+#: modules/common/class-roles-manager.php:337
 msgid "Ver listado completo de certificados emitidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:335 modules/common/class-roles-manager.php:572
+#: modules/common/class-roles-manager.php:338 modules/common/class-roles-manager.php:575
 msgid "Descargar PDF de cualquier estudiante"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:336
+#: modules/common/class-roles-manager.php:339
 msgid "Descargar solo el propio certificado (estudiante)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:337
+#: modules/common/class-roles-manager.php:340
 msgid "Gestionar firmantes y sus firmas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:338
+#: modules/common/class-roles-manager.php:341
 msgid "Verificar autenticidad vía página pública"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:339
+#: modules/common/class-roles-manager.php:342
 msgid "Configurar el módulo de certificados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:340
+#: modules/common/class-roles-manager.php:343
 msgid "Ver reportes de certificados emitidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:344
+#: modules/common/class-roles-manager.php:347 modules/common/class-roles-manager.php:616
 msgid "Ver listado completo de documentos verificables"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:345
+#: modules/common/class-roles-manager.php:348
 msgid "Registrar documentos y subir PDFs firmados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:346
+#: modules/common/class-roles-manager.php:349
 msgid "Editar vigencia y metadatos de documentos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:347
+#: modules/common/class-roles-manager.php:350 modules/common/class-roles-manager.php:619
 msgid "Descargar PDFs privados (original y sellado)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:348
+#: modules/common/class-roles-manager.php:351 modules/common/class-roles-manager.php:621
 msgid "Revocar o reactivar autenticidad de documentos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:349
+#: modules/common/class-roles-manager.php:352 modules/common/class-roles-manager.php:623
 msgid "Eliminar registros documentales (solo admin)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:350
+#: modules/common/class-roles-manager.php:353
 msgid "Ver historial de auditoría y verificaciones QR"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:351
+#: modules/common/class-roles-manager.php:354
 msgid "Configurar el módulo de validación documental"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:355
+#: modules/common/class-roles-manager.php:358
 msgid "Crear/registrar estudiantes manualmente"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:356 modules/common/class-roles-manager.php:527
+#: modules/common/class-roles-manager.php:359 modules/common/class-roles-manager.php:530
 msgid "Editar información de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:357
+#: modules/common/class-roles-manager.php:360
 msgid "Eliminar estudiantes (solo admin)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:358 modules/common/class-roles-manager.php:517 templates/students/dashboard.php:163
+#: modules/common/class-roles-manager.php:361 modules/common/class-roles-manager.php:520 templates/students/dashboard.php:163
 msgid "Ver todos los estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:359 modules/common/class-roles-manager.php:516
+#: modules/common/class-roles-manager.php:362 modules/common/class-roles-manager.php:519
 msgid "Ver solo información propia (estudiante)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:360
+#: modules/common/class-roles-manager.php:363
 msgid "Aprobar/rechazar solicitudes de inscripción"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:361 modules/common/class-roles-manager.php:525
+#: modules/common/class-roles-manager.php:364 modules/common/class-roles-manager.php:528
 msgid "Gestionar inscripciones a cursos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:362 modules/common/class-roles-manager.php:519
+#: modules/common/class-roles-manager.php:365 modules/common/class-roles-manager.php:522
 msgid "Ver becas asignadas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:363
+#: modules/common/class-roles-manager.php:366
 msgid "Asignar/modificar becas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:364 modules/common/class-roles-manager.php:524
+#: modules/common/class-roles-manager.php:367 modules/common/class-roles-manager.php:527
 msgid "Registrar pagos de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:365
+#: modules/common/class-roles-manager.php:368
 msgid "Ver estado de pagos de todos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:366
+#: modules/common/class-roles-manager.php:369
 msgid "Ver solo pagos propios (estudiante)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:367 modules/common/class-roles-manager.php:530
+#: modules/common/class-roles-manager.php:370 modules/common/class-roles-manager.php:533
 msgid "Configurar esquemas de cuotas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:368
+#: modules/common/class-roles-manager.php:371
 msgid "Ver estado paz y salvo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:369
+#: modules/common/class-roles-manager.php:372
 msgid "Crear y gestionar cursos/programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:370 modules/common/class-roles-manager.php:522
+#: modules/common/class-roles-manager.php:373 modules/common/class-roles-manager.php:525
 msgid "Ver reportes de inscripciones y pagos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:371 modules/common/class-roles-manager.php:531
+#: modules/common/class-roles-manager.php:374 modules/common/class-roles-manager.php:534
 msgid "Configurar el módulo de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:375 modules/common/class-roles-manager.php:541
+#: modules/common/class-roles-manager.php:378 modules/common/class-roles-manager.php:544
 msgid "Ver calendario de clases y actividades"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:376
+#: modules/common/class-roles-manager.php:379
 msgid "Crear y editar clases y eventos del calendario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:377 modules/common/class-roles-manager.php:544
+#: modules/common/class-roles-manager.php:380 modules/common/class-roles-manager.php:547
 msgid "Crear y programar eventos del calendario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:378
+#: modules/common/class-roles-manager.php:381
 msgid "Eliminar eventos del calendario (solo admin)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:379
+#: modules/common/class-roles-manager.php:382
 msgid "Crear y gestionar programas de capacitación y materias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:380
+#: modules/common/class-roles-manager.php:383
 msgid "Ver programas de capacitación y materias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:381
+#: modules/common/class-roles-manager.php:384
 msgid "Eliminar programas y materias académicas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:382 templates/calendar/main.php:83
+#: modules/common/class-roles-manager.php:385 templates/calendar/main.php:83
 msgid "Sincronizar eventos con Google Calendar"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:383
+#: modules/common/class-roles-manager.php:386
 msgid "Ver registros de asistencia"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:384
+#: modules/common/class-roles-manager.php:387
 msgid "Tomar y actualizar asistencia de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:385
+#: modules/common/class-roles-manager.php:388
 msgid "Ver calificaciones y notas de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:386
+#: modules/common/class-roles-manager.php:389
 msgid "Calificar y registrar notas de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:387
+#: modules/common/class-roles-manager.php:390
 msgid "Eliminar calificaciones y notas registradas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:388
+#: modules/common/class-roles-manager.php:391
 msgid "Ver tareas y asignaciones académicas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:389
+#: modules/common/class-roles-manager.php:392
 msgid "Crear y gestionar tareas y asignaciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:390
+#: modules/common/class-roles-manager.php:393
 msgid "Eliminar tareas y asignaciones académicas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:391
+#: modules/common/class-roles-manager.php:394
 msgid "Entregar tareas académicas (estudiantes)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:392
+#: modules/common/class-roles-manager.php:395
 msgid "Revisar y calificar entregas de tareas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:393
+#: modules/common/class-roles-manager.php:396
 msgid "Ver únicamente clases/eventos propios asignados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:394 modules/common/class-roles-manager.php:543
+#: modules/common/class-roles-manager.php:397 modules/common/class-roles-manager.php:546
 msgid "Portal Docente: Alternar entre todo el calendario y solo mis clases"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:395
+#: modules/common/class-roles-manager.php:398
 msgid "Configurar módulo de calendario y sincronización GCal"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:399
+#: modules/common/class-roles-manager.php:402
 msgid "Ver directorio de contactos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:400 modules/common/class-roles-manager.php:721
+#: modules/common/class-roles-manager.php:403 modules/common/class-roles-manager.php:728
 msgid "Crear nuevos contactos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:401 modules/common/class-roles-manager.php:722
+#: modules/common/class-roles-manager.php:404 modules/common/class-roles-manager.php:729
 msgid "Editar contactos existentes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:402
+#: modules/common/class-roles-manager.php:405
 msgid "Eliminar/archivar contactos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:403
+#: modules/common/class-roles-manager.php:406
 msgid "Iniciar sincronización con Google Contacts"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:404
+#: modules/common/class-roles-manager.php:407
 msgid "Conectar/desconectar cuenta de Google y credenciales OAuth"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:405 modules/common/class-roles-manager.php:726
+#: modules/common/class-roles-manager.php:408 modules/common/class-roles-manager.php:733
 msgid "Importar contactos desde CSV o Google"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:406
+#: modules/common/class-roles-manager.php:409
 msgid "Exportar directorio de contactos a CSV o vCard"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:407
+#: modules/common/class-roles-manager.php:410
 msgid "Ver historial financiero vinculado del contacto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:408 modules/common/class-roles-manager.php:729
+#: modules/common/class-roles-manager.php:411 modules/common/class-roles-manager.php:736
 msgid "Fusionar contactos duplicados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:427
+#: modules/common/class-roles-manager.php:430
 msgid "MÓDULO: ADMINISTRACIÓN Y SISTEMA"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:430
+#: modules/common/class-roles-manager.php:433
 msgid "Crear nuevos usuarios (suscriptor)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:432
+#: modules/common/class-roles-manager.php:435
 msgid "Configuración general del sistema"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:433
+#: modules/common/class-roles-manager.php:436
 msgid "Configurar y probar Google Drive"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:434
+#: modules/common/class-roles-manager.php:437
 msgid "Centro de notificaciones y alertas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:435
+#: modules/common/class-roles-manager.php:438
 msgid "Activar / desactivar módulos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:436
+#: modules/common/class-roles-manager.php:439
 msgid "Gestionar copias de seguridad (backups)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:437
+#: modules/common/class-roles-manager.php:440
 msgid "Ver logs de auditoría global"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:444
+#: modules/common/class-roles-manager.php:447
 msgid "MÓDULO: ÁREAS Y PROGRAMAS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:447
+#: modules/common/class-roles-manager.php:450
 msgid "Ver todas las áreas y programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:448
+#: modules/common/class-roles-manager.php:451
 msgid "Ver presupuesto del área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:451
+#: modules/common/class-roles-manager.php:454
 msgid "Asignar responsable / director a área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:453
+#: modules/common/class-roles-manager.php:456
 msgid "Gestionar tipos y sedes de área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:454
+#: modules/common/class-roles-manager.php:457
 msgid "Administración total de áreas y programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:461
+#: modules/common/class-roles-manager.php:464
 msgid "MÓDULO: TERCEROS Y EMPRESAS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:464
+#: modules/common/class-roles-manager.php:467
 msgid "Crear/registrar terceros y empresas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:478
+#: modules/common/class-roles-manager.php:481
 msgid "MÓDULO: FINANZAS Y TESORERÍA"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:482
+#: modules/common/class-roles-manager.php:485
 msgid "Ver mi dashboard financiero personal"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:485
+#: modules/common/class-roles-manager.php:488
 msgid "Exportar reportes contables"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:486
+#: modules/common/class-roles-manager.php:489
 msgid "Ver libro mayor por usuario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:487
+#: modules/common/class-roles-manager.php:490
 msgid "Registrar nuevas transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:488
+#: modules/common/class-roles-manager.php:491
 msgid "Vincular usuario a transacción"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:489
+#: modules/common/class-roles-manager.php:492
 msgid "Editar transacciones propias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:491
+#: modules/common/class-roles-manager.php:494
 msgid "Edición masiva de transacciones (en lote)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:492
+#: modules/common/class-roles-manager.php:495
 msgid "Aprobar / rechazar gastos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:493
+#: modules/common/class-roles-manager.php:496
 msgid "Gestionar categorías de gastos/ingresos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:494
+#: modules/common/class-roles-manager.php:497
 msgid "Integraciones contables (QuickBooks, SAP, MX, Excel)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:495
+#: modules/common/class-roles-manager.php:498
 msgid "Ver trazabilidad y auditoría contable"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:496
+#: modules/common/class-roles-manager.php:499
 msgid "Importar transacciones desde CSV / Excel"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:497
+#: modules/common/class-roles-manager.php:500
 msgid "Gestionar presupuestos y techos de gasto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:498
+#: modules/common/class-roles-manager.php:501
 msgid "Gestionar etiquetas clasificatorias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:500
+#: modules/common/class-roles-manager.php:503
 msgid "Gestionar cuentas bancarias y cajas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:502
+#: modules/common/class-roles-manager.php:505
 msgid "Eliminar transacciones propias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:514
+#: modules/common/class-roles-manager.php:517
 msgid "MÓDULO: ESTUDIANTES E INSCRIPCIONES"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:518
+#: modules/common/class-roles-manager.php:521
 msgid "Ver estado y paz y salvo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:520
+#: modules/common/class-roles-manager.php:523
 msgid "Ver solo pagos propios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:521
+#: modules/common/class-roles-manager.php:524
 msgid "Ver pagos de todos los estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:523
+#: modules/common/class-roles-manager.php:526
 msgid "Registrar nuevos estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:526
+#: modules/common/class-roles-manager.php:529
 msgid "Gestionar cursos y programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:528
+#: modules/common/class-roles-manager.php:531
 msgid "Aprobar / rechazar solicitudes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:529
+#: modules/common/class-roles-manager.php:532
 msgid "Asignar / modificar becas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:532
+#: modules/common/class-roles-manager.php:535
 msgid "Eliminar estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:539
+#: modules/common/class-roles-manager.php:542
 msgid "MÓDULO: CALENDARIO, CLASES Y HORARIOS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:542
+#: modules/common/class-roles-manager.php:545
 msgid "Ver solo clases/eventos propios asignados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:545
+#: modules/common/class-roles-manager.php:548
 msgid "Crear y programar clases y eventos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:546
+#: modules/common/class-roles-manager.php:549
 msgid "Eliminar clases y eventos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:547
+#: modules/common/class-roles-manager.php:550
 msgid "Ver programas y materias académicas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:548
+#: modules/common/class-roles-manager.php:551
 msgid "Gestionar programas y materias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:549
+#: modules/common/class-roles-manager.php:552
 msgid "Eliminar programas y materias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:550
+#: modules/common/class-roles-manager.php:553
 msgid "Consultar registros de asistencia"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:551
+#: modules/common/class-roles-manager.php:554
 msgid "Tomar asistencia de estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:552
+#: modules/common/class-roles-manager.php:555
 msgid "Ver calificaciones y notas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:553
+#: modules/common/class-roles-manager.php:556
 msgid "Registrar y editar calificaciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:554
+#: modules/common/class-roles-manager.php:557
 msgid "Eliminar calificaciones y notas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:555
+#: modules/common/class-roles-manager.php:558
 msgid "Ver tareas y asignaciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:556
+#: modules/common/class-roles-manager.php:559
 msgid "Crear y gestionar tareas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:557
+#: modules/common/class-roles-manager.php:560
 msgid "Eliminar tareas y asignaciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:558
+#: modules/common/class-roles-manager.php:561
 msgid "Subir entregas de tareas (estudiantes)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:559
+#: modules/common/class-roles-manager.php:562
 msgid "Revisar y calificar tareas de alumnos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:560
+#: modules/common/class-roles-manager.php:563
 msgid "Sincronizar con Google Calendar"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:561
+#: modules/common/class-roles-manager.php:564
 msgid "Configuración del módulo de calendario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:568
+#: modules/common/class-roles-manager.php:571
 msgid "MÓDULO: CERTIFICADOS Y DIPLOMAS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:570
+#: modules/common/class-roles-manager.php:573
 msgid "Ver listado de certificados emitidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:571
+#: modules/common/class-roles-manager.php:574
 msgid "Descargar certificado propio"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:573
+#: modules/common/class-roles-manager.php:576
 msgid "Ver plantillas de diseño"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:574
+#: modules/common/class-roles-manager.php:577
 msgid "Ver reportes de certificados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:575
+#: modules/common/class-roles-manager.php:578
 msgid "Crear nuevas plantillas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:576
+#: modules/common/class-roles-manager.php:579
 msgid "Editar plantillas de certificados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:578
+#: modules/common/class-roles-manager.php:581
 msgid "Gestionar firmantes y sellos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:579
+#: modules/common/class-roles-manager.php:582
 msgid "Configuración del módulo de certificados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:580
+#: modules/common/class-roles-manager.php:583
 msgid "Revocar certificados emitidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:581
+#: modules/common/class-roles-manager.php:584
 msgid "Eliminar plantillas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:588
-msgid "MÓDULO: VALIDACIÓN DOCUMENTAL (QR & CONSULAR)"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:590
-msgid "Ver listado de documentos registrados"
-msgstr ""
-
 #: modules/common/class-roles-manager.php:591
-msgid "Subir PDFs firmados y emitir QR/Folio"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:592
-msgid "Editar metadatos y vigencia consular"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:593
-msgid "Descargar PDFs originales y sellados"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:594
-msgid "Ver auditoría de consultas y cotejos SHA-256"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:595
-msgid "Revocar o reactivar documentos"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:596
-msgid "Configurar Validación Documental"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:597
-msgid "Eliminar documentos del registro"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:604
 msgid "MÓDULO: FORMULARIOS Y POSTULACIONES"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:606
+#: modules/common/class-roles-manager.php:593
 msgid "Llenar formularios habilitados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:607
+#: modules/common/class-roles-manager.php:594
 msgid "Ver todas las respuestas recibidas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:608
+#: modules/common/class-roles-manager.php:595
 msgid "Ver análisis y métricas de formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:609
+#: modules/common/class-roles-manager.php:596
 msgid "Exportar respuestas (Excel / CSV)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:611
+#: modules/common/class-roles-manager.php:598
 msgid "Crear nuevos formularios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:612
+#: modules/common/class-roles-manager.php:599
 msgid "Editar formularios existentes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:613
+#: modules/common/class-roles-manager.php:600
 msgid "Asignar encuestas a estudiantes/usuarios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:614
+#: modules/common/class-roles-manager.php:601
 msgid "Revisar postulantes de admisión"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:615
+#: modules/common/class-roles-manager.php:602
 msgid "Configuración general del módulo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:627
+#: modules/common/class-roles-manager.php:614
+msgid "MÓDULO: VALIDACIÓN DOCUMENTAL (QR & CONSULAR)"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:617
+msgid "Subir PDFs firmados y emitir QR/Folio"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:618
+msgid "Editar metadatos, estadía y vigencia consular"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:620
+msgid "Ver auditoría de consultas QR y cotejos SHA-256"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:622
+msgid "Configurar Validación Documental (Drive, Folios y Sellos)"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:634
 msgid "MÓDULO: INVENTARIO Y MANTENIMIENTOS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:629
+#: modules/common/class-roles-manager.php:636
 msgid "Ver todo el catálogo de inventario"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:632
+#: modules/common/class-roles-manager.php:639
 msgid "Ver vida útil y depreciación"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:635
+#: modules/common/class-roles-manager.php:642
 msgid "Registrar nuevos equipos y herramientas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:636
+#: modules/common/class-roles-manager.php:643
 msgid "Registrar préstamo / salida de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:642
+#: modules/common/class-roles-manager.php:649
 msgid "Editar datos y fichas de equipos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:646 modules/common/class-roles-manager.php:693
+#: modules/common/class-roles-manager.php:653 modules/common/class-roles-manager.php:700
 msgid "Cancelar / eliminar préstamos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:655
+#: modules/common/class-roles-manager.php:662
 msgid "MÓDULO: VEHÍCULOS Y FLOTA"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:658
+#: modules/common/class-roles-manager.php:665
 msgid "Ver reportes y estadísticas de flota"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:661
+#: modules/common/class-roles-manager.php:668
 msgid "Registrar salidas de vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:662
+#: modules/common/class-roles-manager.php:669
 msgid "Actualizar kilometraje y bitácora"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:663
+#: modules/common/class-roles-manager.php:670
 msgid "Editar propias salidas registradas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:665
+#: modules/common/class-roles-manager.php:672
 msgid "Editar información de vehículos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:666
+#: modules/common/class-roles-manager.php:673
 msgid "Ver auditoría y trazabilidad"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:669
+#: modules/common/class-roles-manager.php:676
 msgid "Eliminar cualquier salida"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:677
+#: modules/common/class-roles-manager.php:684
 msgid "MÓDULO: BIBLIOTECA Y PRÉSTAMOS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:680
+#: modules/common/class-roles-manager.php:687
 msgid "Ver catálogo bibliográfico"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:681
+#: modules/common/class-roles-manager.php:688
 msgid "Ver mis préstamos propios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:684
+#: modules/common/class-roles-manager.php:691
 msgid "Recibir alertas de préstamos vencidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:686
+#: modules/common/class-roles-manager.php:693
 msgid "Registrar préstamos de libros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:687
+#: modules/common/class-roles-manager.php:694
 msgid "Registrar devolución de libros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:701
+#: modules/common/class-roles-manager.php:708
 msgid "MÓDULO: ELECTRICIDAD Y CONSUMOS"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:707
+#: modules/common/class-roles-manager.php:714
 msgid "Registrar lecturas de contador"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:711
+#: modules/common/class-roles-manager.php:718
 msgid "Eliminar lecturas registradas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:718
+#: modules/common/class-roles-manager.php:725
 msgid "MÓDULO: CONTACTOS Y GOOGLE SYNC"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:720
+#: modules/common/class-roles-manager.php:727
 msgid "Ver directorio maestro de contactos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:723
+#: modules/common/class-roles-manager.php:730
 msgid "Eliminar / archivar contactos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:724
+#: modules/common/class-roles-manager.php:731
 msgid "Sincronizar con Google Contacts (Push/Pull)"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:725
+#: modules/common/class-roles-manager.php:732
 msgid "Conectar cuenta de Google y OAuth2"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:727
+#: modules/common/class-roles-manager.php:734
 msgid "Exportar contactos a CSV o vCard"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:728
+#: modules/common/class-roles-manager.php:735
 msgid "Ver historial financiero del contacto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:743
+#: modules/common/class-roles-manager.php:750
 msgid "Auxiliar Contable / Digitador"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:744
+#: modules/common/class-roles-manager.php:751
 msgid "Finanzas & Captura"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:749
+#: modules/common/class-roles-manager.php:756
 msgid "Ingreso de transacciones operativas sin acceso a saldos bancarios, totales de cuentas ni reportes de la organización."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:751
+#: modules/common/class-roles-manager.php:758
 msgid "✅ Registrar transacciones e imputar conceptos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:752
+#: modules/common/class-roles-manager.php:759
 msgid "✅ Vincular usuarios y seleccionar o crear terceros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:753
+#: modules/common/class-roles-manager.php:760
 msgid "✅ Asignar etiquetas operativas a los gastos ingresados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:754
+#: modules/common/class-roles-manager.php:761
 msgid "✅ Ver y editar exclusivamente sus propios registros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:755
+#: modules/common/class-roles-manager.php:762
 msgid "🔒 Sin acceso a saldos bancarios, totales ni análisis globales"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:756
+#: modules/common/class-roles-manager.php:763
 msgid "🔒 Sin permisos de aprobación ni conciliación"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:771
+#: modules/common/class-roles-manager.php:778
 msgid "Finanzas & Tesorería"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:776
+#: modules/common/class-roles-manager.php:783
 msgid "Control total del flujo de caja, conciliaciones, cuentas bancarias, libro mayor, categorías, integraciones contables y aprobación."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:778
+#: modules/common/class-roles-manager.php:785
 msgid "✅ Control total de transacciones, edición masiva y libro mayor"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:779
+#: modules/common/class-roles-manager.php:786
 msgid "✅ Integraciones contables (QuickBooks, SAP, MX, Excel) y trazabilidad"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:780
+#: modules/common/class-roles-manager.php:787
 msgid "✅ Cuentas bancarias, cajas chicas, saldos y presupuestos por área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:781
+#: modules/common/class-roles-manager.php:788
 msgid "✅ Importaciones masivas, categorías, terceros y auditoría contable"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:823
+#: modules/common/class-roles-manager.php:830
 msgid "Dirección & Gobierno"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:828
+#: modules/common/class-roles-manager.php:835
 msgid "Visión ejecutiva 360°, aprobación de gastos de alto nivel, analíticas e informes consolidados de todos los módulos."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:830
+#: modules/common/class-roles-manager.php:837
 msgid "✅ Aprobación ejecutiva de gastos y transacciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:831
+#: modules/common/class-roles-manager.php:838
 msgid "✅ Tableros analíticos, presupuestos e informes consolidados"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:832
+#: modules/common/class-roles-manager.php:839
 msgid "✅ Supervisión global de áreas, flota, inventario y cursos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:833
+#: modules/common/class-roles-manager.php:840
 msgid "✅ Consulta de libros mayores, trazabilidad y respuestas de encuestas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:886
+#: modules/common/class-roles-manager.php:899
 msgid "Auditoría & Control"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:891
+#: modules/common/class-roles-manager.php:904
 msgid "Acceso irrestricto de solo lectura a auditorías, libros mayores, integraciones contables, inventario y trazabilidad del sistema."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:893
+#: modules/common/class-roles-manager.php:906
 msgid "✅ Lectura de todas las transacciones, cuentas y libros mayores"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:894
+#: modules/common/class-roles-manager.php:907
 msgid "✅ Trazabilidad completa y auditoría de finanzas, vehículos y biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:895
+#: modules/common/class-roles-manager.php:908
 msgid "✅ Integraciones contables (QuickBooks, SAP, XML) y exportación fiscal"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:896
+#: modules/common/class-roles-manager.php:909
 msgid "🔒 Estricto solo lectura: sin modificación ni borrado"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:946
+#: modules/common/class-roles-manager.php:962
 msgid "Proyectos & Áreas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:951
+#: modules/common/class-roles-manager.php:967
 msgid "Gestión descentralizada del área asignada: ejecución de presupuesto, registro de gastos e inscripciones de su programa."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:953
+#: modules/common/class-roles-manager.php:969
 msgid "✅ Consulta del presupuesto de su área asignada"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:954
+#: modules/common/class-roles-manager.php:970
 msgid "✅ Registro de transacciones y etiquetas imputadas a su programa"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:955
+#: modules/common/class-roles-manager.php:971
 msgid "✅ Formularios e inscripciones propios de su área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:956
+#: modules/common/class-roles-manager.php:972
 msgid "✅ Calendario y eventos de capacitación de su área"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:957
+#: modules/common/class-roles-manager.php:973
 msgid "🔒 Acceso acotado a su área de responsabilidad"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:990
+#: modules/common/class-roles-manager.php:1006
 msgid "Logística & Activos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:995
+#: modules/common/class-roles-manager.php:1011
 msgid "Administración completa de vehículos, salidas, kilometrajes, mantenimiento de equipos y consumo eléctrico."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:997
+#: modules/common/class-roles-manager.php:1013
 msgid "✅ Control total de vehículos, salidas y odómetros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:998
+#: modules/common/class-roles-manager.php:1014
 msgid "✅ Préstamos, devoluciones y mantenimiento de herramientas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:999
+#: modules/common/class-roles-manager.php:1015
 msgid "✅ Registro de lecturas eléctricas y alertas operativas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1000
+#: modules/common/class-roles-manager.php:1016
 msgid "✅ Registro de compras y gastos menores de mantenimiento con etiquetas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1037
+#: modules/common/class-roles-manager.php:1053
 msgid "Coordinador Académico & Estudiantes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1038 modules/common/class-roles-manager.php:1095 modules/common/class-roles-manager.php:1127 modules/common/class-roles-manager.php:1156
-#: modules/common/class-roles-manager.php:1204
+#: modules/common/class-roles-manager.php:1054 modules/common/class-roles-manager.php:1111 modules/common/class-roles-manager.php:1143 modules/common/class-roles-manager.php:1172
+#: modules/common/class-roles-manager.php:1220
 msgid "Educación & Cursos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1043
+#: modules/common/class-roles-manager.php:1059
 msgid "Gestión de postulaciones estudiantiles, cursos, becas, cobro de cuotas educativas y emisión de diplomas certificados."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1045
+#: modules/common/class-roles-manager.php:1061
 msgid "✅ Registro, revisión y aprobación de estudiantes y cursos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1046
+#: modules/common/class-roles-manager.php:1062
 msgid "✅ Asignación de becas y registro de pagos de cuotas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1047
+#: modules/common/class-roles-manager.php:1063
 msgid "✅ Control de horarios, calendarios, notas, tareas y asistencias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1048
+#: modules/common/class-roles-manager.php:1064
 msgid "✅ Emisión, firma y descarga de certificados oficiales"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1094
+#: modules/common/class-roles-manager.php:1110
 msgid "Profesor / Docente de Capacitación"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1100
+#: modules/common/class-roles-manager.php:1116
 msgid "Impartición de clases asignadas, pase de lista de asistencia, registro de calificaciones y creación/evaluación de tareas para sus estudiantes."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1102
+#: modules/common/class-roles-manager.php:1118
 msgid "✅ Ver calendario de sus clases y materias asignadas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1103
+#: modules/common/class-roles-manager.php:1119
 msgid "✅ Tomar y actualizar asistencia de estudiantes en tiempo real"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1104
+#: modules/common/class-roles-manager.php:1120
 msgid "✅ Registrar y editar calificaciones y reportes de notas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1105
+#: modules/common/class-roles-manager.php:1121
 msgid "✅ Crear asignaciones académicas y calificar entregas de tareas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1106
+#: modules/common/class-roles-manager.php:1122
 msgid "🔒 Acceso acotado a sus clases, sin permisos de borrado de eventos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1132
+#: modules/common/class-roles-manager.php:1148
 msgid "Programación de horarios, asignación de aulas, gestión de eventos académicos, materias, programas de formación y sincronización con Google Calendar."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1134
+#: modules/common/class-roles-manager.php:1150
 msgid "✅ Creación y edición integral de eventos, clases y horarios"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1135
+#: modules/common/class-roles-manager.php:1151
 msgid "✅ Gestión de programas de capacitación y asignación de materias"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1136
+#: modules/common/class-roles-manager.php:1152
 msgid "✅ Sincronización de eventos con Google Calendar"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1137
+#: modules/common/class-roles-manager.php:1153
 msgid "✅ Consulta de asistencias, notas y tareas en todos los programas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1155
+#: modules/common/class-roles-manager.php:1171
 msgid "Director Académico / Decano"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1161
+#: modules/common/class-roles-manager.php:1177
 msgid "Supervisión total de la oferta académica: programas, horarios, asistencia global, cuadro de honor de calificaciones, tareas y auditoría de clases."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1163
+#: modules/common/class-roles-manager.php:1179
 msgid "✅ Control total de calendarios, programas y eventos académicos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1164
+#: modules/common/class-roles-manager.php:1180
 msgid "✅ Supervisión y aprobación de notas, tareas y asistencias globales"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1165
+#: modules/common/class-roles-manager.php:1181
 msgid "✅ Emisión de certificados y gestión de cursos y becas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1166
+#: modules/common/class-roles-manager.php:1182
 msgid "✅ Reportes analíticos de rendimiento docente y estudiantil"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1209
+#: modules/common/class-roles-manager.php:1225
 msgid "Portal del estudiante para consulta de horarios de clases, revisión de calificaciones personales, consulta y entrega de tareas académicas."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1211
+#: modules/common/class-roles-manager.php:1227
 msgid "✅ Ver calendario de sus clases y materias matriculadas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1212
+#: modules/common/class-roles-manager.php:1228
 msgid "✅ Consultar sus calificaciones y retroalimentación docente"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1213
+#: modules/common/class-roles-manager.php:1229
 msgid "✅ Consultar asignaciones académicas y subir entregas de tareas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1214
+#: modules/common/class-roles-manager.php:1230
 msgid "✅ Descargar sus propios certificados aprobados y biblioteca"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1231
+#: modules/common/class-roles-manager.php:1247
 msgid "Bibliotecario / Gestor Documental"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1232
+#: modules/common/class-roles-manager.php:1248
 msgid "Biblioteca & Acervo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1237
+#: modules/common/class-roles-manager.php:1253
 msgid "Gestión integral del catálogo bibliográfico, control de préstamos a estudiantes/docentes, devoluciones y alertas de mora."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1239
+#: modules/common/class-roles-manager.php:1255
 msgid "✅ Catálogo completo de libros, fichas y categorías"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1240
+#: modules/common/class-roles-manager.php:1256
 msgid "✅ Registro de préstamos, renovaciones y devoluciones"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1241
+#: modules/common/class-roles-manager.php:1257
 msgid "✅ Alertas automáticas de préstamos vencidos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1242
+#: modules/common/class-roles-manager.php:1258
 msgid "✅ Reportes estadísticos de lectura y circulación"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1263
+#: modules/common/class-roles-manager.php:1279
 msgid "Registrador / Catalogador de Libros"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1264
+#: modules/common/class-roles-manager.php:1280
 msgid "Biblioteca & Catalogación"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1269
+#: modules/common/class-roles-manager.php:1285
 msgid "Perfil enfocado exclusivamente en registrar, catalogar (ISBN/escáner) y actualizar libros y portadas en la biblioteca."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1271
+#: modules/common/class-roles-manager.php:1287
 msgid "✅ Acceso al módulo de Biblioteca y consulta completa del catálogo"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1272
+#: modules/common/class-roles-manager.php:1288
 msgid "✅ Registrar libros nuevos, búsqueda ISBN/escáner y subir portadas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1273
+#: modules/common/class-roles-manager.php:1289
 msgid "✅ Editar información y fichas bibliográficas existentes"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1274
+#: modules/common/class-roles-manager.php:1290
 msgid "🔒 Sin eliminación de libros ni gestión de préstamos, reportes o finanzas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1284
-msgid "Operador de Campo / Técnico"
+#: modules/common/class-roles-manager.php:1300
+msgid "Secretario General / Gestor Documental & QR"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1285
-msgid "Operación de Campo"
+#: modules/common/class-roles-manager.php:1301 modules/common/class-roles-manager.php:1326 modules/common/class-roles-manager.php:1347
+msgid "Documental & Consular"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1290
-msgid "Operación básica para conductores y técnicos: registro de salidas vehiculares, odómetros, lecturas eléctricas y encuestas."
+#: modules/common/class-roles-manager.php:1306
+msgid "Gobierno integral de Validación Documental: emisión de cartas de invitación (embajadas y migración), oficios con QR, sellado FPDI, revocación, trazabilidad SHA-256 y configuración del módulo."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1292
-msgid "✅ Registrar salidas vehiculares y actualizar odómetros"
+#: modules/common/class-roles-manager.php:1308
+msgid "✅ Subir PDFs firmados y generar QR/folio para cartas consulares y de migración"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1293
-msgid "✅ Toma de lecturas de contadores eléctricos"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:1294
-msgid "✅ Diligenciar formularios y solicitudes en campo"
-msgstr ""
-
-#: modules/common/class-roles-manager.php:1295
-msgid "🔒 Sin acceso a información contable ni datos sensibles"
+#: modules/common/class-roles-manager.php:1309
+msgid "✅ Editar metadatos, estadía, PIN y descargar originales/sellados de Drive"
 msgstr ""
 
 #: modules/common/class-roles-manager.php:1310
-msgid "Administrador de Sistemas & TI"
+msgid "✅ Revocar o reactivar documentos y revisar auditoría criptográfica SHA-256"
 msgstr ""
 
 #: modules/common/class-roles-manager.php:1311
+msgid "✅ Configurar datos institucionales, prefijos de folios, sellos y Drive"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1331
+msgid "Perfil operativo para registrar PDFs firmados, emitir cartas de invitación (visas/migración) y constancias con QR, actualizar vigencias y entregar ejemplares certificados."
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1333
+msgid "✅ Subir PDFs firmados y generar códigos QR y folios INV / MIG / OFI"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1334
+msgid "✅ Editar vigencia consular, dirección de estadía y PIN de privacidad"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1335
+msgid "✅ Descargar PDFs originales y certificados con anexo QR para envío"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1336
+msgid "🔒 Sin permiso para revocar, eliminar registros ni modificar Google Drive o prefijos"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1352
+msgid "Acceso de solo lectura al registro de documentos verificables, descarga de PDFs para cotejo y trazabilidad completa de escaneos QR y validaciones SHA-256."
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1354
+msgid "✅ Consultar listado maestro de documentos, estados y vigencias"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1355
+msgid "✅ Auditar escaneos QR, búsquedas públicas, PINs y cotejos SHA-256"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1356
+msgid "✅ Descargar PDFs originales y sellados para verificación interna"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1357
+msgid "🔒 Estricto solo lectura: sin emisión, edición, revocación ni borrado"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1366
+msgid "Operador de Campo / Técnico"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1367
+msgid "Operación de Campo"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1372
+msgid "Operación básica para conductores y técnicos: registro de salidas vehiculares, odómetros, lecturas eléctricas y encuestas."
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1374
+msgid "✅ Registrar salidas vehiculares y actualizar odómetros"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1375
+msgid "✅ Toma de lecturas de contadores eléctricos"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1376
+msgid "✅ Diligenciar formularios y solicitudes en campo"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1377
+msgid "🔒 Sin acceso a información contable ni datos sensibles"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1392
+msgid "Administrador de Sistemas & TI"
+msgstr ""
+
+#: modules/common/class-roles-manager.php:1393
 msgid "Tecnología & Seguridad"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1316
+#: modules/common/class-roles-manager.php:1398
 msgid "Gestión técnica de usuarios, asignación de permisos CBAC, copias de seguridad, logs de auditoría, integraciones y activación de módulos."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1318
+#: modules/common/class-roles-manager.php:1400
 msgid "✅ Creación de usuarios y asignación de permisos CBAC granulares"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1319
+#: modules/common/class-roles-manager.php:1401
 msgid "✅ Gobierno de integraciones contables, Google Drive y módulos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1320
+#: modules/common/class-roles-manager.php:1402
 msgid "✅ Copias de seguridad y logs de auditoría técnica y de seguridad"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1321
+#: modules/common/class-roles-manager.php:1403
 msgid "✅ Configuración maestra y administración global de la plataforma"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1339
+#: modules/common/class-roles-manager.php:1424
 msgid "Gestor de Presupuesto de Área / Proyecto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1340
+#: modules/common/class-roles-manager.php:1425
 msgid "Presupuestos & Áreas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1345
+#: modules/common/class-roles-manager.php:1430
 msgid "Permite registrar y justificar transacciones imputadas única y exclusivamente al presupuesto del área o proyecto asignado al usuario, con consulta en tiempo real del saldo disponible sin acceso a otras áreas ni a cuentas globales."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1347
+#: modules/common/class-roles-manager.php:1432
 msgid "✅ Registro de transacciones acotado al presupuesto de su área asignada"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1348
+#: modules/common/class-roles-manager.php:1433
 msgid "✅ Consulta del techo presupuestal y saldo restante de su proyecto"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1349
+#: modules/common/class-roles-manager.php:1434
 msgid "✅ Gestión y edición exclusiva de sus propios comprobantes y gastos"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1350
+#: modules/common/class-roles-manager.php:1435
 msgid "🔒 Restricción jerárquica: no puede ver ni cargar gastos a otras áreas"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1351
+#: modules/common/class-roles-manager.php:1436
 msgid "🔒 Sin acceso a cuentas bancarias de la empresa, libro mayor ni auditoría"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1501
+#: modules/common/class-roles-manager.php:1586
 msgid "No tienes permisos suficientes para asignar capabilities a usuarios."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1510
+#: modules/common/class-roles-manager.php:1595
 msgid "Identificador de usuario o plantilla no proporcionado."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1517
+#: modules/common/class-roles-manager.php:1602
 msgid "El usuario especificado no existe en el sistema."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1524
+#: modules/common/class-roles-manager.php:1609
 msgid "La plantilla de perfil seleccionada no existe."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1535
+#: modules/common/class-roles-manager.php:1620
 #, php-format
 msgid "¡Plantilla \"%s\" (%d permisos) aplicada y guardada exitosamente para %s!"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1554
+#: modules/common/class-roles-manager.php:1639
 msgid "Ocurrió un error al guardar la plantilla para este usuario."
 msgstr ""
 
-#: modules/common/class-roles-manager.php:1949 assets/js/calendar-admin.js:1490
+#: modules/common/class-roles-manager.php:2036 assets/js/calendar-admin.js:1490
 msgid "Invitado"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:2144
+#: modules/common/class-roles-manager.php:2231
 msgid "Director / Administrador"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:2153
+#: modules/common/class-roles-manager.php:2240
 msgid "Profesor / Instructor"
 msgstr ""
 
-#: modules/common/class-roles-manager.php:2162
+#: modules/common/class-roles-manager.php:2249
 msgid "Gestor Financiero / Tesorería"
 msgstr ""
 
@@ -8908,7 +8972,7 @@ msgid "WhatsApp"
 msgstr ""
 
 #: modules/contacts/class-contacts-import-export.php:175 modules/contacts/class-contacts-import-export.php:663 modules/contacts/class-contacts-sync.php:1012 modules/forms/class-forms-admin.php:333
-#: modules/students/class-students-settings.php:102 templates/contacts/contacts-page.php:651 templates/forms/builder.php:677 templates/permissions-page.php:1242
+#: modules/students/class-students-settings.php:102 templates/contacts/contacts-page.php:651 templates/forms/builder.php:677 templates/permissions-page.php:1244
 #: templates/students/list.php:372 templates/students/student-form.php:201 assets/js/third-parties-directory.js:460
 msgid "Dirección"
 msgstr ""
@@ -8972,7 +9036,7 @@ msgstr ""
 msgid "Nombre"
 msgstr ""
 
-#: modules/contacts/class-contacts-import-export.php:654 modules/forms/class-forms-admin.php:328 modules/students/class-students-dashboard.php:538 templates/permissions-page.php:1496
+#: modules/contacts/class-contacts-import-export.php:654 modules/forms/class-forms-admin.php:328 modules/students/class-students-dashboard.php:538 templates/permissions-page.php:1501
 #: templates/students/frontend/enrollment-form.php:87
 msgid "Apellido"
 msgstr ""
@@ -9492,11 +9556,11 @@ msgstr ""
 msgid "Dashboard — Validación Documental"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:77 templates/docverify/documents-list.php:66
+#: modules/docverify/class-docverify-admin.php:77 templates/docverify/documents-list.php:70
 msgid "Documentos Verificables"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:78 templates/docverify/audit-log.php:40
+#: modules/docverify/class-docverify-admin.php:78 templates/docverify/audit-log.php:44
 msgid "Documentos"
 msgstr ""
 
@@ -9504,7 +9568,7 @@ msgstr ""
 msgid "Registrar / Subir PDF Firmado"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:89 templates/docverify/documents-list.php:133
+#: modules/docverify/class-docverify-admin.php:89 templates/docverify/documents-list.php:137
 msgid "Registrar PDF"
 msgstr ""
 
@@ -9512,7 +9576,7 @@ msgstr ""
 msgid "Auditoría de Verificaciones"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:110 templates/docverify/settings.php:29
+#: modules/docverify/class-docverify-admin.php:110 templates/docverify/settings.php:33
 msgid "Configuración — Validación Documental"
 msgstr ""
 
@@ -9552,17 +9616,17 @@ msgstr ""
 msgid "Selecciona primero el archivo PDF firmado."
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:173 templates/docverify/dashboard.php:189 templates/docverify/documents-list.php:243
+#: modules/docverify/class-docverify-admin.php:173 templates/docverify/dashboard.php:196 templates/docverify/documents-list.php:247
 msgid "Vigente"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:174 templates/docverify/dashboard.php:191 templates/docverify/documents-list.php:245 templates/forms/assignments.php:41
+#: modules/docverify/class-docverify-admin.php:174 templates/docverify/dashboard.php:198 templates/docverify/documents-list.php:249 templates/forms/assignments.php:41
 #: templates/forms/assignments.php:162 templates/forms/assignments.php:393 templates/library/reservations-list.php:117 templates/library/reservations-list.php:231
 msgid "Expirado"
 msgstr ""
 
 #: modules/docverify/class-docverify-admin.php:175 templates/certificates/dashboard.php:185 templates/certificates/list.php:173 templates/certificates/view.php:88
-#: templates/docverify/dashboard.php:193 templates/docverify/documents-list.php:247
+#: templates/docverify/dashboard.php:200 templates/docverify/documents-list.php:251
 msgid "Revocado"
 msgstr ""
 
@@ -9578,7 +9642,7 @@ msgstr ""
 msgid "Código de Verificación"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:179 templates/docverify/documents-list.php:165
+#: modules/docverify/class-docverify-admin.php:179 templates/docverify/documents-list.php:169
 msgid "Titular / Invitado"
 msgstr ""
 
@@ -9590,15 +9654,15 @@ msgstr ""
 msgid "Lugar de Estadía / Respaldo"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:182 templates/docverify/documents-list.php:290
+#: modules/docverify/class-docverify-admin.php:182 templates/docverify/documents-list.php:294
 msgid "Firmante Autorizado"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:183 templates/docverify/documents-list.php:171
+#: modules/docverify/class-docverify-admin.php:183 templates/docverify/documents-list.php:175
 msgid "Emisión / Vigencia"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:184 templates/docverify/documents-list.php:237
+#: modules/docverify/class-docverify-admin.php:184 templates/docverify/documents-list.php:241
 msgid "Sin vencimiento"
 msgstr ""
 
@@ -9614,7 +9678,7 @@ msgstr ""
 msgid "URL Pública de Verificación"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:188 modules/vehicles/admin/views/page-vehicles.php:681 templates/docverify/documents-list.php:298 templates/forms/list.php:208
+#: modules/docverify/class-docverify-admin.php:188 modules/vehicles/admin/views/page-vehicles.php:681 templates/docverify/documents-list.php:302 templates/forms/list.php:208
 #: templates/forms/list.php:298
 msgid "Copiar URL"
 msgstr ""
@@ -9651,11 +9715,11 @@ msgstr ""
 msgid "Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:197 templates/docverify/document-form.php:186
+#: modules/docverify/class-docverify-admin.php:197 templates/docverify/document-form.php:194
 msgid "Ej: Embajada de los Estados Unidos / Sección Consular"
 msgstr ""
 
-#: modules/docverify/class-docverify-admin.php:198 templates/docverify/document-form.php:212
+#: modules/docverify/class-docverify-admin.php:198 templates/docverify/document-form.php:220
 msgid "Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional"
 msgstr ""
 
@@ -9979,7 +10043,7 @@ msgstr ""
 msgid "Se enviará una alerta cuando el consumo diario supere este valor."
 msgstr ""
 
-#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:259 templates/settings-page.php:1837
+#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:263 templates/settings-page.php:1837
 msgid "Guardar Configuración"
 msgstr ""
 
@@ -11271,7 +11335,7 @@ msgstr ""
 msgid "Estado de Presupuestos"
 msgstr ""
 
-#: modules/financial/class-financial-budgets.php:1158 templates/common/third-parties-page.php:343 templates/docverify/dashboard.php:148 templates/students/scholarships.php:134
+#: modules/financial/class-financial-budgets.php:1158 templates/common/third-parties-page.php:343 templates/docverify/dashboard.php:155 templates/students/scholarships.php:134
 msgid "Ver todos"
 msgstr ""
 
@@ -17424,7 +17488,7 @@ msgstr ""
 msgid "Biblioteca — AURA"
 msgstr ""
 
-#: modules/library/admin/class-library-admin.php:103 modules/library/admin/class-library-admin.php:422 templates/main-dashboard.php:1028 templates/permissions-page.php:1257
+#: modules/library/admin/class-library-admin.php:103 modules/library/admin/class-library-admin.php:422 templates/main-dashboard.php:1028 templates/permissions-page.php:1259
 #: assets/js/advanced-search.js:1099 assets/js/advanced-search.js:1100
 msgid "Biblioteca"
 msgstr ""
@@ -19625,7 +19689,7 @@ msgstr ""
 #: modules/vehicles/admin/views/page-audit.php:107 modules/vehicles/admin/views/page-reports.php:128 templates/calendar/modal-partials.php:245 templates/calendar/tab-programs.php:1237
 #: templates/calendar/tab-settings.php:700 templates/common/third-parties-page.php:125 templates/common/third-parties-page.php:315 templates/contacts/contacts-page.php:204
 #: templates/financial/capital-expenses-page.php:135 templates/financial/capital-expenses-page.php:162 templates/forms/assignments.php:122 templates/inventory/reports-page.php:164
-#: templates/permissions-page.php:1111 templates/permissions-page.php:1236 templates/students/enrollments.php:120 templates/students/paz-salvo.php:67
+#: templates/permissions-page.php:1113 templates/permissions-page.php:1238 templates/students/enrollments.php:120 templates/students/paz-salvo.php:67
 #: assets/js/third-party-selector.js:246
 msgid "Todos"
 msgstr ""
@@ -20346,7 +20410,7 @@ msgid "Nueva Salida"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-trips.php:57 modules/vehicles/admin/views/page-vehicles.php:66 templates/areas/areas-page.php:231 templates/certificates/list.php:104
-#: templates/docverify/documents-list.php:87 templates/financial/accounts-page.php:139 templates/financial/pending-transactions.php:288 templates/financial/trash-transactions.php:189
+#: templates/docverify/documents-list.php:91 templates/financial/accounts-page.php:139 templates/financial/pending-transactions.php:288 templates/financial/trash-transactions.php:189
 #: templates/forms/list.php:106 templates/inventory/maintenance-list.php:175 templates/inventory/reports-page.php:150 templates/students/scholarships.php:107
 #: assets/js/areas-admin.js:484
 msgid "Todos los tipos"
@@ -20358,7 +20422,7 @@ msgid "Renta"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-trips.php:65 modules/vehicles/admin/views/page-vehicles.php:58 templates/certificates/list.php:99 templates/contacts/contacts-page.php:618
-#: templates/contacts/contacts-page.php:1079 templates/docverify/documents-list.php:97 templates/financial/accounts-page.php:252 templates/financial/accounts-page.php:874
+#: templates/contacts/contacts-page.php:1079 templates/docverify/documents-list.php:101 templates/financial/accounts-page.php:252 templates/financial/accounts-page.php:874
 #: templates/financial/budgets-page.php:452 templates/financial/trash-transactions.php:203 templates/financial/user-dashboard.php:406 templates/forms/assignments.php:159
 #: templates/forms/enrollments-pending.php:216 templates/forms/list.php:114 templates/forms/submissions-list.php:178 templates/inventory/equipment-list.php:115
 #: templates/inventory/loans-list.php:133 templates/library/books-list.php:116 templates/library/loans-list.php:130 templates/library/reservations-list.php:114
@@ -20379,7 +20443,7 @@ msgid "Buscar…"
 msgstr ""
 
 #: modules/vehicles/admin/views/page-trips.php:88 modules/vehicles/admin/views/page-vehicles.php:87 templates/areas/areas-page.php:255 templates/certificates/list.php:124
-#: templates/docverify/audit-log.php:75 templates/docverify/documents-list.php:115 templates/financial/user-dashboard.php:416 templates/financial/user-ledger.php:489
+#: templates/docverify/audit-log.php:79 templates/docverify/documents-list.php:119 templates/financial/user-dashboard.php:416 templates/financial/user-ledger.php:489
 #: templates/forms/assignments.php:166 templates/forms/enrollments-pending.php:224 templates/forms/list.php:120 templates/forms/submissions-list.php:187
 #: templates/inventory/equipment-list.php:149 templates/inventory/loans-list.php:153 templates/inventory/maintenance-list.php:217 templates/library/audit.php:185
 #: templates/library/books-list.php:151 templates/library/loans-list.php:160 templates/library/reservations-list.php:126 templates/students/course-list.php:83
@@ -20389,7 +20453,7 @@ msgstr ""
 
 #: modules/vehicles/admin/views/page-trips.php:91 modules/vehicles/admin/views/page-vehicles.php:90 templates/areas/area-types-page.php:473 templates/areas/areas-page.php:259
 #: templates/areas/areas-page.php:395 templates/calendar/tab-calendar.php:81 templates/certificates/issue.php:141 templates/certificates/list.php:126
-#: templates/docverify/audit-log.php:78 templates/docverify/documents-list.php:118 templates/financial/accounts-page.php:164 templates/financial/accounts-page.php:591
+#: templates/docverify/audit-log.php:82 templates/docverify/documents-list.php:122 templates/financial/accounts-page.php:164 templates/financial/accounts-page.php:591
 #: templates/financial/accounts-page.php:1384 templates/financial/audit-log-page.php:108 templates/financial/budgets-page.php:493 templates/financial/search-page.php:296
 #: templates/financial/user-dashboard.php:422 templates/financial/user-ledger.php:493 templates/forms/list.php:123 templates/forms/submissions-list.php:190
 #: templates/inventory/equipment-list.php:153 templates/inventory/loans-list.php:157 templates/inventory/maintenance-list.php:221 templates/library/audit.php:189
@@ -21291,7 +21355,7 @@ msgstr ""
 msgid "Alerta de Mantenimiento"
 msgstr ""
 
-#: modules/vehicles/class-vehicle-alerts.php:421 templates/financial/import-page.php:227 templates/library/audit.php:640 templates/permissions-page.php:1260
+#: modules/vehicles/class-vehicle-alerts.php:421 templates/financial/import-page.php:227 templates/library/audit.php:640 templates/permissions-page.php:1265
 #: assets/js/audit-log.js:138
 msgid "Campo"
 msgstr ""
@@ -22366,12 +22430,12 @@ msgstr ""
 msgid "Opciones de edición o eliminación."
 msgstr ""
 
-#: templates/areas/areas-page.php:443 templates/inventory/dashboard.php:285 templates/inventory/reports-page.php:306 templates/permissions-page.php:1582
+#: templates/areas/areas-page.php:443 templates/inventory/dashboard.php:285 templates/inventory/reports-page.php:306 templates/permissions-page.php:1587
 #: templates/students/settings.php:376
 msgid "Desarrollado con ❤️ por"
 msgstr ""
 
-#: templates/areas/areas-page.php:443 templates/inventory/dashboard.php:285 templates/inventory/reports-page.php:306 templates/permissions-page.php:1582
+#: templates/areas/areas-page.php:443 templates/inventory/dashboard.php:285 templates/inventory/reports-page.php:306 templates/permissions-page.php:1587
 msgid "Versión"
 msgstr ""
 
@@ -22392,7 +22456,7 @@ msgstr ""
 msgid "Seleccionar"
 msgstr ""
 
-#: templates/areas/areas-page.php:487 templates/certificates/settings.php:66 templates/permissions-page.php:1435 modules/vehicles/assets/js/vehicle-vehicles.js:606
+#: templates/areas/areas-page.php:487 templates/certificates/settings.php:66 templates/permissions-page.php:1440 modules/vehicles/assets/js/vehicle-vehicles.js:606
 msgid "Quitar"
 msgstr ""
 
@@ -23959,7 +24023,7 @@ msgstr ""
 msgid "Errores"
 msgstr ""
 
-#: templates/calendar/tab-settings.php:516 templates/docverify/audit-log.php:100 templates/docverify/dashboard.php:231 assets/js/calendar-admin.js:104
+#: templates/calendar/tab-settings.php:516 templates/docverify/audit-log.php:104 templates/docverify/dashboard.php:238 assets/js/calendar-admin.js:104
 #: assets/js/calendar-admin.js:3295
 msgid "Evento"
 msgstr ""
@@ -24333,7 +24397,7 @@ msgstr ""
 msgid "Pendientes de Emitir"
 msgstr ""
 
-#: templates/certificates/dashboard.php:102 templates/certificates/list.php:101 templates/docverify/dashboard.php:79 templates/docverify/documents-list.php:100
+#: templates/certificates/dashboard.php:102 templates/certificates/list.php:101 templates/docverify/dashboard.php:86 templates/docverify/documents-list.php:104
 msgid "Revocados"
 msgstr ""
 
@@ -24591,7 +24655,7 @@ msgstr ""
 msgid "Motivo de revocación…"
 msgstr ""
 
-#: templates/certificates/list.php:230 templates/certificates/view.php:236 templates/docverify/documents-list.php:410
+#: templates/certificates/list.php:230 templates/certificates/view.php:236 templates/docverify/documents-list.php:414
 msgid "Confirmar Revocación"
 msgstr ""
 
@@ -24620,7 +24684,7 @@ msgid "Pendientes de emitir"
 msgstr ""
 
 #: templates/certificates/reports.php:41 templates/inventory/reports-page.php:171 templates/inventory/reports-page.php:231 templates/inventory/reports-page.php:323
-#: templates/permissions-page.php:1556
+#: templates/permissions-page.php:1561
 msgid "Generar"
 msgstr ""
 
@@ -25745,7 +25809,7 @@ msgstr ""
 msgid "Paquete generado previamente por Aura Business Suite"
 msgstr ""
 
-#: templates/common/portable-bundle-modal.php:142 templates/docverify/document-form.php:88
+#: templates/common/portable-bundle-modal.php:142 templates/docverify/document-form.php:96
 msgid "Cambiar archivo"
 msgstr ""
 
@@ -26317,7 +26381,7 @@ msgstr ""
 msgid "Ej: 900.123.456-7"
 msgstr ""
 
-#: templates/common/third-parties-page.php:926 templates/permissions-page.php:1534
+#: templates/common/third-parties-page.php:926 templates/permissions-page.php:1539
 msgid "Teléfono / WhatsApp"
 msgstr ""
 
@@ -27669,1008 +27733,1028 @@ msgstr ""
 msgid "Listo"
 msgstr ""
 
-#: templates/docverify/audit-log.php:29
+#: templates/docverify/audit-log.php:14
+msgid "No tienes permisos para consultar la auditoría de Validación Documental."
+msgstr ""
+
+#: templates/docverify/audit-log.php:33
 msgid "Auditoría de Verificaciones y Consultas"
 msgstr ""
 
-#: templates/docverify/audit-log.php:30
+#: templates/docverify/audit-log.php:34
 msgid "Trazabilidad completa de escaneos QR, búsquedas manuales, cotejos SHA-256, desbloqueos con PIN y descargas"
 msgstr ""
 
-#: templates/docverify/audit-log.php:34
+#: templates/docverify/audit-log.php:38
 msgid "Registro Criptográfico Activo"
 msgstr ""
 
-#: templates/docverify/audit-log.php:55
+#: templates/docverify/audit-log.php:59
 msgid "Buscar por folio, asunto o titular…"
 msgstr ""
 
-#: templates/docverify/audit-log.php:61
+#: templates/docverify/audit-log.php:65
 msgid "Todos los eventos"
 msgstr ""
 
-#: templates/docverify/audit-log.php:88
+#: templates/docverify/audit-log.php:92
 msgid "Sin registros de auditoría para estos criterios"
 msgstr ""
 
-#: templates/docverify/audit-log.php:95
+#: templates/docverify/audit-log.php:99
 msgid "Fecha y Hora"
 msgstr ""
 
-#: templates/docverify/audit-log.php:101
+#: templates/docverify/audit-log.php:105
 msgid "Tipo de operación: verify_qr (escaneo), verify_manual, verify_hash_ok/fail (cotejo PDF), pin_unlock, download_pdf o revoked."
 msgstr ""
 
-#: templates/docverify/audit-log.php:106 templates/docverify/dashboard.php:232
+#: templates/docverify/audit-log.php:110 templates/docverify/dashboard.php:239
 msgid "Resultado"
 msgstr ""
 
-#: templates/docverify/audit-log.php:107
+#: templates/docverify/audit-log.php:111
 msgid "Indica si la validación fue válida/ok, expirada, revocada, con token inválido o PIN incorrecto."
 msgstr ""
 
-#: templates/docverify/audit-log.php:112
+#: templates/docverify/audit-log.php:116
 msgid "Detalle Técnico"
 msgstr ""
 
-#: templates/docverify/audit-log.php:113
+#: templates/docverify/audit-log.php:117
 msgid "Huella anonimizada de la IP solicitante y metadatos del evento."
 msgstr ""
 
-#: templates/docverify/audit-log.php:126
+#: templates/docverify/audit-log.php:130
 msgid "(No localizado)"
 msgstr ""
 
-#: templates/docverify/audit-log.php:153
+#: templates/docverify/audit-log.php:157
 #, php-format
 msgid "Página %1$d de %2$d (%3$d eventos)"
 msgstr ""
 
-#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
-#: templates/docverify/settings.php:266
+#: templates/docverify/audit-log.php:177 templates/docverify/dashboard.php:266 templates/docverify/document-form.php:430 templates/docverify/documents-list.php:347
+#: templates/docverify/settings.php:270
 msgid "Desarrollado con"
 msgstr ""
 
-#: templates/docverify/audit-log.php:173 templates/docverify/dashboard.php:259 templates/docverify/document-form.php:422 templates/docverify/documents-list.php:343
-#: templates/docverify/settings.php:266
+#: templates/docverify/audit-log.php:177 templates/docverify/dashboard.php:266 templates/docverify/document-form.php:430 templates/docverify/documents-list.php:347
+#: templates/docverify/settings.php:270
 msgid "por"
 msgstr ""
 
-#: templates/docverify/dashboard.php:25
-msgid "Validación Documental — Dashboard"
-msgstr ""
-
-#: templates/docverify/dashboard.php:26
-msgid "Control de documentos oficiales firmados, cartas de invitación para embajadas, códigos QR y cotejo SHA-256"
-msgstr ""
-
-#: templates/docverify/dashboard.php:30 templates/docverify/settings.php:40
+#: templates/docverify/dashboard.php:26 templates/docverify/settings.php:44
 msgid "Ver Documentos"
 msgstr ""
 
-#: templates/docverify/dashboard.php:42 templates/docverify/documents-list.php:58
+#: templates/docverify/dashboard.php:42 templates/docverify/documents-list.php:62
 msgid "Registrar PDF Firmado"
 msgstr ""
 
-#: templates/docverify/dashboard.php:55
+#: templates/docverify/dashboard.php:51
+msgid "Validación Documental — Dashboard"
+msgstr ""
+
+#: templates/docverify/dashboard.php:52
+msgid "Control de documentos oficiales firmados, cartas de invitación para embajadas, códigos QR y cotejo SHA-256"
+msgstr ""
+
+#: templates/docverify/dashboard.php:62
 msgid "Documentos Registrados"
 msgstr ""
 
-#: templates/docverify/dashboard.php:57
+#: templates/docverify/dashboard.php:64
 msgid "Total histórico de documentos con folio y QR asignados"
 msgstr ""
 
-#: templates/docverify/dashboard.php:63
+#: templates/docverify/dashboard.php:70
 msgid "Vigentes y Válidos"
 msgstr ""
 
-#: templates/docverify/dashboard.php:65
+#: templates/docverify/dashboard.php:72
 msgid "Documentos activos dentro de su período de vigencia"
 msgstr ""
 
-#: templates/docverify/dashboard.php:71
+#: templates/docverify/dashboard.php:78
 msgid "Vencen en 15 días"
 msgstr ""
 
-#: templates/docverify/dashboard.php:73
+#: templates/docverify/dashboard.php:80
 msgid "Documentos próximos a expirar (cartas de invitación o permisos)"
 msgstr ""
 
-#: templates/docverify/dashboard.php:81
+#: templates/docverify/dashboard.php:88
 msgid "Documentos anulados oficialmente por la institución"
 msgstr ""
 
-#: templates/docverify/dashboard.php:87
+#: templates/docverify/dashboard.php:94
 msgid "En Google Drive"
 msgstr ""
 
-#: templates/docverify/dashboard.php:89
+#: templates/docverify/dashboard.php:96
 msgid "Documentos respaldados en Google Drive de AURA"
 msgstr ""
 
-#: templates/docverify/dashboard.php:95
+#: templates/docverify/dashboard.php:102
 msgid "Verificaciones (30 días)"
 msgstr ""
 
-#: templates/docverify/dashboard.php:97
+#: templates/docverify/dashboard.php:104
 msgid "Consultas públicas válidas realizadas mediante QR, folio o SHA-256"
 msgstr ""
 
-#: templates/docverify/dashboard.php:108
+#: templates/docverify/dashboard.php:115
 msgid "Google Drive Conectado (Almacenamiento Privado Activo)"
 msgstr ""
 
-#: templates/docverify/dashboard.php:113
+#: templates/docverify/dashboard.php:120
 msgid "Google Drive no configurado — Usando bóveda local protegida (.htaccess)"
 msgstr ""
 
-#: templates/docverify/dashboard.php:120
+#: templates/docverify/dashboard.php:127
 #, php-format
 msgid "Carpeta destino en Drive: %s / Año / Mes"
 msgstr ""
 
-#: templates/docverify/dashboard.php:133
+#: templates/docverify/dashboard.php:140
 msgid "Abrir Verificador Público"
 msgstr ""
 
-#: templates/docverify/dashboard.php:146
+#: templates/docverify/dashboard.php:153
 msgid "Últimos Documentos Registrados"
 msgstr ""
 
-#: templates/docverify/dashboard.php:154
+#: templates/docverify/dashboard.php:161
 msgid "Aún no hay documentos registrados"
 msgstr ""
 
-#: templates/docverify/dashboard.php:155
+#: templates/docverify/dashboard.php:162
 msgid "Sube tu primer PDF firmado o carta de invitación para generar su folio institucional, código QR y huella SHA-256."
 msgstr ""
 
-#: templates/docverify/dashboard.php:158
+#: templates/docverify/dashboard.php:165
 msgid "Registrar Primer Documento"
 msgstr ""
 
-#: templates/docverify/dashboard.php:167
+#: templates/docverify/dashboard.php:174
 msgid "Asunto / Titular"
 msgstr ""
 
-#: templates/docverify/dashboard.php:169
+#: templates/docverify/dashboard.php:176
 msgid "Nube"
 msgstr ""
 
-#: templates/docverify/dashboard.php:214
+#: templates/docverify/dashboard.php:221
 msgid "Actividad y Consultas Recientes"
 msgstr ""
 
-#: templates/docverify/dashboard.php:216
+#: templates/docverify/dashboard.php:223
 msgid "Ver historial"
 msgstr ""
 
-#: templates/docverify/dashboard.php:222
+#: templates/docverify/dashboard.php:229
 msgid "Sin eventos de auditoría todavía"
 msgstr ""
 
-#: templates/docverify/dashboard.php:223
+#: templates/docverify/dashboard.php:230
 msgid "Cada escaneo QR, búsqueda manual, cotejo SHA-256 o descarga se registrará aquí."
 msgstr ""
 
-#: templates/docverify/document-form.php:39
+#: templates/docverify/document-form.php:16
+msgid "No tienes permisos para editar documentos verificables."
+msgstr ""
+
+#: templates/docverify/document-form.php:19
+msgid "No tienes permisos para registrar documentos verificables."
+msgstr ""
+
+#: templates/docverify/document-form.php:47
 #, php-format
 msgid "Editar Documento — %s"
 msgstr ""
 
-#: templates/docverify/document-form.php:40
+#: templates/docverify/document-form.php:48
 msgid "Registrar y Sellar Documento PDF"
 msgstr ""
 
-#: templates/docverify/document-form.php:41
+#: templates/docverify/document-form.php:49
 msgid "Sube un PDF ya firmado (carta de invitación, oficio o constancia), genera su folio/QR y guárdalo de forma segura en Google Drive"
 msgstr ""
 
-#: templates/docverify/document-form.php:45 templates/financial/edit-transaction.php:328
+#: templates/docverify/document-form.php:53 templates/financial/edit-transaction.php:328
 msgid "Volver al Listado"
 msgstr ""
 
-#: templates/docverify/document-form.php:62
+#: templates/docverify/document-form.php:70
 msgid "Archivo PDF Firmado"
 msgstr ""
 
-#: templates/docverify/document-form.php:62
+#: templates/docverify/document-form.php:70
 msgid "Sube el documento PDF ya firmado (con firma escaneada o firma electrónica). AURA calculará su huella SHA-256 original para detectar cualquier alteración futura."
 msgstr ""
 
-#: templates/docverify/document-form.php:64
+#: templates/docverify/document-form.php:72
 msgid "El PDF original y su versión sellada se guardarán de forma privada en Google Drive de AURA sin acceso público abierto."
 msgstr ""
 
-#: templates/docverify/document-form.php:64
+#: templates/docverify/document-form.php:72
 msgid "Destino: Google Drive (Privado)"
 msgstr ""
 
-#: templates/docverify/document-form.php:66
+#: templates/docverify/document-form.php:74
 msgid "Google Drive no está configurado; el archivo se almacenará en la bóveda local protegida con .htaccess."
 msgstr ""
 
-#: templates/docverify/document-form.php:66
+#: templates/docverify/document-form.php:74
 msgid "Destino: Bóveda Local (.htaccess)"
 msgstr ""
 
-#: templates/docverify/document-form.php:74
+#: templates/docverify/document-form.php:82
 msgid "Arrastra aquí tu PDF firmado o haz clic para seleccionarlo"
 msgstr ""
 
-#: templates/docverify/document-form.php:79
+#: templates/docverify/document-form.php:87
 #, php-format
 msgid "Solo formato PDF (%d MB máx.). Se calculará su huella criptográfica SHA-256."
 msgstr ""
 
-#: templates/docverify/document-form.php:87
+#: templates/docverify/document-form.php:95
 msgid "Calculando…"
 msgstr ""
 
-#: templates/docverify/document-form.php:95
+#: templates/docverify/document-form.php:103
 msgid "Modo de Sellado / QR en PDF"
 msgstr ""
 
-#: templates/docverify/document-form.php:96
+#: templates/docverify/document-form.php:104
 msgid "Hoja Anexa Oficial añade una página final bilingüe sin tocar las páginas originales (ideal si ya trae firma digital certificada). Estampar QR pega el bloque de verificación en la última página. Solo QR conserva el PDF intacto y te permite descargar el PNG/SVG."
 msgstr ""
 
-#: templates/docverify/document-form.php:100
+#: templates/docverify/document-form.php:108
 msgid "Hoja Anexa Oficial ES/EN (Recomendado si el PDF tiene firma digital)"
 msgstr ""
 
-#: templates/docverify/document-form.php:103
+#: templates/docverify/document-form.php:111
 msgid "Estampar Sello QR compacto sobre la última página"
 msgstr ""
 
-#: templates/docverify/document-form.php:106
+#: templates/docverify/document-form.php:114
 msgid "No modificar el PDF (solo registrar SHA-256 y descargar QR PNG/SVG)"
 msgstr ""
 
-#: templates/docverify/document-form.php:112
+#: templates/docverify/document-form.php:120
 msgid "Posición del Sello QR"
 msgstr ""
 
-#: templates/docverify/document-form.php:113
+#: templates/docverify/document-form.php:121
 msgid "Ubicación donde se estampará el cuadro con QR, Folio, Código de verificación y SHA-256 en la última página del PDF."
 msgstr ""
 
-#: templates/docverify/document-form.php:116
+#: templates/docverify/document-form.php:124
 msgid "Esquina inferior derecha"
 msgstr ""
 
-#: templates/docverify/document-form.php:117
+#: templates/docverify/document-form.php:125
 msgid "Esquina inferior izquierda"
 msgstr ""
 
-#: templates/docverify/document-form.php:118
+#: templates/docverify/document-form.php:126
 msgid "Franja horizontal inferior completa"
 msgstr ""
 
-#: templates/docverify/document-form.php:128
+#: templates/docverify/document-form.php:136
 msgid "Datos Institucionales y del Trámite"
 msgstr ""
 
-#: templates/docverify/document-form.php:128
+#: templates/docverify/document-form.php:136
 msgid "Información oficial que verá la embajada, autoridad migratoria o entidad receptora al escanear el QR."
 msgstr ""
 
-#: templates/docverify/document-form.php:134
+#: templates/docverify/document-form.php:142
 msgid "Tipo de Documento *"
 msgstr ""
 
-#: templates/docverify/document-form.php:135
+#: templates/docverify/document-form.php:143
 msgid "Define la clasificación oficial y el prefijo automático del folio (INV para Visa/Embajada, MIG para Migración/Frontera sin visa, OFI para Oficios, CON para Constancias)."
 msgstr ""
 
-#: templates/docverify/document-form.php:149
+#: templates/docverify/document-form.php:157
 msgid "Idioma del Documento"
 msgstr ""
 
-#: templates/docverify/document-form.php:150
+#: templates/docverify/document-form.php:158
 msgid "Indica en qué idioma está redactado el PDF firmado. El verificador web público igual ofrece cambio instantáneo Español / English."
 msgstr ""
 
-#: templates/docverify/document-form.php:155 templates/library/book-form.php:318 assets/js/library-books.js:596 assets/js/library-books.js:645
+#: templates/docverify/document-form.php:163 templates/library/book-form.php:318 assets/js/library-books.js:596 assets/js/library-books.js:645
 #: assets/js/library-books.js:1256
 msgid "Español"
 msgstr ""
 
-#: templates/docverify/document-form.php:157
+#: templates/docverify/document-form.php:165
 msgid "Bilingüe (ES / EN)"
 msgstr ""
 
-#: templates/docverify/document-form.php:165
+#: templates/docverify/document-form.php:173
 msgid "Título / Asunto Oficial *"
 msgstr ""
 
-#: templates/docverify/document-form.php:166
+#: templates/docverify/document-form.php:174
 msgid "Nombre o asunto principal del documento tal como aparece en el encabezado del PDF firmado."
 msgstr ""
 
-#: templates/docverify/document-form.php:172
+#: templates/docverify/document-form.php:180
 msgid "Ej: Carta de Invitación Institucional para Solicitud de Visa — Conferencia Anual 2026"
 msgstr ""
 
-#: templates/docverify/document-form.php:179
+#: templates/docverify/document-form.php:187
 msgid "Entidad Destinataria / Embajada / Consulado"
 msgstr ""
 
-#: templates/docverify/document-form.php:180
+#: templates/docverify/document-form.php:188
 msgid "Institución ante la cual se presenta el documento (ej: Embajada, Consulado General, Autoridad Migratoria o entidad contratante)."
 msgstr ""
 
-#: templates/docverify/document-form.php:191
+#: templates/docverify/document-form.php:199
 msgid "País de Destino / Jurisdicción"
 msgstr ""
 
-#: templates/docverify/document-form.php:192
+#: templates/docverify/document-form.php:200
 msgid "País de la embajada, puesto fronterizo o jurisdicción donde surtirá efecto el documento."
 msgstr ""
 
-#: templates/docverify/document-form.php:198
+#: templates/docverify/document-form.php:206
 msgid "Ej: Estados Unidos / España / Canadá"
 msgstr ""
 
-#: templates/docverify/document-form.php:205
+#: templates/docverify/document-form.php:213
 msgid "Propósito / Trámite"
 msgstr ""
 
-#: templates/docverify/document-form.php:206
+#: templates/docverify/document-form.php:214
 msgid "Describe brevemente el trámite o motivo del documento (ej: Visa B1/B2, ingreso migratorio por evento/misión, certificación laboral)."
 msgstr ""
 
-#: templates/docverify/document-form.php:220
+#: templates/docverify/document-form.php:228
 msgid "Titular o Persona Invitada"
 msgstr ""
 
-#: templates/docverify/document-form.php:220
+#: templates/docverify/document-form.php:228
 msgid "Persona a favor de quien se emite el documento o viajero invitado en cartas consulares/migratorias."
 msgstr ""
 
-#: templates/docverify/document-form.php:226 assets/js/financial-accounts.js:3984
+#: templates/docverify/document-form.php:234 assets/js/financial-accounts.js:3984
 msgid "Nombre Completo *"
 msgstr ""
 
-#: templates/docverify/document-form.php:227
+#: templates/docverify/document-form.php:235
 msgid "Escribe nombres y apellidos completos exactamente como figuran en el pasaporte o documento de identidad."
 msgstr ""
 
-#: templates/docverify/document-form.php:233
+#: templates/docverify/document-form.php:241
 msgid "Nombre tal como figura en el pasaporte"
 msgstr ""
 
-#: templates/docverify/document-form.php:238
+#: templates/docverify/document-form.php:246
 msgid "Tipo de Identificación"
 msgstr ""
 
-#: templates/docverify/document-form.php:239
+#: templates/docverify/document-form.php:247
 msgid "Documento que acredita la identidad del titular (Pasaporte es el estándar recomendado para visas y migración)."
 msgstr ""
 
-#: templates/docverify/document-form.php:242 templates/students/list.php:336 templates/students/student-form.php:156
+#: templates/docverify/document-form.php:250 templates/students/list.php:336 templates/students/student-form.php:156
 msgid "Pasaporte"
 msgstr ""
 
-#: templates/docverify/document-form.php:243
+#: templates/docverify/document-form.php:251
 msgid "Cédula / DNI / ID Nacional"
 msgstr ""
 
-#: templates/docverify/document-form.php:244
+#: templates/docverify/document-form.php:252
 msgid "NIT / RUC / Tax ID"
 msgstr ""
 
-#: templates/docverify/document-form.php:245
+#: templates/docverify/document-form.php:253
 msgid "No aplica"
 msgstr ""
 
-#: templates/docverify/document-form.php:250
+#: templates/docverify/document-form.php:258
 msgid "Número (se enmascara en público)"
 msgstr ""
 
-#: templates/docverify/document-form.php:251
+#: templates/docverify/document-form.php:259
 msgid "Por privacidad (Habeas Data), nunca se publica completo en la web: solo se muestran los últimos 4 caracteres (ej: *****4821) y su hash SHA-256 para permitir desbloqueo consular."
 msgstr ""
 
-#: templates/docverify/document-form.php:256
+#: templates/docverify/document-form.php:264
 #, php-format
 msgid "Actual: %s (dejar vacío para conservar)"
 msgstr ""
 
-#: templates/docverify/document-form.php:256
+#: templates/docverify/document-form.php:264
 msgid "Ej: AB9874821"
 msgstr ""
 
-#: templates/docverify/document-form.php:264
+#: templates/docverify/document-form.php:272
 msgid "Inicio de Evento / Estadía (Opcional)"
 msgstr ""
 
-#: templates/docverify/document-form.php:265
+#: templates/docverify/document-form.php:273
 msgid "Fecha de ingreso al país o inicio del evento/actividad que respalda la invitación."
 msgstr ""
 
-#: templates/docverify/document-form.php:275
+#: templates/docverify/document-form.php:283
 msgid "Fin de Evento / Estadía (Opcional)"
 msgstr ""
 
-#: templates/docverify/document-form.php:276
+#: templates/docverify/document-form.php:284
 msgid "Fecha de salida prevista o clausura del evento. Muy solicitada en controles migratorios sin visa."
 msgstr ""
 
-#: templates/docverify/document-form.php:288
+#: templates/docverify/document-form.php:296
 msgid "Lugar / Dirección de Estadía o Respaldo en el País (Opcional — Migración)"
 msgstr ""
 
-#: templates/docverify/document-form.php:289
+#: templates/docverify/document-form.php:297
 msgid "Hotel, sede institucional o dirección física donde se hospedará el visitante junto con la entidad o persona anfitriona que lo respalda al ingresar por migración."
 msgstr ""
 
-#: templates/docverify/document-form.php:295
+#: templates/docverify/document-form.php:303
 msgid "Ej: Sede Centro Mateo / Hotel / Dirección de hospedaje y contacto anfitrión"
 msgstr ""
 
-#: templates/docverify/document-form.php:304
+#: templates/docverify/document-form.php:312
 msgid "Firmante y Vigencia"
 msgstr ""
 
-#: templates/docverify/document-form.php:304
+#: templates/docverify/document-form.php:312
 msgid "Identifica quién autoriza y firma el documento y hasta qué fecha conserva validez oficial."
 msgstr ""
 
-#: templates/docverify/document-form.php:308
+#: templates/docverify/document-form.php:316
 msgid "Autocompletar Firmante Registrado"
 msgstr ""
 
-#: templates/docverify/document-form.php:309
+#: templates/docverify/document-form.php:317
 msgid "Carga automáticamente nombre y cargo desde el catálogo de firmantes autorizados de AURA."
 msgstr ""
 
-#: templates/docverify/document-form.php:312
+#: templates/docverify/document-form.php:320
 msgid "— Seleccionar o escribir manual —"
 msgstr ""
 
-#: templates/docverify/document-form.php:325
+#: templates/docverify/document-form.php:333
 msgid "Nombre del Firmante"
 msgstr ""
 
-#: templates/docverify/document-form.php:326
+#: templates/docverify/document-form.php:334
 msgid "Persona con autoridad legal o institucional cuya firma aparece en el PDF subido."
 msgstr ""
 
-#: templates/docverify/document-form.php:330
+#: templates/docverify/document-form.php:338
 msgid "Ej: Dr. Carlos Méndez"
 msgstr ""
 
-#: templates/docverify/document-form.php:333
+#: templates/docverify/document-form.php:341
 msgid "Cargo Institucional"
 msgstr ""
 
-#: templates/docverify/document-form.php:334
+#: templates/docverify/document-form.php:342
 msgid "Título o cargo oficial del firmante (se muestra en la Hoja Anexa y en la verificación pública)."
 msgstr ""
 
-#: templates/docverify/document-form.php:338
+#: templates/docverify/document-form.php:346
 msgid "Ej: Director General / Representante Legal"
 msgstr ""
 
-#: templates/docverify/document-form.php:341
+#: templates/docverify/document-form.php:349
 msgid "Correo de Confirmación Consular"
 msgstr ""
 
-#: templates/docverify/document-form.php:342
+#: templates/docverify/document-form.php:350
 msgid "Correo institucional visible en el pie del verificador por si la embajada o migración desea confirmar directamente."
 msgstr ""
 
-#: templates/docverify/document-form.php:350
+#: templates/docverify/document-form.php:358
 msgid "Fecha Emisión *"
 msgstr ""
 
-#: templates/docverify/document-form.php:351
+#: templates/docverify/document-form.php:359
 msgid "Fecha oficial en que se expidió y firmó el documento; define también la carpeta Año/Mes en Google Drive."
 msgstr ""
 
-#: templates/docverify/document-form.php:358
+#: templates/docverify/document-form.php:366
 msgid "Válido Hasta"
 msgstr ""
 
-#: templates/docverify/document-form.php:359
+#: templates/docverify/document-form.php:367
 msgid "Opcional. Si defines una fecha límite (recomendado en cartas de invitación/migración), pasada esa fecha el QR indicará automáticamente EXPIRADO."
 msgstr ""
 
-#: templates/docverify/document-form.php:368
+#: templates/docverify/document-form.php:376
 msgid "Privacidad y Control Consular"
 msgstr ""
 
-#: templates/docverify/document-form.php:368
+#: templates/docverify/document-form.php:376
 msgid "Controla qué información se muestra al escanear el QR y si requiere PIN o número de pasaporte para ver detalles completos o descargar el PDF."
 msgstr ""
 
-#: templates/docverify/document-form.php:371
+#: templates/docverify/document-form.php:379
 msgid "Nivel de Visibilidad Pública"
 msgstr ""
 
-#: templates/docverify/document-form.php:372
+#: templates/docverify/document-form.php:380
 msgid "Estándar Institucional muestra datos clave con pasaporte enmascarado. Protegido con PIN oculta destino, propósito y estadía hasta ingresar el PIN o número completo de pasaporte."
 msgstr ""
 
-#: templates/docverify/document-form.php:376
+#: templates/docverify/document-form.php:384
 msgid "Estándar Institucional (ID/Pasaporte enmascarado)"
 msgstr ""
 
-#: templates/docverify/document-form.php:379
+#: templates/docverify/document-form.php:387
 msgid "Protegido con PIN o Pasaporte para ver detalle completo"
 msgstr ""
 
-#: templates/docverify/document-form.php:382
+#: templates/docverify/document-form.php:390
 msgid "Resumen Público Completo"
 msgstr ""
 
-#: templates/docverify/document-form.php:387
+#: templates/docverify/document-form.php:395
 msgid "PIN Opcional de Acceso Consular"
 msgstr ""
 
-#: templates/docverify/document-form.php:388
+#: templates/docverify/document-form.php:396
 msgid "Clave adicional (ej. código de cita consular o clave compartida con el invitado). Además del PIN, el sistema acepta el número completo de pasaporte si lo registraste arriba."
 msgstr ""
 
-#: templates/docverify/document-form.php:393
+#: templates/docverify/document-form.php:401
 msgid "PIN configurado (escribir para cambiar)"
 msgstr ""
 
-#: templates/docverify/document-form.php:393
+#: templates/docverify/document-form.php:401
 msgid "Opcional (ej. código de cita)"
 msgstr ""
 
-#: templates/docverify/document-form.php:399
+#: templates/docverify/document-form.php:407
 msgid "Permitir descargar PDF sellado desde verificación web (si tiene PIN lo requerirá primero)"
 msgstr ""
 
-#: templates/docverify/document-form.php:400
+#: templates/docverify/document-form.php:408
 msgid "Por defecto desactivado para proteger cartas confidenciales. Actívalo solo si deseas que la embajada o titular descargue la copia desde el enlace público."
 msgstr ""
 
-#: templates/docverify/document-form.php:405
+#: templates/docverify/document-form.php:413
 msgid "Notas Internas (Privadas)"
 msgstr ""
 
-#: templates/docverify/document-form.php:406
+#: templates/docverify/document-form.php:414
 msgid "Observaciones internas para el equipo administrativo. Nunca aparecen en el PDF ni en la página pública de verificación."
 msgstr ""
 
-#: templates/docverify/document-form.php:414
+#: templates/docverify/document-form.php:422
 msgid "Registrar, Generar QR y Subir a Nube"
 msgstr ""
 
-#: templates/docverify/documents-list.php:67
+#: templates/docverify/documents-list.php:21
+msgid "No tienes permisos para ver el listado de Validación Documental."
+msgstr ""
+
+#: templates/docverify/documents-list.php:71
 msgid "Administra folios institucionales, códigos QR, firmas, cartas de invitación y archivos respaldados en Google Drive"
 msgstr ""
 
-#: templates/docverify/documents-list.php:81
+#: templates/docverify/documents-list.php:85
 msgid "Folio, código, asunto, invitado o embajada…"
 msgstr ""
 
-#: templates/docverify/documents-list.php:98
+#: templates/docverify/documents-list.php:102
 msgid "Vigentes"
 msgstr ""
 
-#: templates/docverify/documents-list.php:99
+#: templates/docverify/documents-list.php:103
 msgid "Expirados"
 msgstr ""
 
-#: templates/docverify/documents-list.php:107
+#: templates/docverify/documents-list.php:111
 msgid "Todo almacenamiento"
 msgstr ""
 
-#: templates/docverify/documents-list.php:109
+#: templates/docverify/documents-list.php:113
 msgid "Local Privado"
 msgstr ""
 
-#: templates/docverify/documents-list.php:129
+#: templates/docverify/documents-list.php:133
 msgid "No se encontraron documentos"
 msgstr ""
 
-#: templates/docverify/documents-list.php:130
+#: templates/docverify/documents-list.php:134
 msgid "Ajusta los filtros o registra un nuevo PDF firmado."
 msgstr ""
 
-#: templates/docverify/documents-list.php:143
+#: templates/docverify/documents-list.php:147
 msgid "Desplegar hashes SHA-256, firmante y enlace público directo."
 msgstr ""
 
-#: templates/docverify/documents-list.php:147
+#: templates/docverify/documents-list.php:151
 msgid "QR"
 msgstr ""
 
-#: templates/docverify/documents-list.php:148
+#: templates/docverify/documents-list.php:152
 msgid "Vista previa rápida del QR y acceso al modal completo."
 msgstr ""
 
-#: templates/docverify/documents-list.php:153
+#: templates/docverify/documents-list.php:157
 msgid "Folio y Código"
 msgstr ""
 
-#: templates/docverify/documents-list.php:154
+#: templates/docverify/documents-list.php:158
 msgid "Folio único institucional y código aleatorio anti-enumeración."
 msgstr ""
 
-#: templates/docverify/documents-list.php:159
+#: templates/docverify/documents-list.php:163
 msgid "Documento y Destinatario"
 msgstr ""
 
-#: templates/docverify/documents-list.php:160
+#: templates/docverify/documents-list.php:164
 msgid "Asunto, tipo de documento y embajada o autoridad migratoria receptora."
 msgstr ""
 
-#: templates/docverify/documents-list.php:166
+#: templates/docverify/documents-list.php:170
 msgid "Nombre del titular/invitado y documento de identidad enmascarado."
 msgstr ""
 
-#: templates/docverify/documents-list.php:172
+#: templates/docverify/documents-list.php:176
 msgid "Fecha de expedición y límite de validez pública del documento."
 msgstr ""
 
-#: templates/docverify/documents-list.php:178
+#: templates/docverify/documents-list.php:182
 msgid "Vigencia actual, almacenamiento (Drive o Local) y cantidad de verificaciones."
 msgstr ""
 
-#: templates/docverify/documents-list.php:196
+#: templates/docverify/documents-list.php:200
 msgid "Ver detalles criptográficos y hashes"
 msgstr ""
 
-#: templates/docverify/documents-list.php:258
+#: templates/docverify/documents-list.php:262
 msgid "QR y Ficha 360°"
 msgstr ""
 
-#: templates/docverify/documents-list.php:263
+#: templates/docverify/documents-list.php:267
 msgid "Descargar PDF sellado / certificado"
 msgstr ""
 
-#: templates/docverify/documents-list.php:270
+#: templates/docverify/documents-list.php:274
 msgid "Editar metadatos o vigencia"
 msgstr ""
 
-#: templates/docverify/documents-list.php:282
+#: templates/docverify/documents-list.php:286
 msgid "SHA-256 Original"
 msgstr ""
 
-#: templates/docverify/documents-list.php:286
+#: templates/docverify/documents-list.php:290
 msgid "SHA-256 Sellado / Anexo"
 msgstr ""
 
-#: templates/docverify/documents-list.php:294
+#: templates/docverify/documents-list.php:298
 msgid "URL de Verificación Pública"
 msgstr ""
 
-#: templates/docverify/documents-list.php:317
+#: templates/docverify/documents-list.php:321
 #, php-format
 msgid "Página %1$d de %2$d (%3$d documentos)"
 msgstr ""
 
-#: templates/docverify/documents-list.php:356
+#: templates/docverify/documents-list.php:360
 msgid "Credencial de Verificación y Código QR"
 msgstr ""
 
-#: templates/docverify/documents-list.php:367
+#: templates/docverify/documents-list.php:371
 msgid "Revocar Documento"
 msgstr ""
 
-#: templates/docverify/documents-list.php:370 assets/js/areas-admin.js:287 assets/js/areas-admin.js:360 assets/js/financial-accounts.js:2821
+#: templates/docverify/documents-list.php:374 assets/js/areas-admin.js:287 assets/js/areas-admin.js:360 assets/js/financial-accounts.js:2821
 msgid "Reactivar"
 msgstr ""
 
-#: templates/docverify/documents-list.php:390
+#: templates/docverify/documents-list.php:394
 msgid "Revocar Autenticidad del Documento"
 msgstr ""
 
-#: templates/docverify/documents-list.php:399
+#: templates/docverify/documents-list.php:403
 msgid "Efecto inmediato en la verificación pública"
 msgstr ""
 
-#: templates/docverify/documents-list.php:400
+#: templates/docverify/documents-list.php:404
 msgid "Cualquier embajada o entidad que escanee el código QR verá el documento como REVOCADO junto con este motivo."
 msgstr ""
 
-#: templates/docverify/documents-list.php:403
+#: templates/docverify/documents-list.php:407
 msgid "Motivo oficial de revocación *"
 msgstr ""
 
-#: templates/docverify/documents-list.php:405
+#: templates/docverify/documents-list.php:409
 msgid "Ej: Carta cancelada por cambio de fechas de evento / reemplazada por folio INV-2026-0015."
 msgstr ""
 
-#: templates/docverify/settings.php:30
+#: templates/docverify/settings.php:14
+msgid "No tienes permisos para configurar Validación Documental."
+msgstr ""
+
+#: templates/docverify/settings.php:34
 msgid "Personaliza datos consulares de la organización, prefijos de folios, sellado FPDI/QR y respaldo en Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:50
+#: templates/docverify/settings.php:54
 msgid "Pestañas de configuración"
 msgstr ""
 
-#: templates/docverify/settings.php:53
+#: templates/docverify/settings.php:57
 msgid "Institución y Contacto Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:57
+#: templates/docverify/settings.php:61
 msgid "Folios y URL Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:61
+#: templates/docverify/settings.php:65
 msgid "Google Drive y Sellado PDF"
 msgstr ""
 
-#: templates/docverify/settings.php:65
+#: templates/docverify/settings.php:69
 msgid "Seguridad y Página Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:73
+#: templates/docverify/settings.php:77
 msgid "Identidad Institucional para Embajadas y Hoja Anexa"
 msgstr ""
 
-#: templates/docverify/settings.php:75
+#: templates/docverify/settings.php:79
 msgid "Se hereda automáticamente de Configuración → Organización de AURA; puedes especificar aquí datos adicionales de verificación consular."
 msgstr ""
 
-#: templates/docverify/settings.php:80
+#: templates/docverify/settings.php:84
 msgid "Nombre Oficial de la Institución"
 msgstr ""
 
-#: templates/docverify/settings.php:80
+#: templates/docverify/settings.php:84
 msgid "Razón social o nombre institucional mostrado en la Hoja Anexa del PDF y en el portal de verificación."
 msgstr ""
 
-#: templates/docverify/settings.php:84
+#: templates/docverify/settings.php:88
 msgid "NIT / Registro Legal / Tax ID"
 msgstr ""
 
-#: templates/docverify/settings.php:84
+#: templates/docverify/settings.php:88
 msgid "Identificación tributaria o personería jurídica de la entidad emisora, muy útil ante consulados y notarías."
 msgstr ""
 
-#: templates/docverify/settings.php:91
+#: templates/docverify/settings.php:95
 msgid "Dirección Física Oficial"
 msgstr ""
 
-#: templates/docverify/settings.php:91
+#: templates/docverify/settings.php:95
 msgid "Sede principal física de la organización emisora."
 msgstr ""
 
-#: templates/docverify/settings.php:95
+#: templates/docverify/settings.php:99
 msgid "Ciudad y País"
 msgstr ""
 
-#: templates/docverify/settings.php:95
+#: templates/docverify/settings.php:99
 msgid "Ciudad y país de domicilio legal de la institución."
 msgstr ""
 
-#: templates/docverify/settings.php:97
+#: templates/docverify/settings.php:101
 msgid "Ej: Bogotá, Colombia"
 msgstr ""
 
-#: templates/docverify/settings.php:103
+#: templates/docverify/settings.php:107
 msgid "Correo Oficial de Confirmación Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:103
+#: templates/docverify/settings.php:107
 msgid "Correo institucional que aparece como canal directo de confirmación para embajadas o autoridades migratorias."
 msgstr ""
 
-#: templates/docverify/settings.php:110
+#: templates/docverify/settings.php:114
 msgid "Teléfono de Atención Institucional / Consular"
 msgstr ""
 
-#: templates/docverify/settings.php:110
+#: templates/docverify/settings.php:114
 msgid "Teléfono de contacto directo para verificación telefónica por parte de entidades receptoras."
 msgstr ""
 
-#: templates/docverify/settings.php:119
+#: templates/docverify/settings.php:123
 msgid "URL del Logo Institucional"
 msgstr ""
 
-#: templates/docverify/settings.php:119
+#: templates/docverify/settings.php:123
 msgid "Logotipo impreso en el encabezado de la Hoja Anexa del PDF y en la tarjeta pública web."
 msgstr ""
 
-#: templates/docverify/settings.php:123
+#: templates/docverify/settings.php:127
 msgid "Elegir de Medios"
 msgstr ""
 
-#: templates/docverify/settings.php:128
+#: templates/docverify/settings.php:132
 msgid "Prefijos de Folios y Ruta Pública"
 msgstr ""
 
-#: templates/docverify/settings.php:131
+#: templates/docverify/settings.php:135
 msgid "Slug Amigable de Verificación"
 msgstr ""
 
-#: templates/docverify/settings.php:131
+#: templates/docverify/settings.php:135
 msgid "Segmento de URL usado en los QR cuando no hay página asignada (ej: /verificar-documento/MIG-2026-0001)."
 msgstr ""
 
-#: templates/docverify/settings.php:138
+#: templates/docverify/settings.php:142
 msgid "Dígitos de Secuencia (Padding)"
 msgstr ""
 
-#: templates/docverify/settings.php:138
+#: templates/docverify/settings.php:142
 msgid "Cantidad de ceros a la izquierda en el consecutivo del folio (4 = 0001, 5 = 00001)."
 msgstr ""
 
-#: templates/docverify/settings.php:145
+#: templates/docverify/settings.php:149
 msgid "Prefijo Carta de Invitación (Visa)"
 msgstr ""
 
-#: templates/docverify/settings.php:145
+#: templates/docverify/settings.php:149
 msgid "Prefijo del folio cuando se selecciona Carta de Invitación para embajada/visa (por defecto INV)."
 msgstr ""
 
-#: templates/docverify/settings.php:149
+#: templates/docverify/settings.php:153
 msgid "Prefijo Carta Migración / Frontera"
 msgstr ""
 
-#: templates/docverify/settings.php:149
+#: templates/docverify/settings.php:153
 msgid "Prefijo del folio para cartas presentadas en migración al entrar a un país sin visa (por defecto MIG)."
 msgstr ""
 
-#: templates/docverify/settings.php:153
+#: templates/docverify/settings.php:157
 msgid "Prefijo Oficio / Comunicado"
 msgstr ""
 
-#: templates/docverify/settings.php:153
+#: templates/docverify/settings.php:157
 msgid "Prefijo para oficios y comunicados oficiales (por defecto OFI)."
 msgstr ""
 
-#: templates/docverify/settings.php:157
+#: templates/docverify/settings.php:161
 msgid "Prefijo Constancia"
 msgstr ""
 
-#: templates/docverify/settings.php:157
+#: templates/docverify/settings.php:161
 msgid "Prefijo para constancias institucionales o laborales (por defecto CON)."
 msgstr ""
 
-#: templates/docverify/settings.php:161
+#: templates/docverify/settings.php:165
 msgid "Prefijo Carta Patrocinio"
 msgstr ""
 
-#: templates/docverify/settings.php:161
+#: templates/docverify/settings.php:165
 msgid "Prefijo para cartas de patrocinio o respaldo económico (por defecto PAT)."
 msgstr ""
 
-#: templates/docverify/settings.php:165
+#: templates/docverify/settings.php:169
 msgid "Prefijo Autorización"
 msgstr ""
 
-#: templates/docverify/settings.php:165
+#: templates/docverify/settings.php:169
 msgid "Prefijo para permisos o autorizaciones oficiales (por defecto AUT)."
 msgstr ""
 
-#: templates/docverify/settings.php:169
+#: templates/docverify/settings.php:173
 msgid "Prefijo Otros Documentos"
 msgstr ""
 
-#: templates/docverify/settings.php:169
+#: templates/docverify/settings.php:173
 msgid "Prefijo genérico para otros documentos institucionales (por defecto DOC)."
 msgstr ""
 
-#: templates/docverify/settings.php:175
+#: templates/docverify/settings.php:179
 msgid "Almacenamiento en Google Drive y Sellado PDF"
 msgstr ""
 
-#: templates/docverify/settings.php:182
+#: templates/docverify/settings.php:186
 msgid "Google Drive de AURA está activo y listo"
 msgstr ""
 
-#: templates/docverify/settings.php:183
+#: templates/docverify/settings.php:187
 msgid "Google Drive de AURA no está configurado aún"
 msgstr ""
 
-#: templates/docverify/settings.php:186
+#: templates/docverify/settings.php:190
 msgid "Este módulo comparte las credenciales Service Account de Configuración → Google Drive y almacena cada PDF de forma privada (sin enlace público abierto) dentro de la subcarpeta dedicada."
 msgstr ""
 
-#: templates/docverify/settings.php:187
+#: templates/docverify/settings.php:191
 msgid "Ir a Configuración de Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:196
+#: templates/docverify/settings.php:200
 msgid "Guardar PDFs originales y sellados en Google Drive de AURA"
 msgstr ""
 
-#: templates/docverify/settings.php:196
+#: templates/docverify/settings.php:200
 msgid "Utiliza la conexión Google Drive de AURA para subir los PDFs originales y sellados de forma privada en carpetas Año/Mes."
 msgstr ""
 
-#: templates/docverify/settings.php:200
+#: templates/docverify/settings.php:204
 msgid "Conservar también una copia local en el servidor tras subir a Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:200
+#: templates/docverify/settings.php:204
 msgid "Si lo activas, mantiene también copia en uploads/aura-docverify/pdf/ (protegida con .htaccess) además de Google Drive."
 msgstr ""
 
-#: templates/docverify/settings.php:204
+#: templates/docverify/settings.php:208
 msgid "Nombre de Subcarpeta en Google Drive"
 msgstr ""
 
-#: templates/docverify/settings.php:204
+#: templates/docverify/settings.php:208
 msgid "Carpeta raíz del módulo dentro de la carpeta configurada en AURA Google Drive."
 msgstr ""
 
-#: templates/docverify/settings.php:211
+#: templates/docverify/settings.php:215
 msgid "Modo de Sellado por Defecto"
 msgstr ""
 
-#: templates/docverify/settings.php:211
+#: templates/docverify/settings.php:215
 msgid "Preselección al abrir Registrar PDF. Hoja Anexa Oficial ES/EN es la opción más segura si el PDF ya tiene firma electrónica."
 msgstr ""
 
-#: templates/docverify/settings.php:213
+#: templates/docverify/settings.php:217
 msgid "Hoja Anexa Oficial ES/EN"
 msgstr ""
 
-#: templates/docverify/settings.php:214
+#: templates/docverify/settings.php:218
 msgid "Sello QR en Esquina/Pie"
 msgstr ""
 
-#: templates/docverify/settings.php:215
+#: templates/docverify/settings.php:219
 msgid "Solo generar QR"
 msgstr ""
 
-#: templates/docverify/settings.php:219
+#: templates/docverify/settings.php:223
 msgid "Posición Sello Esquina"
 msgstr ""
 
-#: templates/docverify/settings.php:219
+#: templates/docverify/settings.php:223
 msgid "Posición predeterminada cuando se elige estampar el sello sobre la última página del PDF."
 msgstr ""
 
-#: templates/docverify/settings.php:221
+#: templates/docverify/settings.php:225
 msgid "Inferior derecha"
 msgstr ""
 
-#: templates/docverify/settings.php:222
+#: templates/docverify/settings.php:226
 msgid "Inferior izquierda"
 msgstr ""
 
-#: templates/docverify/settings.php:223
+#: templates/docverify/settings.php:227
 msgid "Franja inferior"
 msgstr ""
 
-#: templates/docverify/settings.php:227
+#: templates/docverify/settings.php:231
 msgid "Tamaño máximo PDF (MB)"
 msgstr ""
 
-#: templates/docverify/settings.php:227
+#: templates/docverify/settings.php:231
 msgid "Límite máximo permitido por archivo PDF subido (entre 2 y 50 MB)."
 msgstr ""
 
-#: templates/docverify/settings.php:233
+#: templates/docverify/settings.php:237
 msgid "Seguridad Anti-Enumeración y Página de Verificación"
 msgstr ""
 
-#: templates/docverify/settings.php:236
+#: templates/docverify/settings.php:240
 msgid "Página WP del Shortcode [aura_verificar_documento]"
 msgstr ""
 
-#: templates/docverify/settings.php:236
+#: templates/docverify/settings.php:240
 msgid "Página pública de WordPress vinculada al verificador; también puedes gestionarla desde Configuración → Páginas."
 msgstr ""
 
-#: templates/docverify/settings.php:238
+#: templates/docverify/settings.php:242
 msgid "— Automático (Aura Page Manager) —"
 msgstr ""
 
-#: templates/docverify/settings.php:247
+#: templates/docverify/settings.php:251
 msgid "Máximo de búsquedas por IP"
 msgstr ""
 
-#: templates/docverify/settings.php:247
+#: templates/docverify/settings.php:251
 msgid "Número máximo de consultas o intentos de PIN permitidos desde una misma IP dentro de la ventana de tiempo."
 msgstr ""
 
-#: templates/docverify/settings.php:251
+#: templates/docverify/settings.php:255
 msgid "Ventana de bloqueo (minutos)"
 msgstr ""
 
-#: templates/docverify/settings.php:251
+#: templates/docverify/settings.php:255
 msgid "Duración en minutos de la ventana para el límite anti-fuerza bruta."
 msgstr ""
 
@@ -42233,7 +42317,7 @@ msgstr ""
 msgid "Volver al Directorio"
 msgstr ""
 
-#: templates/permissions-page.php:220 templates/permissions-page.php:1350
+#: templates/permissions-page.php:220 templates/permissions-page.php:1355
 msgid "Asignar o Crear Usuario"
 msgstr ""
 
@@ -42661,233 +42745,249 @@ msgid "Estudiantes, becas, pagos, certificados y formularios dinámicos."
 msgstr ""
 
 #: templates/permissions-page.php:1065
-msgid "📦 OPERACIONES, LOGÍSTICA Y RECURSOS"
+msgid "🛡️ VALIDACIÓN DOCUMENTAL, QR Y CONSULAR"
 msgstr ""
 
 #: templates/permissions-page.php:1065
+msgid "Documentos oficiales firmados, cartas de invitación diplomáticas/migración, sellado PDF y cotejo SHA-256."
+msgstr ""
+
+#: templates/permissions-page.php:1066
+msgid "📦 OPERACIONES, LOGÍSTICA Y RECURSOS"
+msgstr ""
+
+#: templates/permissions-page.php:1066
 msgid "Inventario de equipos, mantenimientos, flota vehicular, biblioteca y energía."
 msgstr ""
 
-#: templates/permissions-page.php:1134
+#: templates/permissions-page.php:1067
+msgid "📇 CONTACTOS Y RELACIONES EXTERNAS"
+msgstr ""
+
+#: templates/permissions-page.php:1067
+msgid "Directorio maestro de contactos y sincronización con Google Contacts."
+msgstr ""
+
+#: templates/permissions-page.php:1136
 msgid "Permiso administrativo sensible"
 msgstr ""
 
-#: templates/permissions-page.php:1150
+#: templates/permissions-page.php:1152
 msgid "Guardar Permisos y Áreas del Usuario"
 msgstr ""
 
-#: templates/permissions-page.php:1182
+#: templates/permissions-page.php:1184
 msgid "Catálogo de Perfiles de Negocio Predefinidos"
 msgstr ""
 
-#: templates/permissions-page.php:1185
+#: templates/permissions-page.php:1187
 msgid "Conjuntos de capabilities probadas para roles departamentales específicos. Al hacer clic se aplican en 1 solo paso."
 msgstr ""
 
-#: templates/permissions-page.php:1200
+#: templates/permissions-page.php:1202
 #, php-format
 msgid "Aplicando plantillas a: %s (%s)"
 msgstr ""
 
-#: templates/permissions-page.php:1203
+#: templates/permissions-page.php:1205
 msgid "Al hacer clic en \"Aplicar esta plantilla\", los capabilities del perfil se asignarán y guardarán automáticamente en este usuario."
 msgstr ""
 
-#: templates/permissions-page.php:1209
+#: templates/permissions-page.php:1211
 msgid "Volver a Configurar Permisos"
 msgstr ""
 
-#: templates/permissions-page.php:1218
+#: templates/permissions-page.php:1220
 msgid "Modo de Exploración de Perfiles"
 msgstr ""
 
-#: templates/permissions-page.php:1221
+#: templates/permissions-page.php:1223
 #, php-format
 msgid "Seleccione primero un usuario activo para poder aplicar directamente cualquiera de estas %d plantillas predefinidas."
 msgstr ""
 
-#: templates/permissions-page.php:1227
+#: templates/permissions-page.php:1229
 msgid "Seleccionar Usuario Activo"
 msgstr ""
 
-#: templates/permissions-page.php:1248
+#: templates/permissions-page.php:1250
 msgid "Proyectos"
 msgstr ""
 
-#: templates/permissions-page.php:1251
+#: templates/permissions-page.php:1253
 msgid "Logística"
 msgstr ""
 
-#: templates/permissions-page.php:1254
+#: templates/permissions-page.php:1256
 msgid "Educación"
 msgstr ""
 
-#: templates/permissions-page.php:1263
+#: templates/permissions-page.php:1268
 msgid "TI & Admin"
 msgstr ""
 
-#: templates/permissions-page.php:1269
+#: templates/permissions-page.php:1274
 msgid "Buscar perfil por nombre o función..."
 msgstr ""
 
-#: templates/permissions-page.php:1299
+#: templates/permissions-page.php:1304
 #, php-format
 msgid "%d caps"
 msgstr ""
 
-#: templates/permissions-page.php:1322
+#: templates/permissions-page.php:1327
 msgid "Aplicar esta plantilla"
 msgstr ""
 
-#: templates/permissions-page.php:1331
+#: templates/permissions-page.php:1336
 msgid "No se encontraron perfiles predefinidos"
 msgstr ""
 
-#: templates/permissions-page.php:1332
+#: templates/permissions-page.php:1337
 msgid "Pruebe con otros términos de búsqueda o seleccione otra categoría."
 msgstr ""
 
-#: templates/permissions-page.php:1351
+#: templates/permissions-page.php:1356
 msgid "Seleccione un usuario existente o registre uno nuevo con acceso rápido."
 msgstr ""
 
-#: templates/permissions-page.php:1361
+#: templates/permissions-page.php:1366
 msgid "Seleccionar de WordPress"
 msgstr ""
 
-#: templates/permissions-page.php:1365
+#: templates/permissions-page.php:1370
 msgid "Crear Nuevo Usuario"
 msgstr ""
 
-#: templates/permissions-page.php:1377
+#: templates/permissions-page.php:1382
 msgid "Buscar usuario por nombre, usuario (@login) o email..."
 msgstr ""
 
-#: templates/permissions-page.php:1399
+#: templates/permissions-page.php:1404
 msgid "¡Todos los usuarios configurados!"
 msgstr ""
 
-#: templates/permissions-page.php:1400
+#: templates/permissions-page.php:1405
 msgid "No hay usuarios de WordPress pendientes por configurar. Puede registrar un nuevo usuario con la pestaña \"+ Crear Nuevo Usuario\"."
 msgstr ""
 
-#: templates/permissions-page.php:1413
+#: templates/permissions-page.php:1418
 msgid "Imagen de perfil (opcional · 1:1)"
 msgstr ""
 
-#: templates/permissions-page.php:1414
+#: templates/permissions-page.php:1419
 msgid "Sube una foto o avatar cuadrado (1:1). Respeta máscara circular/cuadrada y transparencia PNG/WebP."
 msgstr ""
 
-#: templates/permissions-page.php:1418
+#: templates/permissions-page.php:1423
 msgid "Vista previa del avatar 1:1"
 msgstr ""
 
-#: templates/permissions-page.php:1427
+#: templates/permissions-page.php:1432
 msgid "Subir imagen"
 msgstr ""
 
-#: templates/permissions-page.php:1431
+#: templates/permissions-page.php:1436
 msgid "Recortar 1:1"
 msgstr ""
 
-#: templates/permissions-page.php:1438
+#: templates/permissions-page.php:1443
 msgid "Forma de máscara 1:1"
 msgstr ""
 
-#: templates/permissions-page.php:1439
+#: templates/permissions-page.php:1444
 msgid "Máscara:"
 msgstr ""
 
-#: templates/permissions-page.php:1441
+#: templates/permissions-page.php:1446
 msgid "Circular (1:1)"
 msgstr ""
 
-#: templates/permissions-page.php:1444
+#: templates/permissions-page.php:1449
 msgid "Cuadrada (1:1)"
 msgstr ""
 
-#: templates/permissions-page.php:1448
+#: templates/permissions-page.php:1453
 msgid "Proporción 1:1 · Preserva transparencia PNG/WebP y la máscara seleccionada."
 msgstr ""
 
-#: templates/permissions-page.php:1459
+#: templates/permissions-page.php:1464
 msgid "Alejar"
 msgstr ""
 
-#: templates/permissions-page.php:1462
+#: templates/permissions-page.php:1467
 msgid "Acercar"
 msgstr ""
 
-#: templates/permissions-page.php:1465
+#: templates/permissions-page.php:1470
 msgid "Rotar 90°"
 msgstr ""
 
-#: templates/permissions-page.php:1475
+#: templates/permissions-page.php:1480
 msgid "Aplicar recorte 1:1"
 msgstr ""
 
-#: templates/permissions-page.php:1486
+#: templates/permissions-page.php:1491
 msgid "Nombre de pila del nuevo usuario"
 msgstr ""
 
-#: templates/permissions-page.php:1490
+#: templates/permissions-page.php:1495
 msgid "Ej. Carlos"
 msgstr ""
 
-#: templates/permissions-page.php:1497
+#: templates/permissions-page.php:1502
 msgid "Apellido familiar del nuevo usuario"
 msgstr ""
 
-#: templates/permissions-page.php:1501
+#: templates/permissions-page.php:1506
 msgid "Ej. Mendoza"
 msgstr ""
 
-#: templates/permissions-page.php:1507
+#: templates/permissions-page.php:1512
 msgid "Correo Electrónico *"
 msgstr ""
 
-#: templates/permissions-page.php:1508
+#: templates/permissions-page.php:1513
 msgid "Correo electrónico corporativo para el acceso y notificaciones"
 msgstr ""
 
-#: templates/permissions-page.php:1519
+#: templates/permissions-page.php:1524
 msgid "Nombre de usuario (@login)"
 msgstr ""
 
-#: templates/permissions-page.php:1523
+#: templates/permissions-page.php:1528
 msgid "Auto de email"
 msgstr ""
 
-#: templates/permissions-page.php:1535
+#: templates/permissions-page.php:1540
 msgid "Número de contacto opcional para alertas o mensajes"
 msgstr ""
 
-#: templates/permissions-page.php:1545
+#: templates/permissions-page.php:1550
 msgid "Contraseña de Acceso *"
 msgstr ""
 
-#: templates/permissions-page.php:1546
+#: templates/permissions-page.php:1551
 msgid "Mínimo 8 caracteres, o genere una contraseña segura aleatoria"
 msgstr ""
 
-#: templates/permissions-page.php:1550
+#: templates/permissions-page.php:1555
 msgid "Mínimo 8 caracteres"
 msgstr ""
 
-#: templates/permissions-page.php:1551
+#: templates/permissions-page.php:1556
 msgid "Mostrar/ocultar contraseña"
 msgstr ""
 
-#: templates/permissions-page.php:1554
+#: templates/permissions-page.php:1559
 msgid "Generar clave aleatoria"
 msgstr ""
 
-#: templates/permissions-page.php:1569
+#: templates/permissions-page.php:1574
 msgid "Configurar permisos del usuario"
 msgstr ""
 
-#: templates/permissions-page.php:1573
+#: templates/permissions-page.php:1578
 msgid "Crear y configurar permisos"
 msgstr ""
 

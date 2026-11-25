@@ -60448,3 +60448,105 @@ msgstr "Official Document Verification"
 #: modules/common/class-page-manager.php:132
 msgid "Portal público bilingüe (ES/EN) para validar documentos firmados, cartas de invitación con QR y cotejo SHA-256."
 msgstr "Bilingual public portal (ES/EN) to verify signed documents, QR invitation letters, and SHA-256 digests."
+
+msgid "Secretario General / Administrador Documental"
+msgstr "Secretary General / Document Verification Admin"
+
+msgid "Emisor / Operador de Cartas y QR"
+msgstr "Letter & QR Issuer / Operator"
+
+msgid "Verificador y Auditor Documental"
+msgstr "Document Verifier & Auditor"
+
+msgid "Ver historial de auditoría y verificaciones QR"
+msgstr "View audit log and QR verifications"
+
+msgid "Configurar el módulo de validación documental"
+msgstr "Configure document verification module"
+
+msgid "Editar metadatos, estadía y vigencia consular"
+msgstr "Edit metadata, stay address, and consular validity"
+
+msgid "Ver auditoría de consultas QR y cotejos SHA-256"
+msgstr "View QR query audit log and SHA-256 checks"
+
+msgid "Configurar Validación Documental (Drive, Folios y Sellos)"
+msgstr "Configure Document Verification (Drive, Folios & Stamps)"
+
+msgid "Secretario General / Gestor Documental & QR"
+msgstr "Secretary General / Document & QR Manager"
+
+msgid "Documental & Consular"
+msgstr "Documentary & Consular"
+
+msgid "Gobierno integral de Validación Documental: emisión de cartas de invitación (embajadas y migración), oficios con QR, sellado FPDI, revocación, trazabilidad SHA-256 y configuración del módulo."
+msgstr "Comprehensive governance of Document Verification: issuing invitation letters (embassies & immigration), official letters with QR, FPDI stamping, revocation, SHA-256 audit trail, and module settings."
+
+msgid "✅ Subir PDFs firmados y generar QR/folio para cartas consulares y de migración"
+msgstr "✅ Upload signed PDFs and generate QR/folio for consular & immigration letters"
+
+msgid "✅ Editar metadatos, estadía, PIN y descargar originales/sellados de Drive"
+msgstr "✅ Edit metadata, stay address, PIN, and download original/stamped Drive PDFs"
+
+msgid "✅ Revocar o reactivar documentos y revisar auditoría criptográfica SHA-256"
+msgstr "✅ Revoke or reactivate documents and review SHA-256 cryptographic audit log"
+
+msgid "✅ Configurar datos institucionales, prefijos de folios, sellos y Drive"
+msgstr "✅ Configure institutional details, folio prefixes, stamps, and Drive storage"
+
+msgid "Perfil operativo para registrar PDFs firmados, emitir cartas de invitación (visas/migración) y constancias con QR, actualizar vigencias y entregar ejemplares certificados."
+msgstr "Operational profile to register signed PDFs, issue invitation letters (visas/immigration) and certificates with QR, update validity dates, and deliver certified copies."
+
+msgid "✅ Subir PDFs firmados y generar códigos QR y folios INV / MIG / OFI"
+msgstr "✅ Upload signed PDFs and generate QR codes and INV / MIG / OFI folios"
+
+msgid "✅ Editar vigencia consular, dirección de estadía y PIN de privacidad"
+msgstr "✅ Edit consular validity, stay address, and privacy PIN"
+
+msgid "✅ Descargar PDFs originales y certificados con anexo QR para envío"
+msgstr "✅ Download original and QR-certified PDFs for delivery"
+
+msgid "🔒 Sin permiso para revocar, eliminar registros ni modificar Google Drive o prefijos"
+msgstr "🔒 Cannot revoke or delete records or modify Google Drive or folio prefixes"
+
+msgid "Acceso de solo lectura al registro de documentos verificables, descarga de PDFs para cotejo y trazabilidad completa de escaneos QR y validaciones SHA-256."
+msgstr "Read-only access to the verifiable documents registry, PDF downloads for comparison, and full audit trail of QR scans and SHA-256 checks."
+
+msgid "✅ Consultar listado maestro de documentos, estados y vigencias"
+msgstr "✅ Browse master list of documents, statuses, and validity dates"
+
+msgid "✅ Auditar escaneos QR, búsquedas públicas, PINs y cotejos SHA-256"
+msgstr "✅ Audit QR scans, public lookups, PIN unlocks, and SHA-256 checks"
+
+msgid "✅ Descargar PDFs originales y sellados para verificación interna"
+msgstr "✅ Download original and stamped PDFs for internal verification"
+
+msgid "🔒 Estricto solo lectura: sin emisión, edición, revocación ni borrado"
+msgstr "🔒 Strict read-only: no issuing, editing, revoking, or deleting"
+
+msgid "No tienes permisos para consultar la auditoría de Validación Documental."
+msgstr "You do not have permission to view the Document Verification audit log."
+
+msgid "No tienes permisos para editar documentos verificables."
+msgstr "You do not have permission to edit verifiable documents."
+
+msgid "No tienes permisos para registrar documentos verificables."
+msgstr "You do not have permission to register verifiable documents."
+
+msgid "No tienes permisos para ver el listado de Validación Documental."
+msgstr "You do not have permission to view the Document Verification list."
+
+msgid "No tienes permisos para configurar Validación Documental."
+msgstr "You do not have permission to configure Document Verification."
+
+msgid "🛡️ VALIDACIÓN DOCUMENTAL, QR Y CONSULAR"
+msgstr "🛡️ DOCUMENT VERIFICATION, QR & CONSULAR"
+
+msgid "Documentos oficiales firmados, cartas de invitación diplomáticas/migración, sellado PDF y cotejo SHA-256."
+msgstr "Signed official documents, diplomatic/immigration invitation letters, PDF stamping, and SHA-256 verification."
+
+msgid "📇 CONTACTOS Y RELACIONES EXTERNAS"
+msgstr "📇 CONTACTS & EXTERNAL RELATIONS"
+
+msgid "Directorio maestro de contactos y sincronización con Google Contacts."
+msgstr "Master contacts directory and Google Contacts synchronization."

@@ -17,6 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! current_user_can( 'aura_docverify_view_all' ) && ! current_user_can( 'aura_docverify_create' ) && ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'No tienes permisos para ver el listado de Validación Documental.', 'aura-suite' ), 403 );
+}
+
 $search         = sanitize_text_field( wp_unslash( $_GET['s_doc'] ?? '' ) );
 $filter_type    = sanitize_key( wp_unslash( $_GET['doc_type'] ?? '' ) );
 $filter_status  = sanitize_key( wp_unslash( $_GET['status'] ?? '' ) );

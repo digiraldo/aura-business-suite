@@ -1059,10 +1059,12 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                 $user_caps  = $selected_user->allcaps;
                 $current_group = '';
                 $group_meta = array(
-                    'admin'      => array('title' => __('👑 ADMINISTRACIÓN Y GOBIERNO GLOBAL', 'aura-suite'), 'desc' => __('Permisos maestros de gestión de usuarios, seguridad, áreas y directorio maestro.', 'aura-suite')),
-                    'finance'    => array('title' => __('💰 GESTIÓN FINANCIERA Y CONTABLE', 'aura-suite'), 'desc' => __('Flujos de caja, transacciones, libro mayor, presupuestos y reportes.', 'aura-suite')),
-                    'academic'   => array('title' => __('🎓 ACADÉMICO, INSCRIPCIONES Y FORMULARIOS', 'aura-suite'), 'desc' => __('Estudiantes, becas, pagos, certificados y formularios dinámicos.', 'aura-suite')),
-                    'operations' => array('title' => __('📦 OPERACIONES, LOGÍSTICA Y RECURSOS', 'aura-suite'), 'desc' => __('Inventario de equipos, mantenimientos, flota vehicular, biblioteca y energía.', 'aura-suite')),
+                    'admin'         => array('title' => __('👑 ADMINISTRACIÓN Y GOBIERNO GLOBAL', 'aura-suite'), 'desc' => __('Permisos maestros de gestión de usuarios, seguridad, áreas y directorio maestro.', 'aura-suite')),
+                    'finance'       => array('title' => __('💰 GESTIÓN FINANCIERA Y CONTABLE', 'aura-suite'), 'desc' => __('Flujos de caja, transacciones, libro mayor, presupuestos y reportes.', 'aura-suite')),
+                    'academic'      => array('title' => __('🎓 ACADÉMICO, INSCRIPCIONES Y FORMULARIOS', 'aura-suite'), 'desc' => __('Estudiantes, becas, pagos, certificados y formularios dinámicos.', 'aura-suite')),
+                    'institutional' => array('title' => __('🛡️ VALIDACIÓN DOCUMENTAL, QR Y CONSULAR', 'aura-suite'), 'desc' => __('Documentos oficiales firmados, cartas de invitación diplomáticas/migración, sellado PDF y cotejo SHA-256.', 'aura-suite')),
+                    'operations'    => array('title' => __('📦 OPERACIONES, LOGÍSTICA Y RECURSOS', 'aura-suite'), 'desc' => __('Inventario de equipos, mantenimientos, flota vehicular, biblioteca y energía.', 'aura-suite')),
+                    'stakeholders'  => array('title' => __('📇 CONTACTOS Y RELACIONES EXTERNAS', 'aura-suite'), 'desc' => __('Directorio maestro de contactos y sincronización con Google Contacts.', 'aura-suite')),
                 );
                 ?>
 
@@ -1255,6 +1257,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                     </button>
                     <button type="button" class="aura-template-filter-btn" data-filter="library">
                         <span>📚 <?php _e('Biblioteca', 'aura-suite'); ?></span>
+                    </button>
+                    <button type="button" class="aura-template-filter-btn" data-filter="docverify">
+                        <span>🛡️ <?php _e('Validación Documental', 'aura-suite'); ?></span>
                     </button>
                     <button type="button" class="aura-template-filter-btn" data-filter="field">
                         <span>📍 <?php _e('Campo', 'aura-suite'); ?></span>

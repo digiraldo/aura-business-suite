@@ -10,6 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! current_user_can( 'aura_docverify_settings' ) && ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'No tienes permisos para configurar Validación Documental.', 'aura-suite' ), 403 );
+}
+
 $settings    = Aura_DocVerify_Settings::get_all();
 $active_tab  = sanitize_key( wp_unslash( $_GET['tab'] ?? 'institutional' ) );
 if ( ! in_array( $active_tab, [ 'institutional', 'folios', 'storage_pdf', 'security' ], true ) ) {

@@ -10,6 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! current_user_can( 'aura_docverify_audit' ) && ! current_user_can( 'manage_options' ) ) {
+    wp_die( esc_html__( 'No tienes permisos para consultar la auditoría de Validación Documental.', 'aura-suite' ), 403 );
+}
+
 $search     = sanitize_text_field( wp_unslash( $_GET['s_log'] ?? '' ) );
 $event_type = sanitize_key( wp_unslash( $_GET['event_type'] ?? '' ) );
 $paged      = max( 1, absint( $_GET['paged'] ?? 1 ) );
