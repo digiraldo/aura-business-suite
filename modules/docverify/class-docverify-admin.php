@@ -34,6 +34,7 @@ class Aura_DocVerify_Admin {
         add_action( 'wp_ajax_aura_docverify_download_pdf', [ __CLASS__, 'ajax_download_pdf' ] );
         add_action( 'wp_ajax_aura_docverify_download_qr',  [ __CLASS__, 'ajax_download_qr' ] );
         add_action( 'wp_ajax_aura_docverify_qr_preview',   [ __CLASS__, 'ajax_qr_preview' ] );
+        add_action( 'wp_ajax_aura_docverify_sync_urls',    [ __CLASS__, 'ajax_sync_urls' ] );
     }
 
     /**
@@ -198,6 +199,8 @@ class Aura_DocVerify_Admin {
                     'phMigPurpose'     => __( 'Ej: Ingreso al país sin visa — Acreditación de estadía, evento y respaldo institucional', 'aura-suite' ),
                     'phInvRecipient'   => __( 'Ej: Embajada de los Estados Unidos / Sección Consular', 'aura-suite' ),
                     'phInvPurpose'     => __( 'Ej: Trámite de Visa de Visitante B1/B2 — Participación en Seminario Internacional', 'aura-suite' ),
+                    'syncingUrls'      => __( 'Actualizando URLs y regenerando códigos QR…', 'aura-suite' ),
+                    'confirmSyncUrls'  => __( '¿Guardar cambios y recalcular las URLs y códigos QR de todos los documentos creados usando la ruta actual?', 'aura-suite' ),
                 ],
             ] );
         }
@@ -542,5 +545,45 @@ class Aura_DocVerify_Admin {
         }
         status_header( 404 );
         exit;
+    }
+
+    /**
+     * AJAX: Recalcula y sincroniza las URLs públicas y códigos QR (y opcionalmente PDFs sellados)
+     * de todos los documentos registrados según la configuración vigente.
+     */
+    public static function ajax_sync_urls(): void {
+        check_ajax_referer( 'aura_docverify_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_docverify_settings' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para actualizar URLs de documentos.', 'aura-suite' ) ], 403 );
+        }
+
+        $restamp = ! empty( $_POST['restamp_pdfs'] );
+        $stats   = Aura_DocVerify_Manager::rebuild_existing_urls( $restamp );
+
+        $msg = sprintf(
+            /* translators: %d = updated documents count */
+            __( 'Se actualizaron las URLs y códigos QR de %d documentos.', 'aura-suite' ),
+            (int) $stats['updated']
+        );
+        if ( $restamp ) {
+            $msg .= ' ' . sprintf(
+                /* translators: %d = re-stamped PDFs count */
+                __( 'PDFs certificados re-estampados: %d.', 'aura-suite' ),
+                (int) $stats['restamped']
+            );
+            if ( $stats['restamp_errors'] > 0 ) {
+                $msg .= ' ' . sprintf(
+                    /* translators: %d = errors count */
+                    __( 'No se pudo re-estampar: %d.', 'aura-suite' ),
+                    (int) $stats['restamp_errors']
+                );
+            }
+        }
+
+        wp_send_json_success( [
+            'message' => $msg,
+            'stats'   => $stats,
+        ] );
     }
 }

@@ -128,11 +128,29 @@ $dv_tip      = static function ( string $text ): string {
                     </div>
                 </div>
 
-            <?php elseif ( $active_tab === 'folios' ) : ?>
+            <?php elseif ( $active_tab === 'folios' ) :
+                $curr_page_id    = (int) ( $settings['verify_page_id'] ?? 0 );
+                $has_active_page = ( $curr_page_id > 0 && get_post_status( $curr_page_id ) === 'publish' );
+                $route_mode      = $has_active_page ? 'wp_page' : 'clean_slug';
+                $page_permalink  = $has_active_page ? trailingslashit( (string) get_permalink( $curr_page_id ) ) : trailingslashit( home_url( $settings['verify_slug'] ) );
+            ?>
                 <h3><?php esc_html_e( 'Prefijos de Folios y Ruta Pública', 'aura-suite' ); ?></h3>
-                <div class="aura-dv-grid-2" style="margin-top:12px;">
+                <div class="aura-dv-grid-3" style="margin-top:12px;">
                     <div>
-                        <label class="aura-dv-label" for="dv-verify-slug"><?php esc_html_e( 'Slug Amigable de Verificación', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Segmento de URL usado en los QR cuando no hay página asignada (ej: /verificar-documento/MIG-2026-0001).', 'aura-suite' ) ); ?></label>
+                        <label class="aura-dv-label" for="dv-route-mode"><?php esc_html_e( 'Modo de URL Pública en QR', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Elige si los códigos QR usarán la URL limpia /{slug}/{folio}?t=... o el enlace de la Página WordPress con shortcode (?doc={folio}&t=...).', 'aura-suite' ) ); ?></label>
+                        <select id="dv-route-mode" name="route_mode" class="form-select form-control"
+                                data-home-url="<?php echo esc_attr( rtrim( home_url(), '/' ) ); ?>"
+                                data-page-url="<?php echo esc_attr( $page_permalink ); ?>">
+                            <option value="clean_slug" <?php selected( $route_mode, 'clean_slug' ); ?>>
+                                <?php esc_html_e( 'Ruta Limpia (/slug/FOLIO?t=...)', 'aura-suite' ); ?>
+                            </option>
+                            <option value="wp_page" <?php selected( $route_mode, 'wp_page' ); ?>>
+                                <?php esc_html_e( 'Página WP Asignada (?doc=FOLIO&t=...)', 'aura-suite' ); ?>
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="aura-dv-label" for="dv-verify-slug"><?php esc_html_e( 'Slug Amigable de Verificación', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Segmento de URL usado en los QR cuando está activo el modo Ruta Limpia (ej: /verificar-documento/MIG-2026-0001).', 'aura-suite' ) ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text"><?php echo esc_html( rtrim( home_url(), '/' ) ); ?>/</span>
                             <input type="text" id="dv-verify-slug" name="verify_slug" class="form-control" value="<?php echo esc_attr( $settings['verify_slug'] ); ?>">
@@ -141,6 +159,22 @@ $dv_tip      = static function ( string $text ): string {
                     <div>
                         <label class="aura-dv-label" for="dv-folio-padding"><?php esc_html_e( 'Dígitos de Secuencia (Padding)', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Cantidad de ceros a la izquierda en el consecutivo del folio (4 = 0001, 5 = 00001).', 'aura-suite' ) ); ?></label>
                         <input type="number" id="dv-folio-padding" name="folio_padding" class="form-control" min="3" max="8" value="<?php echo esc_attr( (string) $settings['folio_padding'] ); ?>">
+                    </div>
+                </div>
+
+                <div class="alert-card alert-info" style="margin-top:12px;">
+                    <span class="alert-icon">🔗</span>
+                    <div>
+                        <div class="alert-title"><?php esc_html_e( 'Formato de URL resultante para los códigos QR:', 'aura-suite' ); ?></div>
+                        <p style="margin:4px 0 0;">
+                            <code id="aura-dv-url-preview"><?php
+                                echo esc_html(
+                                    $route_mode === 'wp_page'
+                                        ? add_query_arg( [ 'doc' => 'INV-2026-0001', 't' => 'abc123...' ], $page_permalink )
+                                        : rtrim( home_url(), '/' ) . '/' . $settings['verify_slug'] . '/INV-2026-0001?t=abc123...'
+                                );
+                            ?></code>
+                        </p>
                     </div>
                 </div>
 
@@ -172,6 +206,27 @@ $dv_tip      = static function ( string $text ): string {
                     <div>
                         <label class="aura-dv-label"><?php esc_html_e( 'Prefijo Otros Documentos', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Prefijo genérico para otros documentos institucionales (por defecto DOC).', 'aura-suite' ) ); ?></label>
                         <input type="text" name="prefix_other" class="form-control" maxlength="8" value="<?php echo esc_attr( $settings['prefix_other'] ); ?>">
+                    </div>
+                </div>
+
+                <div class="alert-card alert-warning" style="margin-top:18px;">
+                    <span class="alert-icon">🔄</span>
+                    <div style="flex:1;">
+                        <div class="alert-title"><?php esc_html_e( 'Actualizar URLs y QR de documentos ya creados', 'aura-suite' ); ?></div>
+                        <p style="margin:4px 0 10px;">
+                            <?php esc_html_e( 'Los prefijos aplican solo a documentos nuevos para no invalidar folios emitidos. Si cambiaste el Slug Amigable, el Modo de URL o el dominio, usa este botón para recalcular las URLs guardadas y regenerar las imágenes QR de todos los documentos existentes.', 'aura-suite' ); ?>
+                        </p>
+                        <label class="aura-dv-check-row" style="margin-bottom:10px;">
+                            <input type="checkbox" id="aura-dv-sync-restamp" value="1">
+                            <span><?php esc_html_e( 'Re-estampar también los PDFs certificados (Hoja Anexa / Sello QR) que conserven su original en Drive o local', 'aura-suite' ); ?></span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <button type="button" id="aura-dv-sync-urls-btn" class="btn btn-secondary btn-lift">
+                                <span class="dashicons dashicons-update"></span>
+                                <span><?php esc_html_e( 'Guardar y Actualizar URLs y QR existentes', 'aura-suite' ); ?></span>
+                            </button>
+                            <span id="aura-dv-sync-urls-result" class="aura-dv-subtext" style="font-weight:600;"></span>
+                        </div>
                     </div>
                 </div>
 

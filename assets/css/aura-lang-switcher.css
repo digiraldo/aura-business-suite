@@ -307,39 +307,39 @@
 /* -------------------------------------------------------------------------
    3. Dark Mode Multi-Driver (.aura-lang-dropdown)
    ------------------------------------------------------------------------- */
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-trigger {
-    background: rgba(30, 41, 59, 0.9);
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-trigger {
+    background: rgba(30, 41, 59, 0.92);
     border-color: rgba(148, 163, 184, 0.28);
     color: #f1f5f9;
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-trigger:hover,
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-dropdown.is-open .aura-lang-trigger {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-trigger:hover,
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-dropdown.is-open .aura-lang-trigger {
     background: rgba(30, 41, 59, 1);
     border-color: #818cf8;
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-menu {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-menu {
     background: #1e293b;
     border-color: rgba(148, 163, 184, 0.25);
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option {
     color: #e2e8f0 !important;
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option:hover {
     background: rgba(99, 102, 241, 0.22);
     color: #ffffff !important;
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option.is-active {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option.is-active {
     background: rgba(99, 102, 241, 0.28);
     color: #a5b4fc !important;
 }
 
-:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option__code {
+:is([data-aura-theme="dark"], .aura-dark-theme, [data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-lang-option__code {
     background: rgba(148, 163, 184, 0.2);
     color: #cbd5e1;
 }

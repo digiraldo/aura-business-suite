@@ -16,6 +16,9 @@ $found  = ! empty( $r['found'] );
 $status = (string) ( $r['status'] ?? 'not_found' );
 $org    = $r['org'] ?? [];
 
+$dv_locale = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_active_locale() : get_locale();
+$dv_lang   = ( strpos( strtolower( (string) $dv_locale ), 'es' ) === 0 ) ? 'es' : 'en';
+
 $public_pdf_url = '';
 if ( $found && ! empty( $r['allow_public_pdf'] ) && empty( $r['is_locked'] ) ) {
     $public_pdf_url = add_query_arg( [
@@ -26,38 +29,27 @@ if ( $found && ! empty( $r['allow_public_pdf'] ) && empty( $r['is_locked'] ) ) {
 }
 ?>
 <div class="aura-dv-public-wrap" id="aura-dv-public-root"
+     data-lang="<?php echo esc_attr( $dv_lang ); ?>"
      data-folio="<?php echo esc_attr( (string) ( $r['folio'] ?? '' ) ); ?>"
      data-sig="<?php echo esc_attr( (string) ( $r['verify_sig'] ?? '' ) ); ?>"
      data-sha-orig="<?php echo esc_attr( (string) ( $r['sha256_original'] ?? '' ) ); ?>"
      data-sha-stamp="<?php echo esc_attr( (string) ( $r['sha256_stamped'] ?? '' ) ); ?>">
 
-    <!-- Barra superior: Tema Claro/Oscuro + Idioma Consular ES/EN + Imprimir -->
+    <!-- Barra superior: Imprimir + Selector estándar de Idioma AURA + Modo Claro/Oscuro -->
     <div class="aura-dv-public-topbar no-print">
-        <div>
-            <?php
-            if ( class_exists( 'Aura_Page_Manager' ) ) {
-                echo Aura_Page_Manager::render_theme_toggle_bar( '', '0', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            }
-            ?>
-        </div>
-        <div class="aura-dv-lang-bar">
-            <?php
-            $dv_flag_es = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_locale_flag_svg( 'es_ES' ) : 'ES';
-            $dv_flag_en = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_locale_flag_svg( 'en_US' ) : 'EN';
-            ?>
-            <button type="button" class="aura-dv-lang-btn is-active" data-dv-lang="es">
-                <span class="aura-dv-flag" aria-hidden="true"><?php echo $dv_flag_es; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-                <span>Español</span>
-            </button>
-            <button type="button" class="aura-dv-lang-btn" data-dv-lang="en">
-                <span class="aura-dv-flag" aria-hidden="true"><?php echo $dv_flag_en; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-                <span>English</span>
-            </button>
+        <div class="aura-dv-topbar-left">
             <?php if ( $found ) : ?>
                 <button type="button" class="aura-dv-print-btn" id="aura-dv-print-receipt" title="Print / Imprimir">
-                    🖨️ <span data-es="Imprimir Comprobante" data-en="Print Verification">Imprimir Comprobante</span>
+                    🖨️ <span data-es="Imprimir Comprobante" data-en="Print Verification"><?php echo esc_html( $dv_lang === 'en' ? 'Print Verification' : 'Imprimir Comprobante' ); ?></span>
                 </button>
             <?php endif; ?>
+        </div>
+        <div class="aura-dv-topbar-right">
+            <?php
+            if ( class_exists( 'Aura_Page_Manager' ) ) {
+                echo Aura_Page_Manager::render_theme_toggle_bar( '', '0', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            }
+            ?>
         </div>
     </div>
 

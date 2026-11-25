@@ -21,6 +21,8 @@
         '.aura-my-certs-wrap',
         '.aura-cert-verify-card',
         '.aura-cert-verify-search',
+        '.aura-dv-public-wrap',
+        '.aura-dv-card',
         '.aura-paz-salvo-check',
         '.aura-form-portal',
         '.aura-form-wrap',

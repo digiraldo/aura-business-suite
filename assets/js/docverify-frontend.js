@@ -39,8 +39,11 @@
         var $root = $('#aura-dv-public-root');
         if (!$root.length) return;
 
-        // Autodetección básica si el navegador está en inglés y AURA no forzó otro estado
-        if (navigator.language && navigator.language.toLowerCase().indexOf('en') === 0) {
+        // Sincronizar con el idioma activo del selector estándar de AURA (o detectar inglés del navegador si no se forzó)
+        var initialLang = String($root.attr('data-lang') || '').toLowerCase();
+        if (initialLang === 'en' || initialLang === 'es') {
+            applyLang(initialLang);
+        } else if (navigator.language && navigator.language.toLowerCase().indexOf('en') === 0) {
             applyLang('en');
         }
 

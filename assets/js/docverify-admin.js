@@ -486,5 +486,73 @@
                 toast(cfg.i18n.error, 'error');
             });
         });
+
+        function refreshUrlPreview() {
+            var $mode = $('#dv-route-mode');
+            var $prev = $('#aura-dv-url-preview');
+            if (!$mode.length || !$prev.length) return;
+            var mode = $mode.val();
+            if (mode === 'wp_page') {
+                var pageUrl = String($mode.data('pageUrl') || '/verificar-documento/');
+                var sep = pageUrl.indexOf('?') === -1 ? '?' : '&';
+                $prev.text(pageUrl + sep + 'doc=INV-2026-0001&t=abc123...');
+            } else {
+                var homeUrl = String($mode.data('homeUrl') || '');
+                var slug = $.trim($('#dv-verify-slug').val() || 'verificar-documento').replace(/^\/+|\/+$/g, '') || 'verificar-documento';
+                $prev.text(homeUrl + '/' + slug + '/INV-2026-0001?t=abc123...');
+            }
+        }
+
+        $('#dv-route-mode').on('change', refreshUrlPreview);
+        $('#dv-verify-slug').on('input', refreshUrlPreview);
+
+        $('#aura-dv-sync-urls-btn').on('click', function () {
+            if (!window.confirm(cfg.i18n.confirmSyncUrls || '¿Guardar cambios y recalcular las URLs y códigos QR de todos los documentos creados?')) {
+                return;
+            }
+            var $btn = $(this);
+            var origHtml = $btn.html();
+            var $out = $('#aura-dv-sync-urls-result');
+            var restamp = $('#aura-dv-sync-restamp').is(':checked') ? 1 : 0;
+
+            $btn.prop('disabled', true);
+            $out.text(cfg.i18n.syncingUrls || 'Actualizando URLs y regenerando códigos QR…');
+
+            var savePayload = $('#aura-docverify-settings-form').serializeArray();
+            savePayload.push({ name: 'action', value: 'aura_docverify_save_settings' });
+            savePayload.push({ name: 'nonce', value: cfg.nonce });
+
+            $.post(cfg.ajaxurl, savePayload).done(function (saveRes) {
+                if (!saveRes || !saveRes.success) {
+                    toast((saveRes && saveRes.data && saveRes.data.message) ? saveRes.data.message : cfg.i18n.error, 'error');
+                    $btn.prop('disabled', false).html(origHtml);
+                    $out.text('');
+                    return;
+                }
+                $.post(cfg.ajaxurl, {
+                    action: 'aura_docverify_sync_urls',
+                    nonce: cfg.nonce,
+                    restamp_pdfs: restamp
+                }, function (syncRes) {
+                    $btn.prop('disabled', false).html(origHtml);
+                    if (syncRes && syncRes.success) {
+                        $out.text(syncRes.data.message);
+                        toast(syncRes.data.message, 'success');
+                    } else {
+                        var err = (syncRes && syncRes.data && syncRes.data.message) ? syncRes.data.message : cfg.i18n.error;
+                        $out.text(err);
+                        toast(err, 'error');
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).html(origHtml);
+                    $out.text('');
+                    toast(cfg.i18n.error, 'error');
+                });
+            }).fail(function () {
+                $btn.prop('disabled', false).html(origHtml);
+                $out.text('');
+                toast(cfg.i18n.error, 'error');
+            });
+        });
     });
 })(jQuery);

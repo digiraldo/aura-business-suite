@@ -469,6 +469,144 @@ class Aura_DocVerify_Manager {
     }
 
     /**
+     * Recalcula y actualiza la URL pública de verificación y los códigos QR (PNG/SVG)
+     * de todos los documentos registrados según la configuración actual de ruta/slug/página.
+     * Opcionalmente re-estampa los PDFs certificados cuando el original está disponible.
+     *
+     * @param bool $restamp_pdfs Si debe regenerar también el PDF sellado (Hoja Anexa / Sello QR).
+     * @return array{total:int, updated:int, restamped:int, restamp_errors:int}
+     */
+    public static function rebuild_existing_urls( bool $restamp_pdfs = false ): array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_verified_documents';
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $docs  = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id ASC" ) ?: [];
+
+        $stats = [
+            'total'          => count( $docs ),
+            'updated'        => 0,
+            'restamped'      => 0,
+            'restamp_errors' => 0,
+        ];
+
+        $drive_ready = self::is_drive_available();
+        $drive       = $drive_ready ? new Aura_Drive_Manager() : null;
+        $drive_folder = (string) Aura_DocVerify_Settings::get( 'drive_folder_name', 'Validación Documental' );
+        $keep_local  = (bool) Aura_DocVerify_Settings::get( 'keep_local_backup', false );
+        $base        = Aura_DocVerify_Setup::ensure_protected_storage_dir();
+
+        foreach ( $docs as $doc ) {
+            $new_url  = Aura_DocVerify_Folio::build_verify_url( (string) $doc->folio, (string) $doc->verification_code );
+            $qr_files = Aura_DocVerify_PDF::generate_qr_files( (string) $doc->folio, $new_url );
+
+            $update = [
+                'verify_url'  => $new_url,
+                'qr_png_path' => $qr_files['png_path'],
+                'qr_svg_path' => $qr_files['svg_path'],
+            ];
+
+            $did_restamp = false;
+            if ( $restamp_pdfs && (string) $doc->stamp_mode !== 'none' ) {
+                $orig_bin = self::read_pdf_binary( $doc, 'original' );
+                if ( is_wp_error( $orig_bin ) || empty( $orig_bin['content'] ) ) {
+                    $stats['restamp_errors']++;
+                } else {
+                    $issued_at = ! empty( $doc->issued_at ) ? (string) $doc->issued_at : current_time( 'Y-m-d' );
+                    $ym_rel    = substr( $issued_at, 0, 4 ) . '/' . substr( $issued_at, 5, 2 );
+                    $dest_dir  = $base . '/pdf/' . $ym_rel;
+                    wp_mkdir_p( $dest_dir );
+                    self::protect_subdir( $dest_dir );
+
+                    $temp_orig = '';
+                    $orig_path = (string) $doc->original_pdf_path;
+                    if ( $orig_path === '' || ! file_exists( $orig_path ) ) {
+                        $temp_orig = $base . '/tmp/' . sanitize_file_name( (string) $doc->folio ) . '-orig-' . uniqid() . '.pdf';
+                        @file_put_contents( $temp_orig, $orig_bin['content'] );
+                        $orig_path = $temp_orig;
+                    }
+
+                    $stamped_local = $dest_dir . '/' . sanitize_file_name( (string) $doc->folio ) . '-certificado.pdf';
+                    $doc_payload   = [
+                        'folio'                 => (string) $doc->folio,
+                        'verification_code'     => (string) $doc->verification_code,
+                        'doc_type'              => (string) $doc->doc_type,
+                        'title_subject'         => (string) $doc->title_subject,
+                        'doc_language'          => (string) $doc->doc_language,
+                        'recipient_entity'      => (string) $doc->recipient_entity,
+                        'recipient_country'     => (string) $doc->recipient_country,
+                        'purpose'               => (string) $doc->purpose,
+                        'holder_name'           => (string) $doc->holder_name,
+                        'holder_doc_type'       => (string) $doc->holder_doc_type,
+                        'holder_doc_masked'     => (string) $doc->holder_doc_masked,
+                        'travel_or_event_start' => (string) $doc->travel_or_event_start,
+                        'travel_or_event_end'   => (string) $doc->travel_or_event_end,
+                        'stay_address'          => (string) ( $doc->stay_address ?? '' ),
+                        'signer_name'           => (string) $doc->signer_name,
+                        'signer_title'          => (string) $doc->signer_title,
+                        'issued_at'             => $issued_at,
+                        'expires_at'            => (string) $doc->expires_at,
+                        'sha256_original'       => (string) $doc->sha256_original,
+                        'qr_png_path'           => $qr_files['png_path'],
+                        'qr_svg_path'           => $qr_files['svg_path'],
+                        'verify_url'            => $new_url,
+                    ];
+
+                    $stamp_res = Aura_DocVerify_PDF::create_stamped_pdf(
+                        $orig_path,
+                        $stamped_local,
+                        $doc_payload,
+                        (string) $doc->stamp_mode,
+                        (string) ( $doc->stamp_position ?: 'bottom_right' )
+                    );
+
+                    if ( $temp_orig !== '' && file_exists( $temp_orig ) ) {
+                        @unlink( $temp_orig );
+                    }
+
+                    if ( is_wp_error( $stamp_res ) || ! file_exists( $stamped_local ) ) {
+                        $stats['restamp_errors']++;
+                    } else {
+                        $update['sha256_stamped']   = Aura_DocVerify_PDF::compute_sha256( $stamped_local );
+                        $update['stamped_pdf_path'] = $stamped_local;
+
+                        if ( $drive && ( (string) $doc->storage_driver === 'google_drive' || ! empty( $doc->drive_original_file_id ) ) ) {
+                            $up_stamp = $drive->upload_file(
+                                $stamped_local,
+                                sanitize_file_name( (string) $doc->folio ) . '-certificado.pdf',
+                                'application/pdf',
+                                $drive_folder,
+                                $issued_at,
+                                false
+                            );
+                            if ( is_array( $up_stamp ) && ! empty( $up_stamp['file_id'] ) ) {
+                                if ( ! empty( $doc->drive_stamped_file_id ) && $doc->drive_stamped_file_id !== $up_stamp['file_id'] ) {
+                                    Aura_Drive_Manager::delete_file( (string) $doc->drive_stamped_file_id );
+                                }
+                                $update['drive_stamped_file_id'] = (string) $up_stamp['file_id'];
+                                $update['drive_stamped_url']     = (string) ( $up_stamp['view_url'] ?? '' );
+                                if ( ! $keep_local ) {
+                                    @unlink( $stamped_local );
+                                    $update['stamped_pdf_path'] = '';
+                                }
+                            }
+                        }
+                        $did_restamp = true;
+                        $stats['restamped']++;
+                    }
+                }
+            }
+
+            $wpdb->update( $table, $update, [ 'id' => (int) $doc->id ] );
+            self::log_event( (int) $doc->id, (string) $doc->folio, 'urls_synced', 'ok', [
+                'restamped' => $did_restamp,
+            ] );
+            $stats['updated']++;
+        }
+
+        return $stats;
+    }
+
+    /**
      * Lee el binario del PDF (original o sellado) desde disco local o Google Drive vía Service Account.
      *
      * @param object $doc

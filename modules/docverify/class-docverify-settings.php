@@ -215,6 +215,16 @@ class Aura_DocVerify_Settings {
             $current['verify_slug']   = $slug ?: 'verificar-documento';
             $current['folio_padding'] = max( 3, min( 8, absint( $_POST['folio_padding'] ?? $current['folio_padding'] ) ) );
 
+            $route_mode = sanitize_key( wp_unslash( $_POST['route_mode'] ?? '' ) );
+            if ( $route_mode === 'clean_slug' ) {
+                $current['verify_page_id'] = 0;
+            } elseif ( $route_mode === 'wp_page' && empty( $current['verify_page_id'] ) && class_exists( 'Aura_Page_Manager' ) ) {
+                $linked_id = Aura_Page_Manager::get_id( 'doc_verify' );
+                if ( $linked_id > 0 && get_post_status( $linked_id ) === 'publish' ) {
+                    $current['verify_page_id'] = $linked_id;
+                }
+            }
+
             $prefix_keys = [
                 'prefix_invitation',
                 'prefix_migration',

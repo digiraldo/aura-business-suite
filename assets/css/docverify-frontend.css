@@ -3,11 +3,24 @@
  */
 
 .aura-dv-public-wrap {
+    --dv-bg-card: var(--aura-surface-card, #ffffff);
+    --dv-bg-alt: var(--aura-surface-alt, #f8fafc);
+    --dv-bg-input: var(--aura-surface, #ffffff);
+    --dv-bg-code: #f1f5f9;
+    --dv-text: var(--aura-text-primary, #0f172a);
+    --dv-text-secondary: var(--aura-text-secondary, #334155);
+    --dv-text-muted: var(--aura-text-muted, #64748b);
+    --dv-border: var(--aura-border, rgba(148, 163, 184, 0.3));
+    --dv-code-text: #0f172a;
+    --dv-code-border: rgba(148, 163, 184, 0.35);
+    --dv-folio-bg: rgba(2, 132, 199, 0.08);
+    --dv-folio-border: rgba(2, 132, 199, 0.25);
+    --dv-folio-label: #0369a1;
     max-width: 920px;
     margin: 24px auto 48px;
     padding: 0 16px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: var(--aura-text, #0f172a);
+    color: var(--dv-text);
 }
 
 .aura-dv-public-topbar {
@@ -19,47 +32,42 @@
     margin-bottom: 14px;
 }
 
-.aura-dv-lang-bar {
-    display: inline-flex;
+.aura-dv-topbar-left,
+.aura-dv-topbar-right {
+    display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-.aura-dv-lang-btn,
 .aura-dv-print-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.35));
-    background: var(--aura-surface, #ffffff);
-    color: var(--aura-text, #0f172a);
+    padding: 6px 13px;
+    border-radius: 9999px;
+    border: 1px solid var(--aura-toggle-border, #cbd5e1);
+    background: var(--aura-toggle-bg, rgba(241, 245, 249, 0.92));
+    color: var(--aura-toggle-color, #334155);
     font-size: 12.5px;
     font-weight: 600;
     cursor: pointer;
+    line-height: 1.2;
     transition: all 0.16s ease;
 }
 
-.aura-dv-flag {
-    display: inline-flex;
-    align-items: center;
-    line-height: 0;
+.aura-dv-print-btn:hover {
+    background: var(--aura-toggle-bg-hover, #e2e8f0);
+    color: var(--aura-toggle-color-hover, #0f172a);
 }
 
-.aura-dv-flag svg {
-    width: 18px;
-    height: 13px;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
-    display: block;
-}
-
-.aura-dv-lang-btn.is-active {
-    background: #0284c7;
-    border-color: #0284c7;
-    color: #ffffff;
+.aura-dv-public-wrap code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: var(--dv-bg-code);
+    color: var(--dv-code-text);
+    border: 1px solid var(--dv-code-border);
+    border-radius: 6px;
+    padding: 2px 6px;
 }
 
 .aura-dv-card {
@@ -395,46 +403,284 @@
     color: var(--aura-text-muted, #64748b);
 }
 
-/* Dark Mode Frontend Multi-Driver */
-[data-theme="dark"] .aura-dv-card,
-[data-theme="dark"] .aura-dv-lang-btn:not(.is-active),
-[data-theme="dark"] .aura-dv-print-btn,
-.aura-dark-mode .aura-dv-card,
-.aura-dark-mode .aura-dv-lang-btn:not(.is-active),
-.aura-dark-mode .aura-dv-print-btn,
-.wp-dark-mode-active .aura-dv-card,
-html[data-wp-dark-mode-scheme="dark"] .aura-dv-card {
-    background: #16152b;
-    color: #f1f5f9;
-    border-color: rgba(255, 255, 255, 0.12);
+/* Dark Mode Frontend Multi-Driver (AURA Toggle + Temas WP) */
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap,
+.aura-dv-public-wrap.aura-dark-theme,
+.aura-dv-public-wrap[data-aura-theme="dark"],
+.aura-dv-public-wrap[data-theme="dark"] {
+    --dv-bg-card: var(--aura-surface-card, #162032);
+    --dv-bg-alt: var(--aura-surface-alt, #1e293b);
+    --dv-bg-input: var(--aura-theme-surface, #111827);
+    --dv-bg-code: #0b1120;
+    --dv-text: var(--aura-text-primary, #f8fafc);
+    --dv-text-secondary: var(--aura-text-secondary, #cbd5e1);
+    --dv-text-muted: var(--aura-text-muted, #94a3b8);
+    --dv-border: var(--aura-border, #2e3d56);
+    --dv-code-text: #7dd3fc;
+    --dv-code-border: #2e3d56;
+    --dv-folio-bg: rgba(56, 189, 248, 0.14);
+    --dv-folio-border: rgba(56, 189, 248, 0.35);
+    --dv-folio-label: #7dd3fc;
+    color: var(--dv-text);
 }
 
-[data-theme="dark"] .aura-dv-spec,
-[data-theme="dark"] .aura-dv-unlock-box,
-[data-theme="dark"] .aura-dv-sha-box,
-[data-theme="dark"] .aura-dv-sha-digest code,
-[data-theme="dark"] .aura-dv-unlock-form input,
-[data-theme="dark"] .aura-dv-search-form input,
-.aura-dark-mode .aura-dv-spec,
-.aura-dark-mode .aura-dv-unlock-box,
-.aura-dark-mode .aura-dv-sha-box,
-.aura-dark-mode .aura-dv-sha-digest code,
-.aura-dark-mode .aura-dv-unlock-form input,
-.aura-dark-mode .aura-dv-search-form input,
-.wp-dark-mode-active .aura-dv-spec,
-.wp-dark-mode-active .aura-dv-sha-box {
-    background: #1f1d38;
-    color: #f8fafc;
-    border-color: rgba(255, 255, 255, 0.14);
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-card,
+.aura-dv-card.aura-dark-theme,
+.aura-dv-card[data-aura-theme="dark"],
+.aura-dv-card[data-theme="dark"] {
+    background: var(--dv-bg-card, #162032) !important;
+    color: var(--dv-text, #f8fafc) !important;
+    border-color: var(--dv-border, #2e3d56) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
-[data-theme="dark"] .aura-dv-org-name,
-[data-theme="dark"] .aura-dv-spec strong,
-.aura-dark-mode .aura-dv-org-name,
-.aura-dark-mode .aura-dv-spec strong,
-.wp-dark-mode-active .aura-dv-org-name,
-.wp-dark-mode-active .aura-dv-spec strong {
-    color: #f8fafc;
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) :is(.aura-dv-spec, .aura-dv-unlock-box, .aura-dv-sha-box) {
+    background: var(--dv-bg-alt, #1e293b) !important;
+    color: var(--dv-text, #f8fafc) !important;
+    border-color: var(--dv-border, #2e3d56) !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap :is(code, .aura-dv-sha-digest code) {
+    background: var(--dv-bg-code, #0b1120) !important;
+    color: var(--dv-code-text, #7dd3fc) !important;
+    border-color: var(--dv-code-border, #2e3d56) !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap :is(.aura-dv-unlock-form input, .aura-dv-search-form input) {
+    background: var(--dv-bg-input, #111827) !important;
+    color: #f8fafc !important;
+    border-color: var(--dv-border, #2e3d56) !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap :is(.aura-dv-unlock-form input::placeholder, .aura-dv-search-form input::placeholder) {
+    color: #64748b !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap :is(
+    .aura-dv-org-name,
+    .aura-dv-spec strong,
+    .aura-dv-folio-chip strong,
+    .aura-dv-status-hero h1,
+    .aura-dv-search-box h2,
+    .aura-dv-search-form label,
+    .aura-dv-unlock-box h4,
+    .aura-dv-sha-box h4
+) {
+    color: #f8fafc !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-public-wrap :is(
+    .aura-dv-org-meta,
+    .aura-dv-muted,
+    .aura-dv-spec small,
+    .aura-dv-sha-digest small,
+    .aura-dv-status-hero p,
+    .aura-dv-search-box p,
+    .aura-dv-unlock-box p,
+    .aura-dv-public-footer
+) {
+    color: #cbd5e1 !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-folio-chip {
+    background: var(--dv-folio-bg) !important;
+    border-color: var(--dv-folio-border) !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-folio-chip span {
+    color: var(--dv-folio-label) !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-status-hero.is-valid {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(52, 211, 153, 0.35);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-status-hero.is-warning {
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(251, 191, 36, 0.35);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-status-hero.is-danger {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(248, 113, 113, 0.35);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-privacy {
+    color: #34d399;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-drop {
+    background: rgba(56, 189, 248, 0.08);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #e2e8f0;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-match-ok {
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+    border-color: rgba(52, 211, 153, 0.4);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-match-fail {
+    background: rgba(239, 68, 68, 0.16);
+    color: #fca5a5;
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-print-btn {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+    color: #f1f5f9 !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-print-btn:hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) :is(.aura-dv-org-header, .aura-dv-public-footer) {
+    border-color: var(--dv-border, #2e3d56) !important;
 }
 
 @media (max-width: 680px) {

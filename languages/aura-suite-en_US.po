@@ -60550,3 +60550,51 @@ msgstr "📇 CONTACTS & EXTERNAL RELATIONS"
 
 msgid "Directorio maestro de contactos y sincronización con Google Contacts."
 msgstr "Master contacts directory and Google Contacts synchronization."
+
+msgid "Actualizando URLs y regenerando códigos QR…"
+msgstr "Updating URLs and regenerating QR codes…"
+
+msgid "¿Guardar cambios y recalcular las URLs y códigos QR de todos los documentos creados usando la ruta actual?"
+msgstr "Save changes and recalculate URLs and QR codes for all existing documents using the current route?"
+
+msgid "Sin permisos para actualizar URLs de documentos."
+msgstr "You do not have permission to update document URLs."
+
+msgid "Se actualizaron las URLs y códigos QR de %d documentos."
+msgstr "Updated URLs and QR codes for %d documents."
+
+msgid "PDFs certificados re-estampados: %d."
+msgstr "Certified PDFs re-stamped: %d."
+
+msgid "No se pudo re-estampar: %d."
+msgstr "Could not re-stamp: %d."
+
+msgid "Modo de URL Pública en QR"
+msgstr "Public QR URL Mode"
+
+msgid "Elige si los códigos QR usarán la URL limpia /{slug}/{folio}?t=... o el enlace de la Página WordPress con shortcode (?doc={folio}&t=...)."
+msgstr "Choose whether QR codes use the clean /{slug}/{folio}?t=... URL or the WordPress shortcode page link (?doc={folio}&t=...)."
+
+msgid "Ruta Limpia (/slug/FOLIO?t=...)"
+msgstr "Clean Route (/slug/FOLIO?t=...)"
+
+msgid "Página WP Asignada (?doc=FOLIO&t=...)"
+msgstr "Assigned WP Page (?doc=FOLIO&t=...)"
+
+msgid "Segmento de URL usado en los QR cuando está activo el modo Ruta Limpia (ej: /verificar-documento/MIG-2026-0001)."
+msgstr "URL segment used in QR codes when Clean Route mode is active (e.g., /verificar-documento/MIG-2026-0001)."
+
+msgid "Formato de URL resultante para los códigos QR:"
+msgstr "Resulting URL format for QR codes:"
+
+msgid "Actualizar URLs y QR de documentos ya creados"
+msgstr "Update URLs and QR codes for existing documents"
+
+msgid "Los prefijos aplican solo a documentos nuevos para no invalidar folios emitidos. Si cambiaste el Slug Amigable, el Modo de URL o el dominio, usa este botón para recalcular las URLs guardadas y regenerar las imágenes QR de todos los documentos existentes."
+msgstr "Prefixes apply only to new documents so previously issued folios remain valid. If you changed the Friendly Slug, URL Mode, or domain, use this button to recalculate stored URLs and regenerate QR images for all existing documents."
+
+msgid "Re-estampar también los PDFs certificados (Hoja Anexa / Sello QR) que conserven su original en Drive o local"
+msgstr "Also re-stamp certified PDFs (Annex Page / QR Stamp) that still have their original file in Drive or local storage"
+
+msgid "Guardar y Actualizar URLs y QR existentes"
+msgstr "Save & Update Existing URLs and QRs"
