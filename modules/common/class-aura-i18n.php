@@ -594,16 +594,14 @@ class Aura_I18n {
             $redirect_to = $host ? ( $scheme . $host . $uri ) : ( is_admin() ? admin_url() : home_url() );
         }
 
-        return wp_nonce_url(
-            add_query_arg(
-                [
-                    'action'      => 'aura_switch_locale',
-                    'locale'      => $target_locale,
-                    'redirect_to' => $redirect_to,
-                ],
-                admin_url( 'admin-post.php' )
-            ),
-            self::NONCE_ACT
+        return add_query_arg(
+            [
+                'action'      => 'aura_switch_locale',
+                'locale'      => rawurlencode( $target_locale ),
+                'redirect_to' => rawurlencode( $redirect_to ),
+                '_wpnonce'    => wp_create_nonce( self::NONCE_ACT ),
+            ],
+            admin_url( 'admin-post.php' )
         );
     }
 
@@ -630,7 +628,7 @@ class Aura_I18n {
             setcookie( self::COOKIE_NAME, $requested, time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
         }
 
-        $redirect = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : '';
+        $redirect = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
         $fallback = wp_get_referer() ?: ( is_admin() ? admin_url() : home_url() );
         wp_safe_redirect( $redirect ?: $fallback );
         exit;
