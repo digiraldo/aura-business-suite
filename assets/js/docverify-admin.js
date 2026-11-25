@@ -291,9 +291,20 @@
         // Formulario Registro / Subida PDF
         var $dz = $('#aura-dv-pdf-dropzone');
         var $fileInput = $('#aura-dv-pdf-input');
+        var selectedPdfFile = null;
+
+        function isPdfFile(file) {
+            if (!file) return false;
+            return file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+        }
 
         function handleSelectedPdf(file) {
             if (!file) return;
+            if (!isPdfFile(file)) {
+                toast(cfg.i18n.needPdf || 'Selecciona un archivo en formato PDF válido.', 'error');
+                return;
+            }
+            selectedPdfFile = file;
             $('#aura-dv-dz-empty').hide();
             $('#aura-dv-dz-ready').show();
             $('#aura-dv-dz-filename').text(file.name);
@@ -304,31 +315,69 @@
             });
         }
 
-        if ($dz.length) {
-            $dz.on('click', function (e) {
-                if ($(e.target).closest('#aura-dv-dz-change').length) return;
-                $fileInput.trigger('click');
-            });
-            $('#aura-dv-dz-change').on('click', function (e) {
+        if ($dz.length && $fileInput.length) {
+            // Evitar que el click programático en el <input> oculto burbujee de regreso a $dz
+            $fileInput.on('click', function (e) {
                 e.stopPropagation();
+            });
+
+            $dz.on('click', function (e) {
+                if (e.target === $fileInput[0] || $(e.target).closest('#aura-dv-dz-change').length) {
+                    return;
+                }
                 $fileInput.trigger('click');
             });
+
+            $dz.on('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    $fileInput.trigger('click');
+                }
+            });
+
+            $('#aura-dv-dz-change').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $fileInput.val('');
+                $fileInput.trigger('click');
+            });
+
             $fileInput.on('change', function () {
                 if (this.files && this.files[0]) {
                     handleSelectedPdf(this.files[0]);
                 }
             });
-            $dz.on('dragover dragenter', function (e) {
+
+            // Evitar que el navegador abra el PDF en otra pestaña si se suelta en el área o cerca del dropzone
+            $(document).on('dragover.auraDvDrop drop.auraDvDrop', function (e) {
+                if ($('#aura-docverify-form-page').length) {
+                    e.preventDefault();
+                }
+            });
+
+            $dz.on('dragenter dragover', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
+                if (e.originalEvent && e.originalEvent.dataTransfer) {
+                    e.originalEvent.dataTransfer.dropEffect = 'copy';
+                }
                 $dz.addClass('is-dragover');
-            }).on('dragleave drop', function (e) {
+            }).on('dragleave', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
+                if (e.currentTarget && e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+                    return;
+                }
                 $dz.removeClass('is-dragover');
             }).on('drop', function (e) {
-                var dt = e.originalEvent.dataTransfer;
-                if (dt && dt.files && dt.files[0]) {
+                e.preventDefault();
+                e.stopPropagation();
+                $dz.removeClass('is-dragover');
+                var dt = e.originalEvent && e.originalEvent.dataTransfer;
+                var file = dt && dt.files && dt.files[0] ? dt.files[0] : null;
+                if (file) {
                     try { $fileInput[0].files = dt.files; } catch (err) {}
-                    handleSelectedPdf(dt.files[0]);
+                    handleSelectedPdf(file);
                 }
             });
         }
@@ -361,12 +410,17 @@
             e.preventDefault();
             var formEl = this;
             var docId = parseInt($(formEl).find('input[name="id"]').val(), 10) || 0;
-            if (docId === 0 && (!$fileInput[0] || !$fileInput[0].files || !$fileInput[0].files.length)) {
+            var inputFile = ($fileInput[0] && $fileInput[0].files && $fileInput[0].files[0]) ? $fileInput[0].files[0] : null;
+            var activeFile = inputFile || selectedPdfFile;
+            if (docId === 0 && !activeFile) {
                 toast(cfg.i18n.needPdf, 'error');
                 return;
             }
 
             var fd = new FormData(formEl);
+            if (docId === 0 && !inputFile && activeFile) {
+                fd.set('signed_pdf', activeFile, activeFile.name || 'document.pdf');
+            }
             fd.append('action', 'aura_docverify_save');
             fd.append('nonce', cfg.nonce);
 

@@ -23,7 +23,7 @@ class Aura_DocVerify_Admin {
      */
     public static function init(): void {
         add_action( 'admin_menu',            [ __CLASS__, 'register_menus' ], 17 );
-        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ], 20 );
 
         // AJAX CRUD y operaciones administrativas
         add_action( 'wp_ajax_aura_docverify_save',         [ __CLASS__, 'ajax_save' ] );
@@ -133,10 +133,11 @@ class Aura_DocVerify_Admin {
         $js_path  = $plugin_dir . 'assets/js/docverify-admin.js';
 
         if ( file_exists( $css_path ) ) {
+            $css_deps = wp_style_is( 'aura-design-system', 'registered' ) ? [ 'aura-design-system' ] : [];
             wp_enqueue_style(
                 'aura-docverify-admin',
                 $plugin_url . 'assets/css/docverify-admin.css',
-                [ 'aura-design-system' ],
+                $css_deps,
                 $ver_base . '.' . filemtime( $css_path )
             );
         }
@@ -146,10 +147,11 @@ class Aura_DocVerify_Admin {
         }
 
         if ( file_exists( $js_path ) ) {
+            $js_deps = wp_script_is( 'aura-ui-core', 'registered' ) ? [ 'jquery', 'aura-ui-core' ] : [ 'jquery' ];
             wp_enqueue_script(
                 'aura-docverify-admin',
                 $plugin_url . 'assets/js/docverify-admin.js',
-                [ 'jquery', 'aura-ui' ],
+                $js_deps,
                 $ver_base . '.' . filemtime( $js_path ),
                 true
             );
