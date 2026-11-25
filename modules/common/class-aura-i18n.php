@@ -69,77 +69,147 @@ class Aura_I18n {
     }
 
     /**
-     * Devuelve una bandera SVG inline nítida y multiplataforma (funciona en Windows/Linux/macOS/Móvil).
+     * Tabla compacta de banderas SVG inline por código ISO 3166-1 alpha-2 / clave de idioma.
+     * Cualquier archivo en assets/flags/{codigo}.svg tiene prioridad automática.
+     *
+     * @return array<string, string>
      */
-    public static function get_locale_flag_svg( string $locale ): string {
-        $base = strtolower( $locale );
-        $svg_body = '';
+    private static function get_builtin_flag_svgs(): array {
+        return [
+            'es' => '<rect width="24" height="18" fill="#AA151B"/><rect y="4.5" width="24" height="9" fill="#F1BF00"/><rect x="5" y="6.5" width="3" height="5" rx="0.8" fill="#AA151B" opacity="0.85"/>',
+            'mx' => '<rect width="8" height="18" fill="#006847"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#CE1126"/><circle cx="12" cy="9" r="2.1" fill="#8C6239"/>',
+            'co' => '<rect width="24" height="9" fill="#FCD116"/><rect y="9" width="24" height="4.5" fill="#003893"/><rect y="13.5" width="24" height="4.5" fill="#CE1126"/>',
+            'cl' => '<rect width="24" height="9" fill="#FFFFFF"/><rect y="9" width="24" height="9" fill="#D52B1E"/><rect width="9" height="9" fill="#0039A6"/><polygon points="4.5,2.1 5.2,4.1 7.3,4.1 5.6,5.3 6.2,7.3 4.5,6.1 2.8,7.3 3.4,5.3 1.7,4.1 3.8,4.1" fill="#FFFFFF"/>',
+            'ar' => '<rect width="24" height="6" fill="#74ACDF"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#74ACDF"/><circle cx="12" cy="9" r="2" fill="#F6B40E"/>',
+            'pe' => '<rect width="8" height="18" fill="#D91023"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#D91023"/>',
+            'ec' => '<rect width="24" height="9" fill="#FFD100"/><rect y="9" width="24" height="4.5" fill="#0033A0"/><rect y="13.5" width="24" height="4.5" fill="#EF3340"/><circle cx="12" cy="9.2" r="1.8" fill="#8C6239"/>',
+            've' => '<rect width="24" height="6" fill="#FFCC00"/><rect y="6" width="24" height="6" fill="#00247D"/><rect y="12" width="24" height="6" fill="#CF142B"/>',
+            'bo' => '<rect width="24" height="6" fill="#D52B1E"/><rect y="6" width="24" height="6" fill="#F9E300"/><rect y="12" width="24" height="6" fill="#007934"/>',
+            'cr' => '<rect width="24" height="18" fill="#002B7F"/><rect y="3" width="24" height="12" fill="#FFFFFF"/><rect y="5.5" width="24" height="7" fill="#CE1126"/>',
+            'pa' => '<rect width="12" height="9" fill="#FFFFFF"/><rect x="12" width="12" height="9" fill="#DA121A"/><rect y="9" width="12" height="9" fill="#072357"/><rect x="12" y="9" width="12" height="9" fill="#FFFFFF"/>',
+            'gt' => '<rect width="8" height="18" fill="#4997D0"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#4997D0"/><circle cx="12" cy="9" r="1.8" fill="#6AA84F"/>',
+            'us' => '<rect width="24" height="18" fill="#FFFFFF"/><rect y="0" width="24" height="2.6" fill="#B22234"/><rect y="5.2" width="24" height="2.6" fill="#B22234"/><rect y="10.4" width="24" height="2.6" fill="#B22234"/><rect y="15.4" width="24" height="2.6" fill="#B22234"/><rect width="11" height="10.4" fill="#3C3B6E"/><circle cx="3" cy="3" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="3" r="0.8" fill="#FFFFFF"/><circle cx="9" cy="3" r="0.8" fill="#FFFFFF"/><circle cx="4.5" cy="5.2" r="0.8" fill="#FFFFFF"/><circle cx="7.5" cy="5.2" r="0.8" fill="#FFFFFF"/><circle cx="3" cy="7.4" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="7.4" r="0.8" fill="#FFFFFF"/><circle cx="9" cy="7.4" r="0.8" fill="#FFFFFF"/>',
+            'gb' => '<rect width="24" height="18" fill="#012169"/><path d="M0,0 L24,18 M24,0 L0,18" stroke="#FFFFFF" stroke-width="3.2"/><path d="M0,0 L24,18 M24,0 L0,18" stroke="#C8102E" stroke-width="1.6"/><path d="M12,0 V18 M0,9 H24" stroke="#FFFFFF" stroke-width="5"/><path d="M12,0 V18 M0,9 H24" stroke="#C8102E" stroke-width="3"/>',
+            'ca' => '<rect width="6" height="18" fill="#FF0000"/><rect x="6" width="12" height="18" fill="#FFFFFF"/><rect x="18" width="6" height="18" fill="#FF0000"/><polygon points="12,4 13.5,8 16,8 13.8,10 14.5,13 12,11.5 9.5,13 10.2,10 8,8 10.5,8" fill="#FF0000"/>',
+            'au' => '<rect width="24" height="18" fill="#00008B"/><rect width="11" height="9" fill="#012169"/><path d="M0,0 L11,9 M11,0 L0,9" stroke="#FFFFFF" stroke-width="1.6"/><path d="M5.5,0 V9 M0,4.5 H11" stroke="#FFFFFF" stroke-width="2.4"/><path d="M5.5,0 V9 M0,4.5 H11" stroke="#C8102E" stroke-width="1.3"/><circle cx="18" cy="5" r="1.1" fill="#FFFFFF"/><circle cx="16" cy="11" r="1" fill="#FFFFFF"/><circle cx="20" cy="10" r="1" fill="#FFFFFF"/><circle cx="18" cy="14" r="1.2" fill="#FFFFFF"/>',
+            'br' => '<rect width="24" height="18" fill="#009C3B"/><polygon points="12,2.2 21.5,9 12,15.8 2.5,9" fill="#FFDF00"/><circle cx="12" cy="9" r="3.6" fill="#002776"/>',
+            'pt' => '<rect width="9.5" height="18" fill="#006600"/><rect x="9.5" width="14.5" height="18" fill="#FF0000"/><circle cx="9.5" cy="9" r="3.4" fill="#FFCC00"/><circle cx="9.5" cy="9" r="2.1" fill="#FFFFFF"/>',
+            'fr' => '<rect width="8" height="18" fill="#0055A4"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#EF4135"/>',
+            'de' => '<rect width="24" height="6" fill="#000000"/><rect y="6" width="24" height="6" fill="#DD0000"/><rect y="12" width="24" height="6" fill="#FFCE00"/>',
+            'ch' => '<rect width="24" height="18" fill="#D52B1E"/><rect x="10" y="3.5" width="4" height="11" fill="#FFFFFF"/><rect x="6.5" y="7" width="11" height="4" fill="#FFFFFF"/>',
+            'at' => '<rect width="24" height="6" fill="#ED2939"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#ED2939"/>',
+            'it' => '<rect width="8" height="18" fill="#009246"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#CE2B37"/>',
+            'nl' => '<rect width="24" height="6" fill="#AE1C28"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#21468B"/>',
+            'be' => '<rect width="8" height="18" fill="#000000"/><rect x="8" width="8" height="18" fill="#FDDA24"/><rect x="16" width="8" height="18" fill="#EF3340"/>',
+            'pl' => '<rect width="24" height="9" fill="#FFFFFF"/><rect y="9" width="24" height="9" fill="#DC143C"/>',
+            'ru' => '<rect width="24" height="6" fill="#FFFFFF"/><rect y="6" width="24" height="6" fill="#0039A6"/><rect y="12" width="24" height="6" fill="#D52B1E"/>',
+            'ua' => '<rect width="24" height="9" fill="#0057B7"/><rect y="9" width="24" height="9" fill="#FFD700"/>',
+            'se' => '<rect width="24" height="18" fill="#006AA7"/><rect x="6" width="3.5" height="18" fill="#FECC00"/><rect y="7.25" width="24" height="3.5" fill="#FECC00"/>',
+            'no' => '<rect width="24" height="18" fill="#BA0C2F"/><rect x="6" width="4.5" height="18" fill="#FFFFFF"/><rect y="6.75" width="24" height="4.5" fill="#FFFFFF"/><rect x="7.2" width="2.1" height="18" fill="#00205B"/><rect y="7.95" width="24" height="2.1" fill="#00205B"/>',
+            'dk' => '<rect width="24" height="18" fill="#C60C30"/><rect x="6" width="3.2" height="18" fill="#FFFFFF"/><rect y="7.4" width="24" height="3.2" fill="#FFFFFF"/>',
+            'fi' => '<rect width="24" height="18" fill="#FFFFFF"/><rect x="6.5" width="3.8" height="18" fill="#003580"/><rect y="7.1" width="24" height="3.8" fill="#003580"/>',
+            'gr' => '<rect width="24" height="18" fill="#0D5EAF"/><rect y="2" width="24" height="2" fill="#FFFFFF"/><rect y="6" width="24" height="2" fill="#FFFFFF"/><rect y="10" width="24" height="2" fill="#FFFFFF"/><rect y="14" width="24" height="2" fill="#FFFFFF"/><rect width="10" height="10" fill="#0D5EAF"/><rect x="4" width="2" height="10" fill="#FFFFFF"/><rect y="4" width="10" height="2" fill="#FFFFFF"/>',
+            'cz' => '<rect width="24" height="9" fill="#FFFFFF"/><rect y="9" width="24" height="9" fill="#D7141A"/><polygon points="0,0 12,9 0,18" fill="#11457E"/>',
+            'ro' => '<rect width="8" height="18" fill="#002B7F"/><rect x="8" width="8" height="18" fill="#FCD116"/><rect x="16" width="8" height="18" fill="#CE1126"/>',
+            'hu' => '<rect width="24" height="6" fill="#CE2939"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#477050"/>',
+            'tr' => '<rect width="24" height="18" fill="#E30A17"/><circle cx="10.2" cy="9" r="4.2" fill="#FFFFFF"/><circle cx="11.4" cy="9" r="3.3" fill="#E30A17"/><polygon points="15.2,9 16.9,9.6 15.8,8.2 15.8,9.8 16.9,8.4" fill="#FFFFFF"/>',
+            'jp' => '<rect width="24" height="18" fill="#FFFFFF"/><circle cx="12" cy="9" r="4.8" fill="#BC002D"/>',
+            'kr' => '<rect width="24" height="18" fill="#FFFFFF"/><path d="M12,4.5 A4.5,4.5 0 0,1 16.5,9 A2.25,2.25 0 0,1 12,9 A2.25,2.25 0 0,0 7.5,9 A4.5,4.5 0 0,1 12,4.5 Z" fill="#CD2E3A"/><path d="M12,13.5 A4.5,4.5 0 0,1 7.5,9 A2.25,2.25 0 0,1 12,9 A2.25,2.25 0 0,0 16.5,9 A4.5,4.5 0 0,1 12,13.5 Z" fill="#0047A0"/>',
+            'cn' => '<rect width="24" height="18" fill="#DE2910"/><polygon points="5.2,3 5.9,5 8,5 6.3,6.2 6.9,8.2 5.2,7 3.5,8.2 4.1,6.2 2.4,5 4.5,5" fill="#FFDE00"/>',
+            'tw' => '<rect width="24" height="18" fill="#FE0000"/><rect width="12" height="9" fill="#000095"/><circle cx="6" cy="4.5" r="2.3" fill="#FFFFFF"/>',
+            'sa' => '<rect width="24" height="18" fill="#006C35"/><rect x="5" y="11" width="14" height="1.8" rx="0.8" fill="#FFFFFF"/><rect x="6" y="6" width="12" height="2.4" rx="1" fill="#FFFFFF" opacity="0.9"/>',
+            'ae' => '<rect width="24" height="6" fill="#00732F"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#000000"/><rect width="6.5" height="18" fill="#FF0000"/>',
+            'il' => '<rect width="24" height="18" fill="#FFFFFF"/><rect y="2.2" width="24" height="2.6" fill="#0038B8"/><rect y="13.2" width="24" height="2.6" fill="#0038B8"/><polygon points="12,5.6 14.8,10.6 9.2,10.6" fill="none" stroke="#0038B8" stroke-width="1.2"/><polygon points="12,12.4 14.8,7.4 9.2,7.4" fill="none" stroke="#0038B8" stroke-width="1.2"/>',
+            'in' => '<rect width="24" height="6" fill="#FF9933"/><rect y="6" width="24" height="6" fill="#FFFFFF"/><rect y="12" width="24" height="6" fill="#138808"/><circle cx="12" cy="9" r="2.1" fill="none" stroke="#000080" stroke-width="1.1"/>',
+            'id' => '<rect width="24" height="9" fill="#FF0000"/><rect y="9" width="24" height="9" fill="#FFFFFF"/>',
+            'vn' => '<rect width="24" height="18" fill="#DA251D"/><polygon points="12,4.2 13.4,8.2 17.6,8.2 14.2,10.7 15.5,14.7 12,12.2 8.5,14.7 9.8,10.7 6.4,8.2 10.6,8.2" fill="#FFFF00"/>',
+            'th' => '<rect width="24" height="3" fill="#A51931"/><rect y="3" width="24" height="3" fill="#F4F5F8"/><rect y="6" width="24" height="6" fill="#2D2A4A"/><rect y="12" width="24" height="3" fill="#F4F5F8"/><rect y="15" width="24" height="3" fill="#A51931"/>',
+            'ph' => '<rect width="24" height="9" fill="#0038A8"/><rect y="9" width="24" height="9" fill="#CE1126"/><polygon points="0,0 11,9 0,18" fill="#FFFFFF"/><circle cx="4" cy="9" r="1.8" fill="#FCD116"/>',
+        ];
+    }
 
-        switch ( $base ) {
-            case 'es_es':
-            case 'es':
-                $svg_body = '<rect width="24" height="18" fill="#AA151B"/><rect y="4.5" width="24" height="9" fill="#F1BF00"/><rect x="5" y="6.5" width="3" height="5" rx="0.8" fill="#AA151B" opacity="0.85"/>';
-                break;
-            case 'es_mx':
-                $svg_body = '<rect width="8" height="18" fill="#006847"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#CE1126"/><circle cx="12" cy="9" r="2.1" fill="#8C6239"/>';
-                break;
-            case 'es_co':
-                $svg_body = '<rect width="24" height="9" fill="#FCD116"/><rect y="9" width="24" height="4.5" fill="#003893"/><rect y="13.5" width="24" height="4.5" fill="#CE1126"/>';
-                break;
-            case 'es_cl':
-                $svg_body = '<rect width="24" height="9" fill="#FFFFFF"/><rect y="9" width="24" height="9" fill="#D52B1E"/><rect width="9" height="9" fill="#0039A6"/><polygon points="4.5,2.1 5.2,4.1 7.3,4.1 5.6,5.3 6.2,7.3 4.5,6.1 2.8,7.3 3.4,5.3 1.7,4.1 3.8,4.1" fill="#FFFFFF"/>';
-                break;
-            case 'en_us':
-            case 'en':
-                $svg_body = '<rect width="24" height="18" fill="#FFFFFF"/>'
-                          . '<rect y="0" width="24" height="2.6" fill="#B22234"/>'
-                          . '<rect y="5.2" width="24" height="2.6" fill="#B22234"/>'
-                          . '<rect y="10.4" width="24" height="2.6" fill="#B22234"/>'
-                          . '<rect y="15.4" width="24" height="2.6" fill="#B22234"/>'
-                          . '<rect width="11" height="10.4" fill="#3C3B6E"/>'
-                          . '<circle cx="3" cy="3" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="3" r="0.8" fill="#FFFFFF"/><circle cx="9" cy="3" r="0.8" fill="#FFFFFF"/>'
-                          . '<circle cx="4.5" cy="5.2" r="0.8" fill="#FFFFFF"/><circle cx="7.5" cy="5.2" r="0.8" fill="#FFFFFF"/>'
-                          . '<circle cx="3" cy="7.4" r="0.8" fill="#FFFFFF"/><circle cx="6" cy="7.4" r="0.8" fill="#FFFFFF"/><circle cx="9" cy="7.4" r="0.8" fill="#FFFFFF"/>';
-                break;
-            case 'en_gb':
-                $svg_body = '<rect width="24" height="18" fill="#012169"/>'
-                          . '<path d="M0,0 L24,18 M24,0 L0,18" stroke="#FFFFFF" stroke-width="3.2"/>'
-                          . '<path d="M0,0 L24,18 M24,0 L0,18" stroke="#C8102E" stroke-width="1.6"/>'
-                          . '<path d="M12,0 V18 M0,9 H24" stroke="#FFFFFF" stroke-width="5"/>'
-                          . '<path d="M12,0 V18 M0,9 H24" stroke="#C8102E" stroke-width="3"/>';
-                break;
-            case 'pt_br':
-            case 'pt':
-                $svg_body = '<rect width="24" height="18" fill="#009C3B"/><polygon points="12,2.2 21.5,9 12,15.8 2.5,9" fill="#FFDF00"/><circle cx="12" cy="9" r="3.6" fill="#002776"/>';
-                break;
-            case 'pt_pt':
-                $svg_body = '<rect width="9.5" height="18" fill="#006600"/><rect x="9.5" width="14.5" height="18" fill="#FF0000"/><circle cx="9.5" cy="9" r="3.4" fill="#FFCC00"/><circle cx="9.5" cy="9" r="2.1" fill="#FFFFFF"/>';
-                break;
-            case 'fr_fr':
-            case 'fr':
-                $svg_body = '<rect width="8" height="18" fill="#0055A4"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#EF4135"/>';
-                break;
-            case 'de_de':
-            case 'de':
-                $svg_body = '<rect width="24" height="6" fill="#000000"/><rect y="6" width="24" height="6" fill="#DD0000"/><rect y="12" width="24" height="6" fill="#FFCE00"/>';
-                break;
-            case 'it_it':
-            case 'it':
-                $svg_body = '<rect width="8" height="18" fill="#009246"/><rect x="8" width="8" height="18" fill="#FFFFFF"/><rect x="16" width="8" height="18" fill="#CE2B37"/>';
-                break;
-            case 'auto':
-                return '<svg class="aura-globe-svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-            default:
-                // Fallback por prefijo de idioma (es_*, en_*, pt_*, fr_*, de_*, it_*) o globo limpio
-                $prefix = substr( $base, 0, 2 );
-                if ( in_array( $prefix, [ 'es', 'en', 'pt', 'fr', 'de', 'it' ], true ) && $prefix !== $base ) {
-                    return self::get_locale_flag_svg( $prefix );
-                }
-                $code_short = esc_html( strtoupper( substr( $locale, 0, 2 ) ) );
-                return '<svg class="aura-flag-svg" viewBox="0 0 24 18" width="18" height="13" aria-hidden="true"><rect width="24" height="18" rx="2" fill="#334155"/><text x="12" y="12.5" text-anchor="middle" fill="#FFFFFF" font-size="9" font-family="sans-serif" font-weight="700">' . $code_short . '</text></svg>';
+    /**
+     * Intenta cargar un SVG personalizado desde assets/flags/{key}.svg si existe.
+     */
+    private static function load_custom_flag_svg( string $key ): string {
+        static $cache = [];
+        $key = strtolower( preg_replace( '/[^a-z0-9_-]/', '', $key ) );
+        if ( $key === '' ) {
+            return '';
+        }
+        if ( array_key_exists( $key, $cache ) ) {
+            return $cache[ $key ];
         }
 
-        return '<svg class="aura-flag-svg" viewBox="0 0 24 18" width="18" height="13" aria-hidden="true">' . $svg_body . '</svg>';
+        $flag_dir = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR . 'assets/flags/' : '';
+        $file     = $flag_dir ? $flag_dir . $key . '.svg' : '';
+        if ( ! $file || ! is_file( $file ) || ! is_readable( $file ) ) {
+            $cache[ $key ] = '';
+            return '';
+        }
+
+        $raw = (string) file_get_contents( $file );
+        if ( stripos( $raw, '<svg' ) === false ) {
+            $cache[ $key ] = '';
+            return '';
+        }
+
+        // Normalizar clase y dimensiones para integración uniforme en pills/dropdowns
+        $clean = preg_replace( '/<\?xml[^>]*\?>\s*/i', '', trim( $raw ) );
+        $clean = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', (string) $clean );
+        $clean = preg_replace( '/<svg\b([^>]*)>/i', '<svg class="aura-flag-svg" width="18" height="13" aria-hidden="true"$1>', (string) $clean, 1 );
+        $cache[ $key ] = (string) $clean;
+        return $cache[ $key ];
+    }
+
+    /**
+     * Devuelve una bandera SVG inline nítida y multiplataforma (funciona en Windows/Linux/macOS/Móvil).
+     * Resuelve automáticamente: archivo local assets/flags/{pais}.svg -> catálogo interno -> prefijo idioma -> badge ISO.
+     */
+    public static function get_locale_flag_svg( string $locale ): string {
+        $base = strtolower( trim( $locale ) );
+        if ( $base === 'auto' ) {
+            return '<svg class="aura-globe-svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+        }
+
+        $svgs = self::get_builtin_flag_svgs();
+
+        // Construir candidatos ordenados: locale completo -> código país (xx_YY -> yy) -> mapa idioma -> prefijo
+        $candidates = [];
+        if ( $base !== '' ) {
+            $candidates[] = str_replace( '-', '_', $base );
+        }
+        if ( preg_match( '/^[a-z]{2,3}[_-]([a-z]{2})\b/', $base, $m ) ) {
+            $candidates[] = $m[1];
+        }
+        $lang = substr( $base, 0, 2 );
+        $lang_to_country = [
+            'es' => 'es', 'en' => 'us', 'pt' => 'br', 'fr' => 'fr', 'de' => 'de',
+            'it' => 'it', 'nl' => 'nl', 'ja' => 'jp', 'ko' => 'kr', 'zh' => 'cn',
+            'ru' => 'ru', 'uk' => 'ua', 'ar' => 'sa', 'pl' => 'pl', 'tr' => 'tr',
+            'sv' => 'se', 'nb' => 'no', 'nn' => 'no', 'da' => 'dk', 'fi' => 'fi',
+            'el' => 'gr', 'cs' => 'cz', 'ro' => 'ro', 'hu' => 'hu', 'he' => 'il',
+            'hi' => 'in', 'id' => 'id', 'vi' => 'vn', 'th' => 'th', 'tl' => 'ph',
+        ];
+        if ( isset( $lang_to_country[ $lang ] ) ) {
+            $candidates[] = $lang_to_country[ $lang ];
+        }
+        if ( $lang !== '' ) {
+            $candidates[] = $lang;
+        }
+
+        foreach ( array_unique( $candidates ) as $cand ) {
+            $custom = self::load_custom_flag_svg( $cand );
+            if ( $custom !== '' ) {
+                return $custom;
+            }
+            if ( isset( $svgs[ $cand ] ) ) {
+                return '<svg class="aura-flag-svg" viewBox="0 0 24 18" width="18" height="13" aria-hidden="true">' . $svgs[ $cand ] . '</svg>';
+            }
+        }
+
+        $code_short = esc_html( strtoupper( substr( $locale, 0, 2 ) ?: 'GL' ) );
+        return '<svg class="aura-flag-svg" viewBox="0 0 24 18" width="18" height="13" aria-hidden="true"><rect width="24" height="18" rx="2" fill="#334155"/><text x="12" y="12.5" text-anchor="middle" fill="#FFFFFF" font-size="9" font-family="sans-serif" font-weight="700">' . $code_short . '</text></svg>';
     }
 
     /**
@@ -190,17 +260,46 @@ class Aura_I18n {
      */
     private static function get_locale_catalog(): array {
         return [
-            'es_ES' => [ 'code' => 'es_ES', 'short' => 'ES', 'flag' => '🇪🇸', 'label' => 'Español',         'native' => 'Español' ],
-            'es_MX' => [ 'code' => 'es_MX', 'short' => 'ES', 'flag' => '🇲🇽', 'label' => 'Español (MX)',    'native' => 'Español (México)' ],
-            'es_CO' => [ 'code' => 'es_CO', 'short' => 'ES', 'flag' => '🇨🇴', 'label' => 'Español (CO)',    'native' => 'Español (Colombia)' ],
-            'es_CL' => [ 'code' => 'es_CL', 'short' => 'ES', 'flag' => '🇨🇱', 'label' => 'Español (CL)',    'native' => 'Español (Chile)' ],
-            'en_US' => [ 'code' => 'en_US', 'short' => 'EN', 'flag' => '🇺🇸', 'label' => 'English (US)',    'native' => 'English (US)' ],
-            'en_GB' => [ 'code' => 'en_GB', 'short' => 'EN', 'flag' => '🇬🇧', 'label' => 'English (UK)',    'native' => 'English (UK)' ],
-            'pt_BR' => [ 'code' => 'pt_BR', 'short' => 'PT', 'flag' => '🇧🇷', 'label' => 'Português (BR)',  'native' => 'Português (Brasil)' ],
-            'pt_PT' => [ 'code' => 'pt_PT', 'short' => 'PT', 'flag' => '🇵🇹', 'label' => 'Português (PT)',  'native' => 'Português' ],
-            'fr_FR' => [ 'code' => 'fr_FR', 'short' => 'FR', 'flag' => '🇫🇷', 'label' => 'Français',        'native' => 'Français' ],
-            'de_DE' => [ 'code' => 'de_DE', 'short' => 'DE', 'flag' => '🇩🇪', 'label' => 'Deutsch',         'native' => 'Deutsch' ],
-            'it_IT' => [ 'code' => 'it_IT', 'short' => 'IT', 'flag' => '🇮🇹', 'label' => 'Italiano',        'native' => 'Italiano' ],
+            'es_ES' => [ 'code' => 'es_ES', 'short' => 'ES', 'flag' => '🇪🇸', 'label' => 'Español',           'native' => 'Español' ],
+            'es_MX' => [ 'code' => 'es_MX', 'short' => 'ES', 'flag' => '🇲🇽', 'label' => 'Español (MX)',      'native' => 'Español (México)' ],
+            'es_CO' => [ 'code' => 'es_CO', 'short' => 'ES', 'flag' => '🇨🇴', 'label' => 'Español (CO)',      'native' => 'Español (Colombia)' ],
+            'es_CL' => [ 'code' => 'es_CL', 'short' => 'ES', 'flag' => '🇨🇱', 'label' => 'Español (CL)',      'native' => 'Español (Chile)' ],
+            'es_AR' => [ 'code' => 'es_AR', 'short' => 'ES', 'flag' => '🇦🇷', 'label' => 'Español (AR)',      'native' => 'Español (Argentina)' ],
+            'es_PE' => [ 'code' => 'es_PE', 'short' => 'ES', 'flag' => '🇵🇪', 'label' => 'Español (PE)',      'native' => 'Español (Perú)' ],
+            'en_US' => [ 'code' => 'en_US', 'short' => 'EN', 'flag' => '🇺🇸', 'label' => 'English (US)',      'native' => 'English (US)' ],
+            'en_GB' => [ 'code' => 'en_GB', 'short' => 'EN', 'flag' => '🇬🇧', 'label' => 'English (UK)',      'native' => 'English (UK)' ],
+            'en_CA' => [ 'code' => 'en_CA', 'short' => 'EN', 'flag' => '🇨🇦', 'label' => 'English (CA)',      'native' => 'English (Canada)' ],
+            'en_AU' => [ 'code' => 'en_AU', 'short' => 'EN', 'flag' => '🇦🇺', 'label' => 'English (AU)',      'native' => 'English (Australia)' ],
+            'pt_BR' => [ 'code' => 'pt_BR', 'short' => 'PT', 'flag' => '🇧🇷', 'label' => 'Português (BR)',    'native' => 'Português (Brasil)' ],
+            'pt_PT' => [ 'code' => 'pt_PT', 'short' => 'PT', 'flag' => '🇵🇹', 'label' => 'Português (PT)',    'native' => 'Português' ],
+            'fr_FR' => [ 'code' => 'fr_FR', 'short' => 'FR', 'flag' => '🇫🇷', 'label' => 'Français',          'native' => 'Français' ],
+            'fr_CA' => [ 'code' => 'fr_CA', 'short' => 'FR', 'flag' => '🇨🇦', 'label' => 'Français (CA)',     'native' => 'Français (Canada)' ],
+            'de_DE' => [ 'code' => 'de_DE', 'short' => 'DE', 'flag' => '🇩🇪', 'label' => 'Deutsch',           'native' => 'Deutsch' ],
+            'it_IT' => [ 'code' => 'it_IT', 'short' => 'IT', 'flag' => '🇮🇹', 'label' => 'Italiano',          'native' => 'Italiano' ],
+            'nl_NL' => [ 'code' => 'nl_NL', 'short' => 'NL', 'flag' => '🇳🇱', 'label' => 'Nederlands',        'native' => 'Nederlands' ],
+            'pl_PL' => [ 'code' => 'pl_PL', 'short' => 'PL', 'flag' => '🇵🇱', 'label' => 'Polski',            'native' => 'Polski' ],
+            'ru_RU' => [ 'code' => 'ru_RU', 'short' => 'RU', 'flag' => '🇷🇺', 'label' => 'Русский',           'native' => 'Русский' ],
+            'uk'    => [ 'code' => 'uk',    'short' => 'UK', 'flag' => '🇺🇦', 'label' => 'Українська',        'native' => 'Українська' ],
+            'tr_TR' => [ 'code' => 'tr_TR', 'short' => 'TR', 'flag' => '🇹🇷', 'label' => 'Türkçe',            'native' => 'Türkçe' ],
+            'ja'    => [ 'code' => 'ja',    'short' => 'JA', 'flag' => '🇯🇵', 'label' => '日本語',             'native' => '日本語' ],
+            'ja_JP' => [ 'code' => 'ja_JP', 'short' => 'JA', 'flag' => '🇯🇵', 'label' => '日本語',             'native' => '日本語' ],
+            'ko_KR' => [ 'code' => 'ko_KR', 'short' => 'KO', 'flag' => '🇰🇷', 'label' => '한국어',             'native' => '한국어' ],
+            'zh_CN' => [ 'code' => 'zh_CN', 'short' => 'ZH', 'flag' => '🇨🇳', 'label' => '简体中文',           'native' => '简体中文' ],
+            'zh_TW' => [ 'code' => 'zh_TW', 'short' => 'ZH', 'flag' => '🇹🇼', 'label' => '繁體中文',           'native' => '繁體中文' ],
+            'ar'    => [ 'code' => 'ar',    'short' => 'AR', 'flag' => '🇸🇦', 'label' => 'العربية',           'native' => 'العربية' ],
+            'he_IL' => [ 'code' => 'he_IL', 'short' => 'HE', 'flag' => '🇮🇱', 'label' => 'עברית',             'native' => 'עברית' ],
+            'hi_IN' => [ 'code' => 'hi_IN', 'short' => 'HI', 'flag' => '🇮🇳', 'label' => 'हिन्दी',            'native' => 'हिन्दी' ],
+            'sv_SE' => [ 'code' => 'sv_SE', 'short' => 'SV', 'flag' => '🇸🇪', 'label' => 'Svenska',           'native' => 'Svenska' ],
+            'nb_NO' => [ 'code' => 'nb_NO', 'short' => 'NB', 'flag' => '🇳🇴', 'label' => 'Norsk bokmål',      'native' => 'Norsk bokmål' ],
+            'da_DK' => [ 'code' => 'da_DK', 'short' => 'DA', 'flag' => '🇩🇰', 'label' => 'Dansk',             'native' => 'Dansk' ],
+            'fi'    => [ 'code' => 'fi',    'short' => 'FI', 'flag' => '🇫🇮', 'label' => 'Suomi',             'native' => 'Suomi' ],
+            'el'    => [ 'code' => 'el',    'short' => 'EL', 'flag' => '🇬🇷', 'label' => 'Ελληνικά',          'native' => 'Ελληνικά' ],
+            'cs_CZ' => [ 'code' => 'cs_CZ', 'short' => 'CS', 'flag' => '🇨🇿', 'label' => 'Čeština',           'native' => 'Čeština' ],
+            'ro_RO' => [ 'code' => 'ro_RO', 'short' => 'RO', 'flag' => '🇷🇴', 'label' => 'Română',            'native' => 'Română' ],
+            'hu_HU' => [ 'code' => 'hu_HU', 'short' => 'HU', 'flag' => '🇭🇺', 'label' => 'Magyar',            'native' => 'Magyar' ],
+            'vi'    => [ 'code' => 'vi',    'short' => 'VI', 'flag' => '🇻🇳', 'label' => 'Tiếng Việt',        'native' => 'Tiếng Việt' ],
+            'th'    => [ 'code' => 'th',    'short' => 'TH', 'flag' => '🇹🇭', 'label' => 'ไทย',               'native' => 'ไทย' ],
+            'id_ID' => [ 'code' => 'id_ID', 'short' => 'ID', 'flag' => '🇮🇩', 'label' => 'Bahasa Indonesia',  'native' => 'Bahasa Indonesia' ],
         ];
     }
 
@@ -231,13 +330,22 @@ class Aura_I18n {
                     if ( isset( $catalog[ $code ] ) ) {
                         $available[ $code ] = $catalog[ $code ];
                     } else {
-                        $short = strtoupper( substr( $code, 0, 2 ) );
+                        $short  = strtoupper( substr( $code, 0, 2 ) );
+                        $native = $code;
+                        if ( class_exists( 'Locale' ) && method_exists( 'Locale', 'getDisplayName' ) ) {
+                            $disp = Locale::getDisplayName( $code, $code );
+                            if ( is_string( $disp ) && $disp !== '' && strtolower( $disp ) !== strtolower( $code ) ) {
+                                $native = function_exists( 'mb_convert_case' )
+                                    ? mb_convert_case( $disp, MB_CASE_TITLE, 'UTF-8' )
+                                    : ucfirst( $disp );
+                            }
+                        }
                         $available[ $code ] = [
                             'code'   => $code,
                             'short'  => $short,
                             'flag'   => self::get_locale_flag( $code ),
-                            'label'  => $code,
-                            'native' => $code,
+                            'label'  => $native,
+                            'native' => $native,
                         ];
                     }
                 }

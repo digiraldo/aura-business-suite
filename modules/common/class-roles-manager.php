@@ -51,6 +51,11 @@ class Aura_Roles_Manager {
         // Permitir ver todos los medios del sistema (no solo los propios) a esos mismos usuarios
         add_filter('ajax_query_attachments_args', array(__CLASS__, 'allow_view_all_media_for_modules'));
 
+        // Ocultar la barra superior de WordPress (#wpadminbar) en el frontend según permisos y contexto de portal
+        if ( ! is_admin() ) {
+            add_filter( 'show_admin_bar', array( __CLASS__, 'filter_frontend_admin_bar' ), 999 );
+        }
+
         // Hook AJAX para aplicar plantillas de perfiles predefinidos
         add_action('wp_ajax_aura_apply_profile_template', array(__CLASS__, 'ajax_apply_profile_template'));
     }
@@ -1778,6 +1783,40 @@ class Aura_Roles_Manager {
             wp_safe_redirect( admin_url() );
             exit;
         }
+    }
+
+    /**
+     * Controla la visibilidad de la barra superior de WordPress (#wpadminbar) en el frontend:
+     *  - Visitantes sin sesión o usuarios sin acceso administrativo (estudiantes, suscriptores,
+     *    usuarios solo portal): siempre oculta.
+     *  - Páginas del sistema / portales frontend de AURA (portales, certificados, verificación
+     *    documental, formularios): siempre oculta para mantener la interfaz limpia tipo app.
+     *  - Resto de páginas públicas del sitio: visible solo para personal con acceso admin (`can_admin`).
+     *
+     * @param bool $show Estado actual calculado por WordPress.
+     * @return bool
+     */
+    public static function filter_frontend_admin_bar( $show ) {
+        if ( is_admin() ) {
+            return (bool) $show;
+        }
+
+        if ( ! $show || ! is_user_logged_in() ) {
+            return false;
+        }
+
+        // Ocultar siempre en páginas de portales / verificación del sistema AURA
+        if ( class_exists( 'Aura_Page_Manager' ) && Aura_Page_Manager::is_current_system_page() ) {
+            return false;
+        }
+
+        // En el resto del sitio público, mostrar solo a personal con acceso administrativo/staff
+        $access = self::get_user_portal_access();
+        if ( empty( $access['can_admin'] ) ) {
+            return false;
+        }
+
+        return (bool) $show;
     }
 
     /**

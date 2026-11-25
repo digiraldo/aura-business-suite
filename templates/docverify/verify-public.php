@@ -36,13 +36,23 @@ if ( $found && ! empty( $r['allow_public_pdf'] ) && empty( $r['is_locked'] ) ) {
         <div>
             <?php
             if ( class_exists( 'Aura_Page_Manager' ) ) {
-                echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo Aura_Page_Manager::render_theme_toggle_bar( '', '0', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             }
             ?>
         </div>
         <div class="aura-dv-lang-bar">
-            <button type="button" class="aura-dv-lang-btn is-active" data-dv-lang="es">🇪🇸 Español</button>
-            <button type="button" class="aura-dv-lang-btn" data-dv-lang="en">🇺🇸 English</button>
+            <?php
+            $dv_flag_es = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_locale_flag_svg( 'es_ES' ) : 'ES';
+            $dv_flag_en = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_locale_flag_svg( 'en_US' ) : 'EN';
+            ?>
+            <button type="button" class="aura-dv-lang-btn is-active" data-dv-lang="es">
+                <span class="aura-dv-flag" aria-hidden="true"><?php echo $dv_flag_es; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                <span>Español</span>
+            </button>
+            <button type="button" class="aura-dv-lang-btn" data-dv-lang="en">
+                <span class="aura-dv-flag" aria-hidden="true"><?php echo $dv_flag_en; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                <span>English</span>
+            </button>
             <?php if ( $found ) : ?>
                 <button type="button" class="aura-dv-print-btn" id="aura-dv-print-receipt" title="Print / Imprimir">
                     🖨️ <span data-es="Imprimir Comprobante" data-en="Print Verification">Imprimir Comprobante</span>

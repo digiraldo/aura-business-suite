@@ -268,7 +268,7 @@ class Aura_Page_Manager {
      * o a una vista/shortcode público del plugin.
      */
     public static function is_current_system_page(): bool {
-        if ( function_exists( 'get_query_var' ) && ! empty( get_query_var( 'aura_cert_verify' ) ) ) {
+        if ( function_exists( 'get_query_var' ) && ( ! empty( get_query_var( 'aura_cert_verify' ) ) || ! empty( get_query_var( 'aura_doc_verify' ) ) ) ) {
             return true;
         }
         if ( ! is_page() && ! is_singular() ) {
@@ -341,8 +341,10 @@ class Aura_Page_Manager {
     /**
      * Devuelve una barra superior alineada a la derecha con el botón .aura-theme-toggle.
      */
-    public static function render_theme_toggle_bar( string $label = '', string $margin = '0 0 14px 0' ): string {
-        $lang_html = class_exists( 'Aura_I18n' ) ? Aura_I18n::get_switcher_html( [ 'compact' => true ] ) : '';
+    public static function render_theme_toggle_bar( string $label = '', string $margin = '0 0 14px 0', bool $include_lang_switcher = true ): string {
+        $lang_html = ( $include_lang_switcher && class_exists( 'Aura_I18n' ) )
+            ? Aura_I18n::get_switcher_html( [ 'compact' => true ] )
+            : '';
         return sprintf(
             '<div class="aura-theme-toggle-bar" style="display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;margin:%s;">%s%s</div>',
             esc_attr( $margin ),

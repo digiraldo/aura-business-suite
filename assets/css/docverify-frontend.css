@@ -28,6 +28,9 @@
 
 .aura-dv-lang-btn,
 .aura-dv-print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 7px 12px;
     border-radius: 999px;
     border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.35));
@@ -37,6 +40,20 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.16s ease;
+}
+
+.aura-dv-flag {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+}
+
+.aura-dv-flag svg {
+    width: 18px;
+    height: 13px;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+    display: block;
 }
 
 .aura-dv-lang-btn.is-active {
