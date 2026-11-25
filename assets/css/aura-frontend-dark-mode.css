@@ -2726,6 +2726,10 @@ body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode)
 }
 
 /* Ancho completo automático cuando la página del sistema usa et_no_sidebar */
+body.aura-system-page #main-content,
+body.aura-has-theme-toggle #main-content {
+    display: flow-root;
+}
 body.aura-system-page.aura-divi-no-sidebar #left-area {
     width: 100% !important;
     float: none !important;
@@ -2741,6 +2745,7 @@ body.aura-system-page.aura-divi-no-sidebar #main-content .container::before {
 /* Modo Oscuro automático SOLO en el área de contenido (#main-content / .et-l--post / .et-l--body),
    preservando intactos <body> (debajo del footer), #page-container, #et-main-area, barra de navegación, carrito, Header y Footer */
 html[data-aura-theme="dark"] body.aura-system-page #main-content,
+html[data-aura-theme="dark"] body.aura-system-page #main-content > .container,
 html[data-aura-theme="dark"] body.aura-system-page #content-area,
 html[data-aura-theme="dark"] body.aura-system-page #left-area,
 html[data-aura-theme="dark"] body.aura-system-page #main-content article.page,
@@ -2749,14 +2754,15 @@ html[data-aura-theme="dark"] body.aura-system-page #main-content .entry-content,
 html[data-aura-theme="dark"] body.aura-system-page main#primary,
 html[data-aura-theme="dark"] body.aura-system-page main.site-main,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content > .container,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #content-area,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #left-area,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content article.page,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content article.et_pb_post,
 html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content .entry-content,
-html[data-aura-theme="dark"] body.aura-has-theme-toggle main#primary,
-html[data-aura-theme="dark"] body.aura-has-theme-toggle main.site-main,
+html[data-aura-theme="dark"] .aura-dv-main-content,
 body.aura-dark-theme.aura-system-page #main-content,
+body.aura-dark-theme.aura-system-page #main-content > .container,
 body.aura-dark-theme.aura-system-page #content-area,
 body.aura-dark-theme.aura-system-page #left-area,
 body.aura-dark-theme.aura-system-page #main-content article.page,
@@ -2765,13 +2771,13 @@ body.aura-dark-theme.aura-system-page #main-content .entry-content,
 body.aura-dark-theme.aura-system-page main#primary,
 body.aura-dark-theme.aura-system-page main.site-main,
 body.aura-dark-theme.aura-has-theme-toggle #main-content,
+body.aura-dark-theme.aura-has-theme-toggle #main-content > .container,
 body.aura-dark-theme.aura-has-theme-toggle #content-area,
 body.aura-dark-theme.aura-has-theme-toggle #left-area,
 body.aura-dark-theme.aura-has-theme-toggle #main-content article.page,
 body.aura-dark-theme.aura-has-theme-toggle #main-content article.et_pb_post,
 body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-content,
-body.aura-dark-theme.aura-has-theme-toggle main#primary,
-body.aura-dark-theme.aura-has-theme-toggle main.site-main {
+body.aura-dark-theme .aura-dv-main-content {
     background-color: var(--aura-theme-bg, #0e121a) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }

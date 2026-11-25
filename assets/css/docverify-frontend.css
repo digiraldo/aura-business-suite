@@ -2,6 +2,29 @@
  * Estilos Frontend — Portal Público de Verificación Documental (ES/EN + Claro/Oscuro + Print)
  */
 
+#main-content.aura-dv-main-content {
+    display: flow-root;
+    min-height: calc(100vh - 200px);
+    padding: 28px 0 48px;
+    background-color: var(--aura-theme-bg, #f8fafc);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#main-content.aura-dv-main-content #content-area {
+    padding-top: 0 !important;
+}
+
+#main-content.aura-dv-main-content #left-area {
+    width: 100% !important;
+    float: none !important;
+    padding: 0 !important;
+}
+
+#main-content.aura-dv-main-content .aura-dv-public-wrap {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .aura-dv-public-wrap {
     --dv-bg-card: var(--aura-surface-card, #ffffff);
     --dv-bg-alt: var(--aura-surface-alt, #f8fafc);
@@ -331,8 +354,72 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-items: center;
     gap: 6px 12px;
     margin-bottom: 10px;
+}
+
+.aura-dv-sha-title-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-dv-tip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.aura-dv-tip-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(2, 132, 199, 0.45);
+    background: rgba(2, 132, 199, 0.12);
+    color: #0284c7;
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.aura-dv-tip-btn:hover,
+.aura-dv-tip-wrap.is-open .aura-dv-tip-btn {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+}
+
+.aura-dv-tip-popover {
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    width: min(360px, 82vw);
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.48;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    z-index: 40;
+}
+
+.aura-dv-tip-wrap:hover .aura-dv-tip-popover,
+.aura-dv-tip-wrap:focus-within .aura-dv-tip-popover,
+.aura-dv-tip-wrap.is-open .aura-dv-tip-popover {
+    display: block;
 }
 
 .aura-dv-sha-privacy {
@@ -360,7 +447,7 @@
 
 .aura-dv-sha-drop {
     margin-top: 12px;
-    padding: 14px;
+    padding: 16px 14px;
     border-radius: 10px;
     border: 2px dashed rgba(2, 132, 199, 0.45);
     text-align: center;
@@ -368,6 +455,34 @@
     font-weight: 600;
     cursor: pointer;
     background: rgba(2, 132, 199, 0.04);
+    transition: all 0.16s ease;
+    user-select: none;
+}
+
+.aura-dv-sha-drop:hover,
+.aura-dv-sha-drop:focus-visible,
+.aura-dv-sha-drop.is-dragover {
+    background: rgba(2, 132, 199, 0.11);
+    border-color: #0284c7;
+    outline: none;
+}
+
+.aura-dv-sha-hint {
+    margin: 8px 0 0;
+    font-size: 11.5px;
+    color: var(--dv-text-muted, #64748b);
+    line-height: 1.4;
+}
+
+.aura-dv-sha-checking {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(2, 132, 199, 0.1);
+    color: #0369a1;
+    border: 1px solid rgba(2, 132, 199, 0.35);
 }
 
 .aura-dv-sha-match-ok,
@@ -404,6 +519,26 @@
 }
 
 /* Dark Mode Frontend Multi-Driver (AURA Toggle + Temas WP) */
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) #main-content.aura-dv-main-content,
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) #main-content.aura-dv-main-content :is(#content-area, #left-area, article.page, .entry-content) {
+    background-color: var(--aura-theme-bg, #0e121a) !important;
+    color: var(--aura-text-primary, #f8fafc);
+}
+
 :is(
     [data-aura-theme="dark"],
     .aura-dark-theme,
@@ -628,6 +763,76 @@
     .aura-dark-mode,
     .wp-dark-mode-active,
     html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-drop:hover,
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-drop.is-dragover {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: #38bdf8;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-hint {
+    color: #94a3b8 !important;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-sha-checking {
+    background: rgba(56, 189, 248, 0.14);
+    color: #7dd3fc;
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-tip-btn {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #7dd3fc;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
+) .aura-dv-tip-popover {
+    background: #0b1120;
+    color: #f8fafc;
+    border-color: #334155;
+}
+
+:is(
+    [data-aura-theme="dark"],
+    .aura-dark-theme,
+    [data-theme="dark"],
+    .aura-dark-mode,
+    .wp-dark-mode-active,
+    html[data-wp-dark-mode-scheme="dark"]
 ) .aura-dv-sha-match-ok {
     background: rgba(16, 185, 129, 0.16);
     color: #6ee7b7;
@@ -695,6 +900,11 @@
 @media print {
     .no-print {
         display: none !important;
+    }
+    #main-content.aura-dv-main-content {
+        min-height: 0;
+        padding: 0;
+        background: #ffffff !important;
     }
     .aura-dv-public-wrap {
         margin: 0;

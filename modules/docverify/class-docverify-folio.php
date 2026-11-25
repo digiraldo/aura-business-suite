@@ -146,10 +146,11 @@ class Aura_DocVerify_Folio {
      * Construye la URL pública de verificación para codificar en QR.
      */
     public static function build_verify_url( string $folio, string $verification_code ): string {
-        $token   = self::build_hmac_token( $folio, $verification_code, 'verify' );
-        $page_id = (int) Aura_DocVerify_Settings::get( 'verify_page_id', 0 );
+        $token    = self::build_hmac_token( $folio, $verification_code, 'verify' );
+        $url_mode = (string) Aura_DocVerify_Settings::get( 'url_mode', 'clean_slug' );
+        $page_id  = (int) Aura_DocVerify_Settings::get( 'verify_page_id', 0 );
 
-        if ( $page_id > 0 && get_post_status( $page_id ) === 'publish' ) {
+        if ( $url_mode === 'wp_page' && $page_id > 0 && get_post_status( $page_id ) === 'publish' ) {
             $base = get_permalink( $page_id );
             return add_query_arg(
                 [
@@ -160,7 +161,9 @@ class Aura_DocVerify_Folio {
             );
         }
 
-        $slug = sanitize_title( (string) Aura_DocVerify_Settings::get( 'verify_slug', 'verificar-documento' ) ) ?: 'verificar-documento';
+        $slug = class_exists( 'Aura_DocVerify_Setup' )
+            ? Aura_DocVerify_Setup::get_verify_slug()
+            : ( sanitize_title( (string) Aura_DocVerify_Settings::get( 'verify_slug', 'verificar-documento' ) ) ?: 'verificar-documento' );
         return add_query_arg(
             [ 't' => $token ],
             home_url( '/' . $slug . '/' . rawurlencode( $folio ) )

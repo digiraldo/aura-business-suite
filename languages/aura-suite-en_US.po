@@ -60598,3 +60598,15 @@ msgstr "Also re-stamp certified PDFs (Annex Page / QR Stamp) that still have the
 
 msgid "Guardar y Actualizar URLs y QR existentes"
 msgstr "Save & Update Existing URLs and QRs"
+
+msgid "Densidad y Lectura del Código QR (ECC)"
+msgstr "QR Code Density & Readability (ECC)"
+
+msgid "Estándar M (15%) genera códigos QR menos densos, con cuadros blancos y negros más grandes y fáciles de escanear en papel o móvil. Alta H (30%) tolera más daño físico pero genera cuadros más pequeños."
+msgstr "Standard M (15%) produces less dense QR codes with larger black-and-white modules that are easier to scan on paper or mobile. High H (30%) tolerates more physical wear but produces smaller modules."
+
+msgid "Estándar M (15%) — Cuadros más grandes y lectura rápida (Recomendado)"
+msgstr "Standard M (15%) — Larger modules & fast scan (Recommended)"
+
+msgid "Alta H (30%) — Máxima redundancia (más cuadros)"
+msgstr "High H (30%) — Maximum redundancy (denser modules)"

@@ -240,9 +240,19 @@ if ( $found && ! empty( $r['allow_public_pdf'] ) && empty( $r['is_locked'] ) ) {
             <!-- Verificador Criptográfico SHA-256 Zero-Upload -->
             <div class="aura-dv-sha-box">
                 <div class="aura-dv-sha-header">
-                    <h4 data-es="🛡️ Verificador Criptográfico de Integridad PDF (SHA-256)" data-en="🛡️ Cryptographic PDF Integrity Checker (SHA-256)">
-                        🛡️ Verificador Criptográfico de Integridad PDF (SHA-256)
-                    </h4>
+                    <div class="aura-dv-sha-title-wrap">
+                        <h4 data-es="🛡️ Verificador Criptográfico de Integridad PDF (SHA-256)" data-en="🛡️ Cryptographic PDF Integrity Checker (SHA-256)">
+                            🛡️ Verificador Criptográfico de Integridad PDF (SHA-256)
+                        </h4>
+                        <div class="aura-dv-tip-wrap no-print">
+                            <button type="button" class="aura-dv-tip-btn" aria-label="Info" aria-expanded="false">?</button>
+                            <div class="aura-dv-tip-popover" role="tooltip"
+                                 data-es="Sube aquí el archivo PDF digital exacto que recibiste (sin imprimirlo ni re-escanearlo). El verificador acepta: (1) el PDF original firmado o (2) el PDF certificado que contiene el código QR / sello o la Hoja Anexa estampada. Si el documento tiene versión sellada registrada, comparamos contra ambas huellas automáticamente."
+                                 data-en="Upload the exact digital PDF file you received (without printing, re-scanning, or editing it). You can check either: (1) the original signed PDF or (2) the certified PDF containing the stamped QR / verification badge or Annex Page. If a certified PDF is registered, both official SHA-256 hashes are checked automatically.">
+                                Sube aquí el archivo PDF digital exacto que recibiste (sin imprimirlo ni re-escanearlo). El verificador acepta: (1) el PDF original firmado o (2) el PDF certificado que contiene el código QR / sello o la Hoja Anexa estampada. Si el documento tiene versión sellada registrada, comparamos contra ambas huellas automáticamente.
+                            </div>
+                        </div>
+                    </div>
                     <span class="aura-dv-sha-privacy" data-es="100% local en tu navegador — El archivo no se sube al servidor" data-en="100% local in browser — File is never uploaded">
                         100% local en tu navegador — El archivo no se sube al servidor
                     </span>
@@ -258,13 +268,18 @@ if ( $found && ! empty( $r['allow_public_pdf'] ) && empty( $r['is_locked'] ) ) {
                     </div>
                 <?php endif; ?>
 
-                <div class="aura-dv-sha-drop no-print" id="aura-dv-public-sha-drop">
-                    <input type="file" id="aura-dv-public-sha-input" accept="application/pdf,.pdf" style="display:none;">
+                <input type="file" id="aura-dv-public-sha-input" class="no-print" accept="application/pdf,.pdf" style="display:none;">
+                <div class="aura-dv-sha-drop no-print" id="aura-dv-public-sha-drop" tabindex="0" role="button">
                     <span data-es="📎 Haz clic o arrastra aquí el PDF que recibiste para comprobar si es bit a bit idéntico al original"
                           data-en="📎 Click or drag &amp; drop the PDF you received to verify it matches bit-for-bit with the official record">
                         📎 Haz clic o arrastra aquí el PDF que recibiste para comprobar si es bit a bit idéntico al original
                     </span>
                 </div>
+                <p class="aura-dv-sha-hint no-print"
+                   data-es="Acepta el archivo PDF original firmado o el PDF certificado con código QR / Hoja Anexa estampada (sin re-escanear ni editar)."
+                   data-en="Accepts the original signed PDF or the certified PDF with stamped QR code / Annex Page (must be the unaltered digital file).">
+                    Acepta el archivo PDF original firmado o el PDF certificado con código QR / Hoja Anexa estampada (sin re-escanear ni editar).
+                </p>
                 <div id="aura-dv-public-sha-result" style="display:none;"></div>
             </div>
 

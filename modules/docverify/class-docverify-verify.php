@@ -22,7 +22,8 @@ class Aura_DocVerify_Verify {
      * Inicializar hooks públicos.
      */
     public static function init(): void {
-        add_action( 'template_redirect',  [ __CLASS__, 'intercept_verify_page' ] );
+        add_filter( 'redirect_canonical', [ __CLASS__, 'prevent_canonical_redirect' ], 10, 2 );
+        add_action( 'template_redirect',  [ __CLASS__, 'intercept_verify_page' ], 1 );
         add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_frontend_assets' ] );
         add_shortcode( 'aura_verificar_documento', [ __CLASS__, 'shortcode_verificar' ] );
 
@@ -36,15 +37,76 @@ class Aura_DocVerify_Verify {
     }
 
     /**
+     * Resuelve el folio si la petición actual corresponde a /{verify_slug}/{folio}
+     * (vía query_var de WP o respaldo directo por ruta cuando rewrite/canonical interfieren).
+     */
+    public static function resolve_route_folio(): string {
+        $qv = function_exists( 'get_query_var' ) ? trim( sanitize_text_field( (string) get_query_var( 'aura_doc_verify' ) ) ) : '';
+        if ( $qv !== '' ) {
+            return strtoupper( $qv );
+        }
+
+        if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+            return '';
+        }
+
+        $req_path  = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
+        $home_path = trim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
+        $rel_path  = trim( $req_path, '/' );
+        if ( $home_path !== '' && stripos( $rel_path, $home_path . '/' ) === 0 ) {
+            $rel_path = substr( $rel_path, strlen( $home_path ) + 1 );
+        }
+
+        $slug = class_exists( 'Aura_DocVerify_Setup' )
+            ? Aura_DocVerify_Setup::get_verify_slug()
+            : ( sanitize_title( (string) Aura_DocVerify_Settings::get( 'verify_slug', 'verificar-documento' ) ) ?: 'verificar-documento' );
+
+        if ( preg_match( '#^(?:index\.php/)?' . preg_quote( $slug, '#' ) . '/([A-Za-z0-9\-]+)/?$#i', $rel_path, $m ) ) {
+            $candidate = strtoupper( sanitize_text_field( $m[1] ) );
+            if ( class_exists( 'Aura_DocVerify_Folio' ) && Aura_DocVerify_Folio::is_valid_format( $candidate ) ) {
+                return $candidate;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Evita que redirect_canonical() redirija /{verify_slug}/{folio} hacia la portada (Inicio)
+     * o añada/quite barras finales alterando la ruta pública de verificación.
+     *
+     * @param string|false $redirect_url
+     * @param string       $requested_url
+     * @return string|false
+     */
+    public static function prevent_canonical_redirect( $redirect_url, $requested_url ) {
+        if ( self::resolve_route_folio() !== '' ) {
+            return false;
+        }
+        return $redirect_url;
+    }
+
+    /**
      * Intercepta URL /{verify_slug}/{folio}.
      */
     public static function intercept_verify_page(): void {
-        $folio = get_query_var( 'aura_doc_verify' );
-        if ( empty( $folio ) ) {
+        $folio = self::resolve_route_folio();
+        if ( $folio === '' ) {
             return;
         }
 
-        $folio = strtoupper( sanitize_text_field( (string) $folio ) );
+        global $wp_query;
+        if ( $wp_query ) {
+            $wp_query->set( 'aura_doc_verify', $folio );
+            $wp_query->is_404            = false;
+            $wp_query->is_home           = false;
+            $wp_query->is_page           = false;
+            $wp_query->is_singular       = false;
+            $wp_query->is_posts_page     = false;
+            $wp_query->queried_object    = null;
+            $wp_query->queried_object_id = 0;
+        }
+
         $token = sanitize_text_field( wp_unslash( $_GET['t'] ?? '' ) );
         $code  = sanitize_text_field( wp_unslash( $_GET['code'] ?? '' ) );
 
@@ -53,7 +115,21 @@ class Aura_DocVerify_Verify {
 
         $result = self::verify_lookup( $folio, $token, $code, 'qr' );
         get_header();
-        self::include_template( 'verify-public.php', [ 'verify_result' => $result ] );
+        ?>
+        <div id="main-content" class="aura-dv-main-content">
+            <div class="container">
+                <div id="content-area" class="clearfix">
+                    <div id="left-area">
+                        <article class="page type-page status-publish hentry aura-dv-virtual-page">
+                            <div class="entry-content">
+                                <?php self::include_template( 'verify-public.php', [ 'verify_result' => $result ] ); ?>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
         get_footer();
         exit;
     }
@@ -85,10 +161,12 @@ class Aura_DocVerify_Verify {
      */
     public static function enqueue_frontend_assets(): void {
         global $post;
-        $is_route = ! empty( get_query_var( 'aura_doc_verify' ) );
-        $has_sc   = ( $post && is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'aura_verificar_documento' ) );
+        $is_route       = ( self::resolve_route_folio() !== '' );
+        $verify_page_id = class_exists( 'Aura_DocVerify_Settings' ) ? (int) Aura_DocVerify_Settings::get( 'verify_page_id', 0 ) : 0;
+        $is_verify_page = $verify_page_id > 0 && is_page( $verify_page_id );
+        $has_sc         = ( $post && is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'aura_verificar_documento' ) );
 
-        if ( $is_route || $has_sc ) {
+        if ( $is_route || $is_verify_page || $has_sc ) {
             self::enqueue_assets_force();
         }
     }

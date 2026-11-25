@@ -43,6 +43,7 @@ class Aura_DocVerify_Settings {
             'org_country'          => '',
             'consular_email'       => (string) get_option( 'admin_email', '' ),
             'consular_phone'       => '',
+            'url_mode'             => 'clean_slug',
             'verify_slug'          => 'verificar-documento',
             'verify_page_id'       => 0,
             'folio_padding'        => 4,
@@ -61,6 +62,7 @@ class Aura_DocVerify_Settings {
             'keep_local_backup'    => false,
             'drive_folder_name'    => 'Validación Documental',
             'qr_scale'             => 6,
+            'qr_ecc'               => 'M',
             'max_upload_mb'        => 15,
             'rate_limit_max'       => 20,
             'rate_limit_minutes'   => 10,
@@ -215,10 +217,9 @@ class Aura_DocVerify_Settings {
             $current['verify_slug']   = $slug ?: 'verificar-documento';
             $current['folio_padding'] = max( 3, min( 8, absint( $_POST['folio_padding'] ?? $current['folio_padding'] ) ) );
 
-            $route_mode = sanitize_key( wp_unslash( $_POST['route_mode'] ?? '' ) );
-            if ( $route_mode === 'clean_slug' ) {
-                $current['verify_page_id'] = 0;
-            } elseif ( $route_mode === 'wp_page' && empty( $current['verify_page_id'] ) && class_exists( 'Aura_Page_Manager' ) ) {
+            $route_mode = sanitize_key( wp_unslash( $_POST['route_mode'] ?? 'clean_slug' ) );
+            $current['url_mode'] = ( $route_mode === 'wp_page' ) ? 'wp_page' : 'clean_slug';
+            if ( $current['url_mode'] === 'wp_page' && empty( $current['verify_page_id'] ) && class_exists( 'Aura_Page_Manager' ) ) {
                 $linked_id = Aura_Page_Manager::get_id( 'doc_verify' );
                 if ( $linked_id > 0 && get_post_status( $linked_id ) === 'publish' ) {
                     $current['verify_page_id'] = $linked_id;
@@ -264,6 +265,10 @@ class Aura_DocVerify_Settings {
             $current['drive_folder_name'] = $drive_folder !== '' ? $drive_folder : 'Validación Documental';
             $current['max_upload_mb']     = max( 2, min( 50, absint( $_POST['max_upload_mb'] ?? $current['max_upload_mb'] ) ) );
             $current['qr_scale']          = max( 4, min( 10, absint( $_POST['qr_scale'] ?? $current['qr_scale'] ) ) );
+            $qr_ecc                       = strtoupper( sanitize_text_field( wp_unslash( $_POST['qr_ecc'] ?? $current['qr_ecc'] ) ) );
+            if ( in_array( $qr_ecc, [ 'M', 'H' ], true ) ) {
+                $current['qr_ecc'] = $qr_ecc;
+            }
         }
 
         if ( $tab === 'security' || $tab === 'all' ) {
@@ -275,8 +280,7 @@ class Aura_DocVerify_Settings {
         }
 
         update_option( self::OPTION_KEY, $current );
-        Aura_DocVerify_Setup::register_rewrite_rules();
-        flush_rewrite_rules( false );
+        Aura_DocVerify_Setup::flush_and_mark_rewrite_rules();
 
         wp_send_json_success( [
             'message'  => __( 'Configuración de Validación Documental guardada correctamente.', 'aura-suite' ),

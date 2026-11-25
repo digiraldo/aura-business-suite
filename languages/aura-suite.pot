@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Aura Business Suite 1.8.3\n"
 "Report-Msgid-Bugs-To: https://github.com/digiraldo/aura-business-suite\n"
-"POT-Creation-Date: 2026-11-25 04:46+0000\n"
+"POT-Creation-Date: 2026-11-25 05:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -371,7 +371,7 @@ msgstr ""
 msgid "Progreso"
 msgstr ""
 
-#: aura-business-suite.php:1212 aura-business-suite.php:1539 aura-business-suite.php:1621 modules/common/class-aura-i18n.php:1416
+#: aura-business-suite.php:1212 aura-business-suite.php:1539 aura-business-suite.php:1621 modules/common/class-aura-i18n.php:1414
 #: modules/financial/class-financial-approval.php:722 modules/financial/class-financial-pending-list.php:53 modules/vehicles/admin/views/page-catalogs.php:142 modules/vehicles/admin/views/page-trips.php:108
 #: modules/vehicles/admin/views/page-vehicles.php:105 templates/areas/area-types-page.php:488 templates/areas/areas-page.php:294 templates/areas/areas-page.php:429
 #: templates/calendar/tab-settings.php:324 templates/calendar/tab-settings.php:387 templates/certificates/dashboard.php:158 templates/certificates/list.php:147
@@ -5552,210 +5552,210 @@ msgstr ""
 msgid "El certificado no fue encontrado."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:615
+#: modules/common/class-aura-i18n.php:613
 msgid "Enlace de cambio de idioma inválido o expirado."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:668
+#: modules/common/class-aura-i18n.php:666
 msgid "Cambiar idioma de interfaz AURA (preferencia personal)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:698
+#: modules/common/class-aura-i18n.php:696
 msgid "Usar idioma de WordPress"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:742
+#: modules/common/class-aura-i18n.php:740
 msgid "Idioma personal de la interfaz (no altera los datos en base de datos)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:747 modules/common/class-aura-i18n.php:752 modules/vehicles/templates/vehicle-qr-mobile.php:795
+#: modules/common/class-aura-i18n.php:745 modules/common/class-aura-i18n.php:750 modules/vehicles/templates/vehicle-qr-mobile.php:795
 msgid "Idioma de interfaz"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1052
+#: modules/common/class-aura-i18n.php:1050
 msgid "Archivo .po no encontrado o ilegible."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1055
+#: modules/common/class-aura-i18n.php:1053
 msgid "Las librerías Gettext POMO de WordPress no están disponibles."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1060
+#: modules/common/class-aura-i18n.php:1058
 msgid "El archivo .po no tiene un formato Gettext válido."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1105
+#: modules/common/class-aura-i18n.php:1103
 msgid "No se pudo escribir el archivo compilado .mo (revisa permisos de escritura)."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1115
+#: modules/common/class-aura-i18n.php:1113
 msgid "No se pudo escribir el archivo .l10n.php."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1166 modules/common/class-aura-i18n.php:1217 modules/forms/class-forms-settings.php:75 modules/forms/class-forms-settings.php:104
+#: modules/common/class-aura-i18n.php:1164 modules/common/class-aura-i18n.php:1215 modules/forms/class-forms-settings.php:75 modules/forms/class-forms-settings.php:104
 #: modules/forms/class-forms-settings.php:123
 msgid "No tienes permiso para realizar esta acción."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1196
+#: modules/common/class-aura-i18n.php:1194
 msgid "Escaneo completado. No se encontraron archivos .po pendientes."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1199
+#: modules/common/class-aura-i18n.php:1197
 #, php-format
 msgid "Compilado %d paquete de idioma correctamente (.mo, .l10n.php y JED JSON)."
 msgid_plural "Compilados %d paquetes de idioma correctamente (.mo, .l10n.php y JED JSON)."
 msgstr[0] ""
 msgstr[1] ""
 
-#: modules/common/class-aura-i18n.php:1221
+#: modules/common/class-aura-i18n.php:1219
 msgid "Debes seleccionar un archivo .po válido."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1226
+#: modules/common/class-aura-i18n.php:1224
 msgid "Formato inválido: solo se admiten archivos .po de Gettext."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1235
+#: modules/common/class-aura-i18n.php:1233
 msgid "Especifica un código de idioma válido (ej: en_US, pt_BR, fr_FR)."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1240
+#: modules/common/class-aura-i18n.php:1238
 msgid "Librerías POMO no disponibles."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1246
+#: modules/common/class-aura-i18n.php:1244
 msgid "El archivo subido no contiene entradas Gettext (.po) válidas."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1257
+#: modules/common/class-aura-i18n.php:1255
 msgid "Error al guardar el archivo .po en la carpeta /languages."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1268
+#: modules/common/class-aura-i18n.php:1266
 #, php-format
 msgid "Idioma %1$s instalado y compilado (%2$d / %3$d cadenas traducidas)."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1283
+#: modules/common/class-aura-i18n.php:1281
 msgid "No tienes permiso para descargar este archivo."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1300
+#: modules/common/class-aura-i18n.php:1298
 msgid "El archivo de idioma solicitado no existe."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1332
+#: modules/common/class-aura-i18n.php:1330
 msgid "Idioma de la Interfaz (AURA Business Suite)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1335
+#: modules/common/class-aura-i18n.php:1333
 msgid "Controla el idioma global con el que se renderizan los menús, pantallas, correos y reportes de AURA. Los datos capturados por los usuarios en base de datos permanecen intactos sin importar el idioma seleccionado."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1341
+#: modules/common/class-aura-i18n.php:1339
 msgid "Idioma Predeterminado de AURA"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1342
+#: modules/common/class-aura-i18n.php:1340
 msgid "Por defecto hereda el idioma de WordPress, o puedes forzar un idioma fijo para toda la suite."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1347
+#: modules/common/class-aura-i18n.php:1345
 msgid "Usar idioma de WordPress (Recomendado)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1359
+#: modules/common/class-aura-i18n.php:1357
 #, php-format
 msgid "Idioma actual de WordPress: %s. Cada usuario también puede alternar su idioma personal desde el selector 🌐 en la barra superior o en los portales frontend."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1369
+#: modules/common/class-aura-i18n.php:1367
 msgid "Orden de prioridad:"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1370
+#: modules/common/class-aura-i18n.php:1368
 msgid "1) Preferencia personal del usuario (selector 🌐) → 2) Idioma forzado en esta configuración de AURA → 3) Idioma general de WordPress."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1380
+#: modules/common/class-aura-i18n.php:1378
 msgid "Gestor de Paquetes de Idioma (/languages)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1386
+#: modules/common/class-aura-i18n.php:1384
 #, php-format
 msgid "Compatible con Poedit y Loco Translate. Plantilla maestra actual: %d cadenas traducibles."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1396
+#: modules/common/class-aura-i18n.php:1394
 msgid "Descargar aura-suite.pot"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1401
+#: modules/common/class-aura-i18n.php:1399
 msgid "Escanear y Recompilar Todos"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1412 templates/library/book-form.php:314 assets/js/library-books.js:645 assets/js/library-books.js:1256
+#: modules/common/class-aura-i18n.php:1410 templates/library/book-form.php:314 assets/js/library-books.js:645 assets/js/library-books.js:1256
 msgid "Idioma"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1413 templates/calendar/tab-grades.php:83
+#: modules/common/class-aura-i18n.php:1411 templates/calendar/tab-grades.php:83
 msgid "Código"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1414
+#: modules/common/class-aura-i18n.php:1412
 msgid "Cobertura"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1415
+#: modules/common/class-aura-i18n.php:1413
 msgid "Archivos compilados"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1429
+#: modules/common/class-aura-i18n.php:1427
 msgid "Instalar o Actualizar Idioma (.po)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1432
+#: modules/common/class-aura-i18n.php:1430
 msgid "Sube un archivo .po traducido con Poedit o Loco Translate (por ejemplo aura-suite-pt_BR.po o aura-suite-fr_FR.po). AURA lo validará y compilará automáticamente a .mo, .l10n.php y JED .json."
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1437
+#: modules/common/class-aura-i18n.php:1435
 msgid "Código Locale"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1443
+#: modules/common/class-aura-i18n.php:1441
 msgid "Archivo Gettext (.po)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1449
+#: modules/common/class-aura-i18n.php:1447
 msgid "Subir y Compilar Idioma"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1472 modules/common/class-aura-i18n.php:1606
+#: modules/common/class-aura-i18n.php:1470 modules/common/class-aura-i18n.php:1604
 msgid "Nativo (Base PHP/JS)"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1478 modules/common/class-aura-i18n.php:1612
+#: modules/common/class-aura-i18n.php:1476 modules/common/class-aura-i18n.php:1610
 msgid "Requiere compilar"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1484 modules/common/class-aura-i18n.php:1620
+#: modules/common/class-aura-i18n.php:1482 modules/common/class-aura-i18n.php:1618
 msgid "Compilar"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1485 modules/common/class-aura-i18n.php:1623
+#: modules/common/class-aura-i18n.php:1483 modules/common/class-aura-i18n.php:1621
 msgid "Descargar .po"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1486 modules/common/class-aura-i18n.php:1626
+#: modules/common/class-aura-i18n.php:1484 modules/common/class-aura-i18n.php:1624
 msgid "Solo binario"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1515 modules/common/class-aura-i18n.php:1530 modules/common/class-aura-i18n.php:1569 templates/settings-page.php:2035
+#: modules/common/class-aura-i18n.php:1513 modules/common/class-aura-i18n.php:1528 modules/common/class-aura-i18n.php:1567 templates/settings-page.php:2035
 msgid "Error de comunicación con el servidor"
 msgstr ""
 
-#: modules/common/class-aura-i18n.php:1547
+#: modules/common/class-aura-i18n.php:1545
 msgid "Selecciona primero un archivo .po para subir."
 msgstr ""
 
@@ -5975,7 +5975,7 @@ msgstr ""
 
 #: modules/common/class-nav-login-menu.php:471 modules/common/class-page-manager.php:479 modules/contacts/auth/class-google-auth-service-account.php:377 modules/contacts/auth/class-google-auth-service-account.php:408
 #: modules/contacts/auth/class-google-auth-service-account.php:428 modules/contacts/class-contacts-merge.php:637 modules/contacts/class-contacts.php:1029 modules/contacts/class-contacts.php:1665
-#: modules/contacts/class-contacts.php:1916 modules/contacts/class-contacts.php:2100 modules/docverify/class-docverify-admin.php:325 modules/docverify/class-docverify-settings.php:184
+#: modules/contacts/class-contacts.php:1916 modules/contacts/class-contacts.php:2100 modules/docverify/class-docverify-admin.php:325 modules/docverify/class-docverify-settings.php:186
 #: modules/students/class-students-settings.php:122 modules/students/class-students-settings.php:139
 msgid "Sin permisos suficientes."
 msgstr ""
@@ -9852,88 +9852,88 @@ msgstr ""
 msgid "El archivo no tiene una firma binaria PDF válida (%PDF-)."
 msgstr ""
 
-#: modules/docverify/class-docverify-pdf.php:157
+#: modules/docverify/class-docverify-pdf.php:159
 msgid "La librería mPDF no está disponible para sellar el PDF."
 msgstr ""
 
-#: modules/docverify/class-docverify-pdf.php:161
+#: modules/docverify/class-docverify-pdf.php:163
 msgid "No se encontró el PDF base para sellar."
 msgstr ""
 
-#: modules/docverify/class-docverify-pdf.php:190
+#: modules/docverify/class-docverify-pdf.php:192
 msgid "El PDF no contiene páginas importables."
 msgstr ""
 
-#: modules/docverify/class-docverify-pdf.php:234
+#: modules/docverify/class-docverify-pdf.php:236
 msgid "No se pudo generar el archivo PDF sellado."
 msgstr ""
 
-#: modules/docverify/class-docverify-pdf.php:244
+#: modules/docverify/class-docverify-pdf.php:246
 #, php-format
 msgid "No fue posible estampar este PDF automáticamente (%s). Puede usar el modo \"Solo QR\" e insertar el código QR manualmente antes de exportarlo."
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:106
+#: modules/docverify/class-docverify-settings.php:108
 msgid "Carta de Invitación (Visa / Embajada)"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:107
+#: modules/docverify/class-docverify-settings.php:109
 msgid "Carta de Invitación (Migración / Control Fronterizo)"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:108
+#: modules/docverify/class-docverify-settings.php:110
 msgid "Oficio / Comunicado Oficial"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:109
+#: modules/docverify/class-docverify-settings.php:111
 msgid "Constancia / Certificación Institucional"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:110
+#: modules/docverify/class-docverify-settings.php:112
 msgid "Carta de Patrocinio / Apoyo"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:111
+#: modules/docverify/class-docverify-settings.php:113
 msgid "Autorización / Poder / Permiso"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:112
+#: modules/docverify/class-docverify-settings.php:114
 msgid "Convenio / Acta / Resolución"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:113
+#: modules/docverify/class-docverify-settings.php:115
 msgid "Otro Documento Institucional"
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:197
+#: modules/docverify/class-docverify-settings.php:199
 msgid "Sin permisos para modificar la configuración."
 msgstr ""
 
-#: modules/docverify/class-docverify-settings.php:282
+#: modules/docverify/class-docverify-settings.php:287
 msgid "Configuración de Validación Documental guardada correctamente."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:259
+#: modules/docverify/class-docverify-verify.php:261
 msgid "Demasiados intentos. Espera unos minutos."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:269
+#: modules/docverify/class-docverify-verify.php:271
 msgid "Documento o firma de consulta inválidos."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:286
+#: modules/docverify/class-docverify-verify.php:288
 msgid "El PIN o número de documento/pasaporte no coincide."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:327
+#: modules/docverify/class-docverify-verify.php:329
 msgid "Descarga pública no habilitada para este documento."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:331
+#: modules/docverify/class-docverify-verify.php:333
 msgid "Token de descarga inválido."
 msgstr ""
 
-#: modules/docverify/class-docverify-verify.php:336
+#: modules/docverify/class-docverify-verify.php:338
 msgid "Se requiere validar PIN o número de pasaporte antes de descargar."
 msgstr ""
 
@@ -10070,7 +10070,7 @@ msgstr ""
 msgid "Se enviará una alerta cuando el consumo diario supere este valor."
 msgstr ""
 
-#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:318 templates/settings-page.php:1837
+#: modules/electricity/class-electricity-dashboard.php:176 templates/certificates/settings.php:190 templates/docverify/settings.php:332 templates/settings-page.php:1837
 msgid "Guardar Configuración"
 msgstr ""
 
@@ -27822,12 +27822,12 @@ msgid "Página %1$d de %2$d (%3$d eventos)"
 msgstr ""
 
 #: templates/docverify/audit-log.php:177 templates/docverify/dashboard.php:266 templates/docverify/document-form.php:430 templates/docverify/documents-list.php:347
-#: templates/docverify/settings.php:325
+#: templates/docverify/settings.php:339
 msgid "Desarrollado con"
 msgstr ""
 
 #: templates/docverify/audit-log.php:177 templates/docverify/dashboard.php:266 templates/docverify/document-form.php:430 templates/docverify/documents-list.php:347
-#: templates/docverify/settings.php:325
+#: templates/docverify/settings.php:339
 msgid "por"
 msgstr ""
 
@@ -28789,35 +28789,51 @@ msgstr ""
 msgid "Límite máximo permitido por archivo PDF subido (entre 2 y 50 MB)."
 msgstr ""
 
-#: templates/docverify/settings.php:292
+#: templates/docverify/settings.php:293
+msgid "Densidad y Lectura del Código QR (ECC)"
+msgstr ""
+
+#: templates/docverify/settings.php:293
+msgid "Estándar M (15%) genera códigos QR menos densos, con cuadros blancos y negros más grandes y fáciles de escanear en papel o móvil. Alta H (30%) tolera más daño físico pero genera cuadros más pequeños."
+msgstr ""
+
+#: templates/docverify/settings.php:296
+msgid "Estándar M (15%) — Cuadros más grandes y lectura rápida (Recomendado)"
+msgstr ""
+
+#: templates/docverify/settings.php:299
+msgid "Alta H (30%) — Máxima redundancia (más cuadros)"
+msgstr ""
+
+#: templates/docverify/settings.php:306
 msgid "Seguridad Anti-Enumeración y Página de Verificación"
 msgstr ""
 
-#: templates/docverify/settings.php:295
+#: templates/docverify/settings.php:309
 msgid "Página WP del Shortcode [aura_verificar_documento]"
 msgstr ""
 
-#: templates/docverify/settings.php:295
+#: templates/docverify/settings.php:309
 msgid "Página pública de WordPress vinculada al verificador; también puedes gestionarla desde Configuración → Páginas."
 msgstr ""
 
-#: templates/docverify/settings.php:297
+#: templates/docverify/settings.php:311
 msgid "— Automático (Aura Page Manager) —"
 msgstr ""
 
-#: templates/docverify/settings.php:306
+#: templates/docverify/settings.php:320
 msgid "Máximo de búsquedas por IP"
 msgstr ""
 
-#: templates/docverify/settings.php:306
+#: templates/docverify/settings.php:320
 msgid "Número máximo de consultas o intentos de PIN permitidos desde una misma IP dentro de la ventana de tiempo."
 msgstr ""
 
-#: templates/docverify/settings.php:310
+#: templates/docverify/settings.php:324
 msgid "Ventana de bloqueo (minutos)"
 msgstr ""
 
-#: templates/docverify/settings.php:310
+#: templates/docverify/settings.php:324
 msgid "Duración en minutos de la ventana para el límite anti-fuerza bruta."
 msgstr ""
 

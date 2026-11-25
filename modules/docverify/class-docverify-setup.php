@@ -30,7 +30,9 @@ class Aura_DocVerify_Setup {
             add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
         }
 
-        add_action( 'init', [ __CLASS__, 'register_rewrite_rules' ] );
+        add_filter( 'query_vars', [ __CLASS__, 'register_query_vars' ] );
+        add_action( 'init',       [ __CLASS__, 'register_rewrite_rules' ] );
+        add_action( 'init',       [ __CLASS__, 'maybe_flush_rewrite' ], 99 );
     }
 
     /**
@@ -203,19 +205,65 @@ class Aura_DocVerify_Setup {
     }
 
     /**
-     * Registrar reglas de reescritura para URL limpia /{verify_slug}/{folio}.
+     * Slug público configurado para la verificación documental.
      */
-    public static function register_rewrite_rules(): void {
+    public static function get_verify_slug(): string {
         $slug = class_exists( 'Aura_DocVerify_Settings' )
             ? Aura_DocVerify_Settings::get( 'verify_slug', 'verificar-documento' )
             : 'verificar-documento';
-        $slug = sanitize_title( (string) $slug ) ?: 'verificar-documento';
+        $slug = sanitize_title( (string) $slug );
+        return $slug !== '' ? $slug : 'verificar-documento';
+    }
 
+    /**
+     * Registra la query var pública `aura_doc_verify`.
+     */
+    public static function register_query_vars( array $vars ): array {
+        if ( ! in_array( 'aura_doc_verify', $vars, true ) ) {
+            $vars[] = 'aura_doc_verify';
+        }
+        return $vars;
+    }
+
+    /**
+     * Expresión regular usada en WordPress para /{verify_slug}/{folio}.
+     */
+    public static function get_verify_rewrite_regex(): string {
+        return '^' . preg_quote( self::get_verify_slug(), '#' ) . '/([A-Za-z0-9\-]+)/?$';
+    }
+
+    /**
+     * Registrar reglas de reescritura para URL limpia /{verify_slug}/{folio}.
+     */
+    public static function register_rewrite_rules(): void {
         add_rewrite_rule(
-            '^' . preg_quote( $slug, '^' ) . '/([A-Za-z0-9\-]+)/?$',
+            self::get_verify_rewrite_regex(),
             'index.php?aura_doc_verify=$matches[1]',
             'top'
         );
         add_rewrite_tag( '%aura_doc_verify%', '([A-Za-z0-9\-]+)' );
+    }
+
+    /**
+     * Regenera rewrite rules automáticamente si cambió verify_slug o si falta la regla en BD.
+     */
+    public static function maybe_flush_rewrite(): void {
+        $slug     = self::get_verify_slug();
+        $expected = '1.9.1:' . $slug;
+        $rules    = get_option( 'rewrite_rules' );
+        $regex    = self::get_verify_rewrite_regex();
+
+        if ( get_option( 'aura_docverify_rewrite_state', '' ) !== $expected || ( is_array( $rules ) && ! isset( $rules[ $regex ] ) ) ) {
+            self::flush_and_mark_rewrite_rules();
+        }
+    }
+
+    /**
+     * Registra las reglas vigentes, sincroniza el flush y guarda el estado del slug.
+     */
+    public static function flush_and_mark_rewrite_rules(): void {
+        self::register_rewrite_rules();
+        flush_rewrite_rules( false );
+        update_option( 'aura_docverify_rewrite_state', '1.9.1:' . self::get_verify_slug(), true );
     }
 }

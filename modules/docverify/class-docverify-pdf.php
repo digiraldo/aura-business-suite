@@ -93,11 +93,13 @@ class Aura_DocVerify_PDF {
 
         $png_path = $qr_dir . '/qr-' . $safe . '.png';
         $svg_path = $qr_dir . '/qr-' . $safe . '.svg';
+        $ecc_opt  = strtoupper( (string) Aura_DocVerify_Settings::get( 'qr_ecc', 'M' ) );
+        $ecc      = ( $ecc_opt === 'H' ) ? Aura_DocVerify_QRCode::ECC_H : Aura_DocVerify_QRCode::ECC_M;
 
         // Motor nativo PHP ISO/IEC 18004 (cero dependencias externas)
         if ( class_exists( 'Aura_DocVerify_QRCode' ) ) {
             try {
-                if ( Aura_DocVerify_QRCode::to_png_file( $verify_url, $png_path, Aura_DocVerify_QRCode::ECC_H, $scale, 2 ) ) {
+                if ( Aura_DocVerify_QRCode::to_png_file( $verify_url, $png_path, $ecc, $scale, 2 ) ) {
                     $result['png_path'] = $png_path;
                 }
             } catch ( \Throwable $e ) {
@@ -105,7 +107,7 @@ class Aura_DocVerify_PDF {
             }
 
             try {
-                $svg = Aura_DocVerify_QRCode::to_svg( $verify_url, Aura_DocVerify_QRCode::ECC_H, $scale, 2 );
+                $svg = Aura_DocVerify_QRCode::to_svg( $verify_url, $ecc, $scale, 2 );
                 if ( $svg !== '' && @file_put_contents( $svg_path, $svg ) !== false && file_exists( $svg_path ) ) {
                     $result['svg_path'] = $svg_path;
                 }
@@ -123,7 +125,7 @@ class Aura_DocVerify_PDF {
             try {
                 $opts_png              = new \chillerlan\QRCode\QROptions();
                 $opts_png->outputType  = \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG;
-                $opts_png->eccLevel    = \chillerlan\QRCode\QRCode::ECC_H;
+                $opts_png->eccLevel    = ( $ecc_opt === 'H' ) ? \chillerlan\QRCode\QRCode::ECC_H : \chillerlan\QRCode\QRCode::ECC_M;
                 $opts_png->imageBase64 = false;
                 $opts_png->scale       = $scale;
                 ( new \chillerlan\QRCode\QRCode( $opts_png ) )->render( $verify_url, $png_path );

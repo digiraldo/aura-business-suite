@@ -271,6 +271,9 @@ class Aura_Page_Manager {
         if ( function_exists( 'get_query_var' ) && ( ! empty( get_query_var( 'aura_cert_verify' ) ) || ! empty( get_query_var( 'aura_doc_verify' ) ) ) ) {
             return true;
         }
+        if ( class_exists( 'Aura_DocVerify_Verify' ) && Aura_DocVerify_Verify::resolve_route_folio() !== '' ) {
+            return true;
+        }
         if ( ! is_page() && ! is_singular() ) {
             return false;
         }

@@ -131,7 +131,7 @@ $dv_tip      = static function ( string $text ): string {
             <?php elseif ( $active_tab === 'folios' ) :
                 $curr_page_id    = (int) ( $settings['verify_page_id'] ?? 0 );
                 $has_active_page = ( $curr_page_id > 0 && get_post_status( $curr_page_id ) === 'publish' );
-                $route_mode      = $has_active_page ? 'wp_page' : 'clean_slug';
+                $route_mode      = ( (string) ( $settings['url_mode'] ?? 'clean_slug' ) === 'wp_page' && $has_active_page ) ? 'wp_page' : 'clean_slug';
                 $page_permalink  = $has_active_page ? trailingslashit( (string) get_permalink( $curr_page_id ) ) : trailingslashit( home_url( $settings['verify_slug'] ) );
             ?>
                 <h3><?php esc_html_e( 'Prefijos de Folios y Ruta Pública', 'aura-suite' ); ?></h3>
@@ -285,6 +285,20 @@ $dv_tip      = static function ( string $text ): string {
                     <div>
                         <label class="aura-dv-label"><?php esc_html_e( 'Tamaño máximo PDF (MB)', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Límite máximo permitido por archivo PDF subido (entre 2 y 50 MB).', 'aura-suite' ) ); ?></label>
                         <input type="number" name="max_upload_mb" class="form-control" min="2" max="50" value="<?php echo esc_attr( (string) $settings['max_upload_mb'] ); ?>">
+                    </div>
+                </div>
+
+                <div class="aura-dv-grid-2" style="margin-top:14px;">
+                    <div>
+                        <label class="aura-dv-label"><?php esc_html_e( 'Densidad y Lectura del Código QR (ECC)', 'aura-suite' ); ?> <?php echo $dv_tip( __( 'Estándar M (15%) genera códigos QR menos densos, con cuadros blancos y negros más grandes y fáciles de escanear en papel o móvil. Alta H (30%) tolera más daño físico pero genera cuadros más pequeños.', 'aura-suite' ) ); ?></label>
+                        <select name="qr_ecc" class="form-select form-control">
+                            <option value="M" <?php selected( strtoupper( (string) ( $settings['qr_ecc'] ?? 'M' ) ), 'M' ); ?>>
+                                <?php esc_html_e( 'Estándar M (15%) — Cuadros más grandes y lectura rápida (Recomendado)', 'aura-suite' ); ?>
+                            </option>
+                            <option value="H" <?php selected( strtoupper( (string) ( $settings['qr_ecc'] ?? 'M' ) ), 'H' ); ?>>
+                                <?php esc_html_e( 'Alta H (30%) — Máxima redundancia (más cuadros)', 'aura-suite' ); ?>
+                            </option>
+                        </select>
                     </div>
                 </div>
 
